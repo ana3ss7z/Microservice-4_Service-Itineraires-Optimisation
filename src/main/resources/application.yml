@@ -6,9 +6,10 @@ spring:
   application:
     name: itineraire-optimisation-service
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:itineraire_db}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:anass2002}
+    url: jdbc:postgresql://localhost:5432/itineraire_db
+    username: postgres
+    password: anass2002
+    driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG95Dialect
     hibernate:
