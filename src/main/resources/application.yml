@@ -1,0 +1,35 @@
+server:
+  port: 8083
+  servlet:
+    context-path: /api
+spring:
+  application:
+    name: itineraire-optimisation-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:itineraire_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:anass2002}
+  jpa:
+    database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG95Dialect
+    hibernate:
+      ddl-auto: create
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=3600s
+external:
+  api:
+    nominatim:
+      base-url: https://nominatim.openstreetmap.org
+      email: contact@transport.com
+    osrm:
+      base-url: http://router.project-osrm.org
+      profile: car
+jwt:
+  secret: mySecretKeyForJWTTokenGenerationAndValidation123456789
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+optimization:
+  max-waypoints: 25
+  algorithm: heuristic
