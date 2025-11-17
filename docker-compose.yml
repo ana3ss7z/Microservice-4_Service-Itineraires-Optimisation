@@ -1,13 +1,13 @@
 services:
   postgres:
     image: postgis/postgis:16-3.4-alpine
-    container_name: itineraire_db
+    container_name: itineraire_db_ms4
     environment:
       POSTGRES_DB: itineraire_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: anass2002
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
@@ -16,22 +16,30 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - itineraire-network
 
   itineraire-service:
     build: .
-    container_name: itineraire_service
+    container_name: itineraire_service_ms4
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/itineraire_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: anass2002
     ports:
-      - "31030:8081"
+      - "8082:8081"
     volumes:
       - ~/apps:/apps
       - ~/workspace:/workspace
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - itineraire-network
+
+networks:
+  itineraire-network:
+    driver: bridge
 
 volumes:
   postgres-data:
