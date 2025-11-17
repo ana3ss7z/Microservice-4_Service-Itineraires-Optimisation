@@ -10,5 +10,5 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 ENV TZ=Africa/Casablanca
 RUN apk add --no-cache tzdata
-EXPOSE 8083
+EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]
