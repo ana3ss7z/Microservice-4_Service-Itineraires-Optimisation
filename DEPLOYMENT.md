@@ -10,11 +10,11 @@ This microservice runs inside the **projet2-ms4-devbox** container.
 
 ## Local Access (Inside Devbox)
 
-- **API**: `http://localhost:8082/api`
-- **Swagger UI**: `http://localhost:8082/api/swagger-ui.html`
-- **Health Check**: `http://localhost:8082/api/routes/health`
-- **OpenAPI Docs**: `http://localhost:8082/api/v3/api-docs`
-- **Cities Endpoint**: `http://localhost:8082/api/routes/ville`
+- **API**: `http://172.30.80.11:8082/api`
+- **Swagger UI**: `http://172.30.80.11:8082/api/swagger-ui.html`
+- **Health Check**: `http://172.30.80.11:8082/api/routes/health`
+- **OpenAPI Docs**: `http://172.30.80.11:8082/api/v3/api-docs`
+- **Cities Endpoint**: `http://172.30.80.11:8082/api/routes/ville`
 
 ## Database Configuration
 
@@ -53,13 +53,13 @@ docker-compose logs -f itineraire-service
 ### Quick Health Check
 
 ```bash
-curl http://localhost:8082/api/routes/health
+curl http://172.30.80.11:8082/api/routes/health
 ```
 
 ### Calculate Route
 
 ```bash
-curl -X POST http://localhost:8082/api/routes/coordinates \
+curl -X POST http://172.30.80.11:8082/api/routes/coordinates \
   -H "Content-Type: application/json" \
   -d '{
     "origin": {"latitude": 33.8959, "longitude": -5.5544},
@@ -72,14 +72,14 @@ curl -X POST http://localhost:8082/api/routes/coordinates \
 ### Get All Cities
 
 ```bash
-curl http://localhost:8082/api/routes/ville
+curl http://172.30.80.11:8082/api/routes/ville
 ```
 
 ### Access Endpoints
 
-- **Health Check**: `http://localhost:8082/api/routes/health`
-- **Swagger UI**: `http://localhost:8082/api/swagger-ui.html`
-- **OpenAPI Docs**: `http://localhost:8082/api/v3/api-docs`
+- **Health Check**: `http://172.30.80.11:8082/api/routes/health`
+- **Swagger UI**: `http://172.30.80.11:8082/api/swagger-ui.html`
+- **OpenAPI Docs**: `http://172.30.80.11:8082/api/v3/api-docs`
 
 ## Environment Variables
 
