@@ -1,6 +1,7 @@
 package com.transport.itineraire.controller;
 
 import com.transport.itineraire.entity.RouteEntity;
+import com.transport.itineraire.entity.VilleEntity;
 import com.transport.itineraire.model.*;
 import com.transport.itineraire.service.*;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -17,6 +19,7 @@ public class RouteController {
 
     private final RouteService routeService;
     private final OptimizationService optimizationService;
+    private final VilleService villeService;
 
     @PostMapping("/coordinates")
     public ResponseEntity<RouteResponse> calculateFromCoordinates(@RequestBody RouteRequest request) {
@@ -59,6 +62,11 @@ public class RouteController {
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Service opérationnel");
+    }
+
+    @GetMapping("/ville")
+    public ResponseEntity<List<VilleEntity>> getAllCities() {
+        return ResponseEntity.ok(villeService.getAllCities());
     }
 
     /**

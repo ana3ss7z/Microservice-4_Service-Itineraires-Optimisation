@@ -8,5 +8,7 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
+ENV TZ=Africa/Casablanca
+RUN apk add --no-cache tzdata
 EXPOSE 8083
 ENTRYPOINT ["java", "-jar", "app.jar"]

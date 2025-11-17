@@ -28,6 +28,7 @@ public class RouteService {
     private final RouteRepository repository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final VilleService villeService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Value("${external.api.nominatim.base-url}") private String nominatimUrl;
@@ -260,6 +261,10 @@ public class RouteService {
             if (step.getCity() != null) {
                 currentCity = step.getCity();
                 currentAddress = step.getAddress();
+
+                // CORRECTION: Sauvegarder la ville dans la base de données
+                villeService.saveCityIfNotExists(step.getCity(), step.getLatitude(), step.getLongitude());
+
             } else if (currentCity != null) {
                 // Propager la ville actuelle aux waypoints sans ville
                 step.setCity(currentCity);

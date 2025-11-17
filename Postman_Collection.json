@@ -481,6 +481,21 @@
       "response": []
     },
     {
+      "name": "Get All Cities (Villes)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8083/api/routes/ville",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8083",
+          "path": ["api", "routes", "ville"]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "OpenAPI JSON Specification",
       "request": {
         "method": "GET",
