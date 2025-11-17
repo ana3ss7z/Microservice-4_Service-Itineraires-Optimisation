@@ -6,14 +6,15 @@ spring:
   application:
     name: itineraire-optimisation-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/itineraire_db
-    username: postgres
-    password: anass2002
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/itineraire_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:anass2002}
     driver-class-name: org.postgresql.Driver
   jpa:
-    database-platform: org.hibernate.spatial.dialect.postgis.PostgisPG95Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
+    show-sql: true
   cache:
     type: caffeine
     caffeine:

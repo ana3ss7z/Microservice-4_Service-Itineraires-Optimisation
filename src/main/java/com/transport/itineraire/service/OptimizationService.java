@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,17 +17,30 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Service @Slf4j @RequiredArgsConstructor
+@Service @Slf4j
 public class OptimizationService {
 
     private final RouteRepository repository;
+    private final RouteService routeService;
     private final ObjectMapper objectMapper;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Value("${optimization.max-waypoints}") private Integer maxWaypoints;
 
+    public OptimizationService(RouteRepository repository,
+                               @Lazy RouteService routeService,
+                               ObjectMapper objectMapper) {
+        this.repository = repository;
+        this.routeService = routeService;
+        this.objectMapper = objectMapper;
+    }
+
     public RouteResponse optimizeRoute(RouteRequest request) {
         validateRequest(request);
+
+        // CORRECTION: Enrichir les waypoints avec reverse geocoding
+        enrichWaypoints(request.getWaypoints());
+
         List<Waypoint> optimized = nearestNeighborOptimization(request.getWaypoints());
         RouteResponse response = calculateDetails(optimized);
 
@@ -59,6 +73,45 @@ public class OptimizationService {
 
         saveOptimizedRoute(request, response, optimized);
         return response;
+    }
+
+    /**
+     * CORRECTION: Enrichir les waypoints avec des informations de localisation
+     */
+    private void enrichWaypoints(List<Waypoint> waypoints) {
+        if (waypoints == null || waypoints.isEmpty()) {
+            return;
+        }
+
+        for (Waypoint waypoint : waypoints) {
+            // Skip if already has address and city
+            if (waypoint.getAddress() != null && waypoint.getCity() != null) {
+                continue;
+            }
+
+            try {
+                Waypoint enriched = routeService.reverseGeocode(
+                    waypoint.getLatitude(),
+                    waypoint.getLongitude()
+                );
+
+                if (waypoint.getAddress() == null) {
+                    waypoint.setAddress(enriched.getAddress());
+                }
+                if (waypoint.getCity() == null) {
+                    waypoint.setCity(enriched.getCity());
+                }
+                if (waypoint.getName() == null || waypoint.getName().isEmpty()) {
+                    waypoint.setName(enriched.getCity());
+                }
+
+                // Small delay to respect Nominatim usage policy (max 1 request/second)
+                Thread.sleep(1100);
+            } catch (Exception e) {
+                log.warn("Failed to enrich waypoint {}, {}: {}",
+                    waypoint.getLatitude(), waypoint.getLongitude(), e.getMessage());
+            }
+        }
     }
 
     private List<Waypoint> nearestNeighborOptimization(List<Waypoint> points) {
@@ -251,6 +304,7 @@ public class OptimizationService {
                     .includeReturn(request.getIncludeReturn())
                     .isOptimized(true)
                     .optimizationType("heuristic")
+                    .createdAt(LocalDateTime.now())
                     .status("SUCCESS")
                     .calculatedBy("OPTIMIZATION")
                     .build();

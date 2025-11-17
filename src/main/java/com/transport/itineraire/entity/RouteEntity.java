@@ -65,6 +65,7 @@ public class RouteEntity {
     private String optimizationType;
 
     @Column(updatable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private String calculatedBy;

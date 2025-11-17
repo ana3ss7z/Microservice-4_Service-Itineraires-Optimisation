@@ -98,7 +98,7 @@ public class RouteService {
     @Cacheable("geocoding")
     public Waypoint geocodeAddress(String address) {
         try {
-            String url = String.format("%s/search?q=%s&format=json&limit=1",
+            String url = String.format("%s/search?q=%s&format=json&limit=1&addressdetails=1",
                     nominatimUrl, address.replace(" ", "+"));
 
             String response = restTemplate.getForObject(url, String.class);
@@ -109,14 +109,186 @@ public class RouteService {
             }
 
             JsonNode first = node.get(0);
+            JsonNode addressNode = first.path("address");
+
+            String city = extractCity(addressNode);
+
             return Waypoint.builder()
                     .latitude(first.get("lat").asDouble())
                     .longitude(first.get("lon").asDouble())
                     .address(first.get("display_name").asText())
+                    .city(city)
                     .build();
         } catch (Exception e) {
             log.error("Erreur géocodage: {}", e.getMessage(), e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @Cacheable("reverseGeocoding")
+    public Waypoint reverseGeocode(double latitude, double longitude) {
+        try {
+            String url = String.format("%s/reverse?lat=%f&lon=%f&format=json&addressdetails=1",
+                    nominatimUrl, latitude, longitude);
+
+            String response = restTemplate.getForObject(url, String.class);
+            JsonNode node = objectMapper.readTree(response);
+
+            if (node.isMissingNode() || node.isNull()) {
+                log.warn("Reverse geocoding failed for coordinates: {}, {}", latitude, longitude);
+                return Waypoint.builder()
+                        .latitude(latitude)
+                        .longitude(longitude)
+                        .address("Coordonnées: " + latitude + ", " + longitude)
+                        .city("Ville inconnue")
+                        .build();
+            }
+
+            JsonNode addressNode = node.path("address");
+            String city = extractCity(addressNode);
+            String displayName = node.path("display_name").asText();
+
+            return Waypoint.builder()
+                    .latitude(latitude)
+                    .longitude(longitude)
+                    .address(displayName)
+                    .city(city)
+                    .build();
+        } catch (Exception e) {
+            log.warn("Erreur reverse geocoding pour {}, {}: {}", latitude, longitude, e.getMessage());
+            return Waypoint.builder()
+                    .latitude(latitude)
+                    .longitude(longitude)
+                    .address("Coordonnées: " + latitude + ", " + longitude)
+                    .city("Ville inconnue")
+                    .build();
+        }
+    }
+
+    private String extractCity(JsonNode addressNode) {
+        if (addressNode.isMissingNode() || addressNode.isNull()) {
+            return null;
+        }
+
+        // Try different fields that might contain city name
+        if (addressNode.has("city")) {
+            return addressNode.get("city").asText();
+        }
+        if (addressNode.has("town")) {
+            return addressNode.get("town").asText();
+        }
+        if (addressNode.has("village")) {
+            return addressNode.get("village").asText();
+        }
+        if (addressNode.has("municipality")) {
+            return addressNode.get("municipality").asText();
+        }
+        if (addressNode.has("county")) {
+            return addressNode.get("county").asText();
+        }
+        if (addressNode.has("state")) {
+            return addressNode.get("state").asText();
+        }
+
+        return null;
+    }
+
+    /**
+     * CORRECTION: Enrichir intelligemment les étapes avec géolocalisation
+     * Enrichit des étapes clés et propage les informations aux étapes voisines
+     */
+    private void enrichStepsWithLocationData(List<Waypoint> steps) {
+        if (steps == null || steps.isEmpty()) {
+            return;
+        }
+
+        try {
+            int totalSteps = steps.size();
+
+            // Étape 1: Enrichir le premier waypoint
+            if (totalSteps > 0) {
+                Waypoint first = steps.get(0);
+                Waypoint enriched = reverseGeocode(first.getLatitude(), first.getLongitude());
+                first.setAddress(enriched.getAddress());
+                first.setCity(enriched.getCity());
+                Thread.sleep(1100); // Respect Nominatim rate limit
+            }
+
+            // Étape 2: Enrichir le dernier waypoint
+            if (totalSteps > 1) {
+                Waypoint last = steps.get(totalSteps - 1);
+                Waypoint enriched = reverseGeocode(last.getLatitude(), last.getLongitude());
+                last.setAddress(enriched.getAddress());
+                last.setCity(enriched.getCity());
+                Thread.sleep(1100);
+            }
+
+            // Étape 3: Enrichir des waypoints intermédiaires espacés (tous les 10 étapes max)
+            int interval = Math.max(1, totalSteps / 5); // Max 5 requêtes intermédiaires
+            for (int i = interval; i < totalSteps - 1; i += interval) {
+                Waypoint waypoint = steps.get(i);
+                Waypoint enriched = reverseGeocode(waypoint.getLatitude(), waypoint.getLongitude());
+                waypoint.setAddress(enriched.getAddress());
+                waypoint.setCity(enriched.getCity());
+                Thread.sleep(1100);
+            }
+
+            // Étape 4: Propager les informations de ville aux waypoints non enrichis
+            propagateCityInfo(steps);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("Enrichment interrupted: {}", e.getMessage());
+        } catch (Exception e) {
+            log.warn("Error during step enrichment: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * CORRECTION: Propager les informations de ville des waypoints enrichis aux non-enrichis
+     */
+    private void propagateCityInfo(List<Waypoint> steps) {
+        if (steps == null || steps.isEmpty()) {
+            return;
+        }
+
+        // Parcourir et propager la ville du waypoint enrichi le plus proche
+        String currentCity = null;
+        String currentAddress = null;
+
+        for (Waypoint step : steps) {
+            if (step.getCity() != null) {
+                currentCity = step.getCity();
+                currentAddress = step.getAddress();
+            } else if (currentCity != null) {
+                // Propager la ville actuelle aux waypoints sans ville
+                step.setCity(currentCity);
+                // Pour l'adresse, utiliser le nom de la rue si disponible, sinon l'adresse de référence
+                if (step.getName() != null && !step.getName().isEmpty()) {
+                    step.setAddress(step.getName() + ", " + currentCity);
+                } else {
+                    step.setAddress(currentAddress);
+                }
+            }
+        }
+
+        // Parcourir en sens inverse pour remplir les premiers éléments si nécessaire
+        currentCity = null;
+        currentAddress = null;
+
+        for (int i = steps.size() - 1; i >= 0; i--) {
+            Waypoint step = steps.get(i);
+            if (step.getCity() != null) {
+                currentCity = step.getCity();
+                currentAddress = step.getAddress();
+            } else if (currentCity != null && step.getCity() == null) {
+                step.setCity(currentCity);
+                if (step.getName() != null && !step.getName().isEmpty()) {
+                    step.setAddress(step.getName() + ", " + currentCity);
+                } else {
+                    step.setAddress(currentAddress);
+                }
+            }
         }
     }
 
@@ -146,16 +318,51 @@ public class RouteService {
                         JsonNode location = maneuver.path("location");
 
                         if (location.isArray() && location.size() == 2) {
+                            double longitude = location.get(0).asDouble();
+                            double latitude = location.get(1).asDouble();
+                            String name = step.path("name").asText("");
+
                             Waypoint waypoint = Waypoint.builder()
-                                    .longitude(location.get(0).asDouble())
-                                    .latitude(location.get(1).asDouble())
-                                    .name(step.path("name").asText(""))
+                                    .longitude(longitude)
+                                    .latitude(latitude)
+                                    .name(name)
                                     .order(stepOrder++)
                                     .build();
+
                             steps.add(waypoint);
                         }
                     }
                 }
+            }
+        }
+
+        // CORRECTION: Enrichir les étapes avec reverse geocoding de manière intelligente
+        enrichStepsWithLocationData(steps);
+
+        // CORRECTION: Enrichir origin et destination avec reverse geocoding si nécessaire
+        if (request.getOrigin() != null && request.getOrigin().getAddress() == null) {
+            try {
+                Waypoint enrichedOrigin = reverseGeocode(
+                    request.getOrigin().getLatitude(),
+                    request.getOrigin().getLongitude()
+                );
+                request.getOrigin().setAddress(enrichedOrigin.getAddress());
+                request.getOrigin().setCity(enrichedOrigin.getCity());
+            } catch (Exception e) {
+                log.debug("Skip origin enrichment: {}", e.getMessage());
+            }
+        }
+
+        if (request.getDestination() != null && request.getDestination().getAddress() == null) {
+            try {
+                Waypoint enrichedDest = reverseGeocode(
+                    request.getDestination().getLatitude(),
+                    request.getDestination().getLongitude()
+                );
+                request.getDestination().setAddress(enrichedDest.getAddress());
+                request.getDestination().setCity(enrichedDest.getCity());
+            } catch (Exception e) {
+                log.debug("Skip destination enrichment: {}", e.getMessage());
             }
         }
 
@@ -265,6 +472,7 @@ public class RouteService {
                     .instructionsJson(objectMapper.writeValueAsString(response.getInstructions()))
                     .includeReturn(request.getIncludeReturn())
                     .isOptimized(false)
+                    .createdAt(LocalDateTime.now())
                     .status("SUCCESS")
                     .calculatedBy("OSRM")
                     .build();
