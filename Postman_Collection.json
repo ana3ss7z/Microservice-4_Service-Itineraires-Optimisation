@@ -1,514 +1,550 @@
 {
   "info": {
-    "name": "Itinéraire Optimisation Service",
-    "description": "Collection complète pour tester le microservice d'itinéraires et optimisation",
+    "name": "🚗 Itinéraire Optimisation API - Local",
+    "description": "Collection complète pour tester le microservice d'itinéraires et optimisation de tournées en **environnement local**.\n\n## 🌐 Base URL\n`http://localhost:8082/api`\n\n## 📋 Fonctionnalités\n- Calcul d'itinéraires par coordonnées GPS\n- Calcul d'itinéraires par adresses\n- Optimisation de tournées multi-points (TSP)\n- Historique des trajets par utilisateur\n- Gestion des villes marocaines\n\n## ⚙️ Configuration\nModifiez la variable `base_url` pour changer l'environnement.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8082",
+      "type": "string",
+      "description": "URL de base du service (local)"
+    },
+    {
+      "key": "api_prefix",
+      "value": "/api",
+      "type": "string",
+      "description": "Préfixe de l'API"
+    }
+  ],
   "item": [
     {
-      "name": "Health Check",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:31030/api/routes/health",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "health"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Calculate Route from Coordinates - Simple",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"origin\": {\n    \"latitude\": 33.8959,\n    \"longitude\": -5.5544\n  },\n  \"destination\": {\n    \"latitude\": 34.0181,\n    \"longitude\": -5.0078\n  },\n  \"userId\": \"user123\",\n  \"requestId\": \"req001\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/coordinates",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "coordinates"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Calculate Route from Coordinates - With Return",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"origin\": {\n    \"latitude\": 33.5731,\n    \"longitude\": -7.5898\n  },\n  \"destination\": {\n    \"latitude\": 31.6295,\n    \"longitude\": -7.9811\n  },\n  \"includeReturn\": true,\n  \"userId\": \"user123\",\n  \"requestId\": \"req002\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/coordinates",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "coordinates"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Calculate Route from Address",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"originAddress\": \"Fes, Morocco\",\n  \"destinationAddress\": \"Meknes, Morocco\",\n  \"includeReturn\": false,\n  \"userId\": \"user123\",\n  \"requestId\": \"req003\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/address",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "address"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Optimize Route with Multiple Waypoints",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"origin\": {\n    \"latitude\": 33.5731,\n    \"longitude\": -7.5898\n  },\n  \"destination\": {\n    \"latitude\": 31.6295,\n    \"longitude\": -7.9811\n  },\n  \"waypoints\": [\n    {\n      \"latitude\": 33.2316,\n      \"longitude\": -7.5833\n    },\n    {\n      \"latitude\": 32.2917,\n      \"longitude\": -9.2372\n    },\n    {\n      \"latitude\": 31.7917,\n      \"longitude\": -7.0926\n    }\n  ],\n  \"includeReturn\": true,\n  \"userId\": \"user456\",\n  \"requestId\": \"req004\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/optimize",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "optimize"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get Route by ID",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:31030/api/routes/:id",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", ":id"],
-          "variable": [
-            {
-              "key": "id",
-              "value": "replace-with-actual-route-id",
-              "description": "Route ID from previous request"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get User Route History",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:31030/api/routes/history?userId=user123&page=0&size=10",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "history"],
-          "query": [
-            {
-              "key": "userId",
-              "value": "user123"
+      "name": "🏥 Health & Documentation",
+      "description": "Endpoints pour vérifier l'état du service et accéder à la documentation",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/health",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "health"]
             },
-            {
-              "key": "page",
-              "value": "0"
+            "description": "Vérifie que le service est opérationnel"
+          },
+          "response": []
+        },
+        {
+          "name": "Swagger UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/swagger-ui.html",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["swagger-ui.html"]
             },
-            {
-              "key": "size",
-              "value": "10"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Calculate Route - Rabat to Casablanca",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"origin\": {\n    \"latitude\": 34.0209,\n    \"longitude\": -6.8416\n  },\n  \"destination\": {\n    \"latitude\": 33.5731,\n    \"longitude\": -7.5898\n  },\n  \"includeReturn\": true,\n  \"userId\": \"user789\",\n  \"requestId\": \"req005\"\n}"
+            "description": "Interface Swagger pour explorer l'API"
+          },
+          "response": []
         },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/coordinates",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "coordinates"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Calculate Route - Tangier to Marrakech",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"origin\": {\n    \"latitude\": 35.7595,\n    \"longitude\": -5.8340\n  },\n  \"destination\": {\n    \"latitude\": 31.6295,\n    \"longitude\": -7.9811\n  },\n  \"userId\": \"user789\",\n  \"requestId\": \"req006\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/coordinates",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "coordinates"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get User History - Paginated (Page 1)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:31030/api/routes/history?userId=user123&page=1&size=5",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "history"],
-          "query": [
-            {
-              "key": "userId",
-              "value": "user123"
+        {
+          "name": "OpenAPI Specification",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/v3/api-docs",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["v3", "api-docs"]
             },
-            {
-              "key": "page",
-              "value": "1"
+            "description": "Spécification OpenAPI en format JSON"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📍 Routes par Coordonnées",
+      "description": "Calcul d'itinéraires à partir de coordonnées GPS (latitude/longitude)",
+      "item": [
+        {
+          "name": "Route Simple - Fes → Meknes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 33.8959,\n    \"longitude\": -5.5544\n  },\n  \"destination\": {\n    \"latitude\": 34.0181,\n    \"longitude\": -5.0078\n  },\n  \"userId\": \"user123\",\n  \"requestId\": \"req001\"\n}"
             },
-            {
-              "key": "size",
-              "value": "5"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Calculate Route - Agadir to Essaouira",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"origin\": {\n    \"latitude\": 30.4278,\n    \"longitude\": -9.5981\n  },\n  \"destination\": {\n    \"latitude\": 31.5085,\n    \"longitude\": -9.7595\n  },\n  \"includeReturn\": false,\n  \"userId\": \"user123\",\n  \"requestId\": \"req007\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/coordinates",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "coordinates"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Calculate Route by Address - Rabat to Fes",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"originAddress\": \"Rabat, Morocco\",\n  \"destinationAddress\": \"Fes, Morocco\",\n  \"includeReturn\": true,\n  \"userId\": \"user456\",\n  \"requestId\": \"req008\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/address",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "address"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Calculate Route - Oujda to Tetouan (Long Distance)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"origin\": {\n    \"latitude\": 34.6814,\n    \"longitude\": -1.9086\n  },\n  \"destination\": {\n    \"latitude\": 35.5889,\n    \"longitude\": -5.3626\n  },\n  \"userId\": \"user789\",\n  \"requestId\": \"req009\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/coordinates",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "coordinates"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Optimize Route - Morocco Grand Tour",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"origin\": {\n    \"latitude\": 33.5731,\n    \"longitude\": -7.5898\n  },\n  \"destination\": {\n    \"latitude\": 33.5731,\n    \"longitude\": -7.5898\n  },\n  \"waypoints\": [\n    {\n      \"latitude\": 34.0209,\n      \"longitude\": -6.8416,\n      \"name\": \"Rabat\"\n    },\n    {\n      \"latitude\": 33.8959,\n      \"longitude\": -5.5544,\n      \"name\": \"Fès\"\n    },\n    {\n      \"latitude\": 34.0181,\n      \"longitude\": -5.0078,\n      \"name\": \"Meknès\"\n    },\n    {\n      \"latitude\": 31.6295,\n      \"longitude\": -7.9811,\n      \"name\": \"Marrakech\"\n    },\n    {\n      \"latitude\": 30.4278,\n      \"longitude\": -9.5981,\n      \"name\": \"Agadir\"\n    }\n  ],\n  \"includeReturn\": true,\n  \"userId\": \"user999\",\n  \"requestId\": \"req010\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/optimize",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "optimize"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Calculate Route - Safi to El Jadida",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"origin\": {\n    \"latitude\": 32.2917,\n    \"longitude\": -9.2372\n  },\n  \"destination\": {\n    \"latitude\": 33.2316,\n    \"longitude\": -8.5007\n  },\n  \"includeReturn\": true,\n  \"userId\": \"user456\",\n  \"requestId\": \"req011\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/coordinates",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "coordinates"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get User History - Different User",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:31030/api/routes/history?userId=user456&page=0&size=20",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "history"],
-          "query": [
-            {
-              "key": "userId",
-              "value": "user456"
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "coordinates"]
             },
-            {
-              "key": "page",
-              "value": "0"
+            "description": "Calcul d'un itinéraire simple entre Fès et Meknès"
+          },
+          "response": []
+        },
+        {
+          "name": "Route Aller-Retour - Casablanca → Marrakech",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 33.5731,\n    \"longitude\": -7.5898\n  },\n  \"destination\": {\n    \"latitude\": 31.6295,\n    \"longitude\": -7.9811\n  },\n  \"includeReturn\": true,\n  \"userId\": \"user123\",\n  \"requestId\": \"req002\"\n}"
             },
-            {
-              "key": "size",
-              "value": "20"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Optimize Route - Coastal Cities",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"origin\": {\n    \"latitude\": 35.7595,\n    \"longitude\": -5.8340\n  },\n  \"destination\": {\n    \"latitude\": 30.4278,\n    \"longitude\": -9.5981\n  },\n  \"waypoints\": [\n    {\n      \"latitude\": 34.0209,\n      \"longitude\": -6.8416,\n      \"name\": \"Rabat\"\n    },\n    {\n      \"latitude\": 33.5731,\n      \"longitude\": -7.5898,\n      \"name\": \"Casablanca\"\n    },\n    {\n      \"latitude\": 33.2316,\n      \"longitude\": -8.5007,\n      \"name\": \"El Jadida\"\n    },\n    {\n      \"latitude\": 31.5085,\n      \"longitude\": -9.7595,\n      \"name\": \"Essaouira\"\n    }\n  ],\n  \"includeReturn\": false,\n  \"userId\": \"user789\",\n  \"requestId\": \"req012\"\n}"
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "coordinates"]
+            },
+            "description": "Calcul avec retour au point de départ"
+          },
+          "response": []
         },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/optimize",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "optimize"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Calculate Route by Address - Marrakech to Ouarzazate",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"originAddress\": \"Marrakech, Morocco\",\n  \"destinationAddress\": \"Ouarzazate, Morocco\",\n  \"includeReturn\": false,\n  \"userId\": \"user999\",\n  \"requestId\": \"req013\"\n}"
+        {
+          "name": "Route - Rabat → Casablanca",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 34.0209,\n    \"longitude\": -6.8416\n  },\n  \"destination\": {\n    \"latitude\": 33.5731,\n    \"longitude\": -7.5898\n  },\n  \"includeReturn\": true,\n  \"userId\": \"user789\",\n  \"requestId\": \"req005\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "coordinates"]
+            },
+            "description": "Itinéraire Rabat - Casablanca avec retour"
+          },
+          "response": []
         },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/address",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "address"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Calculate Route - Meknes to Laayoune (Very Long Distance)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"origin\": {\n    \"latitude\": 33.8935,\n    \"longitude\": -5.5473\n  },\n  \"destination\": {\n    \"latitude\": 27.1536,\n    \"longitude\": -13.1994\n  },\n  \"userId\": \"user123\",\n  \"requestId\": \"req014\"\n}"
+        {
+          "name": "Route - Tangier → Marrakech",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 35.7595,\n    \"longitude\": -5.8340\n  },\n  \"destination\": {\n    \"latitude\": 31.6295,\n    \"longitude\": -7.9811\n  },\n  \"userId\": \"user789\",\n  \"requestId\": \"req006\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "coordinates"]
+            },
+            "description": "Long trajet Nord-Sud du Maroc"
+          },
+          "response": []
         },
-        "url": {
-          "raw": "http://localhost:31030/api/routes/coordinates",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "coordinates"]
+        {
+          "name": "Route - Agadir → Essaouira",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 30.4278,\n    \"longitude\": -9.5981\n  },\n  \"destination\": {\n    \"latitude\": 31.5085,\n    \"longitude\": -9.7595\n  },\n  \"includeReturn\": false,\n  \"userId\": \"user123\",\n  \"requestId\": \"req007\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "coordinates"]
+            },
+            "description": "Route côtière atlantique"
+          },
+          "response": []
+        },
+        {
+          "name": "Route Longue - Oujda → Tetouan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 34.6814,\n    \"longitude\": -1.9086\n  },\n  \"destination\": {\n    \"latitude\": 35.5889,\n    \"longitude\": -5.3626\n  },\n  \"userId\": \"user789\",\n  \"requestId\": \"req009\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "coordinates"]
+            },
+            "description": "Traversée Est-Ouest du Nord du Maroc"
+          },
+          "response": []
+        },
+        {
+          "name": "Route - Safi → El Jadida",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 32.2917,\n    \"longitude\": -9.2372\n  },\n  \"destination\": {\n    \"latitude\": 33.2316,\n    \"longitude\": -8.5007\n  },\n  \"includeReturn\": true,\n  \"userId\": \"user456\",\n  \"requestId\": \"req011\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "coordinates"]
+            },
+            "description": "Route côtière avec aller-retour"
+          },
+          "response": []
+        },
+        {
+          "name": "Route Très Longue - Meknes → Laayoune",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 33.8935,\n    \"longitude\": -5.5473\n  },\n  \"destination\": {\n    \"latitude\": 27.1536,\n    \"longitude\": -13.1994\n  },\n  \"userId\": \"user123\",\n  \"requestId\": \"req014\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "coordinates"]
+            },
+            "description": "Très long trajet vers le Sud du Maroc"
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "Swagger UI Documentation",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:31030/api/swagger-ui.html",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "swagger-ui.html"]
+      "name": "🏠 Routes par Adresses",
+      "description": "Calcul d'itinéraires à partir d'adresses textuelles (géocodage automatique)",
+      "item": [
+        {
+          "name": "Route - Fes → Meknes (Adresses)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"originAddress\": \"Fes, Morocco\",\n  \"destinationAddress\": \"Meknes, Morocco\",\n  \"includeReturn\": false,\n  \"userId\": \"user123\",\n  \"requestId\": \"req003\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/address",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "address"]
+            },
+            "description": "Calcul par noms de villes"
+          },
+          "response": []
+        },
+        {
+          "name": "Route - Rabat → Fes (Adresses)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"originAddress\": \"Rabat, Morocco\",\n  \"destinationAddress\": \"Fes, Morocco\",\n  \"includeReturn\": true,\n  \"userId\": \"user456\",\n  \"requestId\": \"req008\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/address",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "address"]
+            },
+            "description": "Route avec aller-retour par adresses"
+          },
+          "response": []
+        },
+        {
+          "name": "Route - Marrakech → Ouarzazate (Adresses)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"originAddress\": \"Marrakech, Morocco\",\n  \"destinationAddress\": \"Ouarzazate, Morocco\",\n  \"includeReturn\": false,\n  \"userId\": \"user999\",\n  \"requestId\": \"req013\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/address",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "address"]
+            },
+            "description": "Route vers le désert marocain"
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "Get All Cities (Villes)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:31030/api/routes/ville",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "routes", "ville"]
+      "name": "🔄 Optimisation de Tournées",
+      "description": "Optimisation d'itinéraires multi-points (algorithme du voyageur de commerce)",
+      "item": [
+        {
+          "name": "Tournée Multi-Points (3 étapes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 33.5731,\n    \"longitude\": -7.5898\n  },\n  \"destination\": {\n    \"latitude\": 31.6295,\n    \"longitude\": -7.9811\n  },\n  \"waypoints\": [\n    {\n      \"latitude\": 33.2316,\n      \"longitude\": -7.5833,\n      \"name\": \"Settat\"\n    },\n    {\n      \"latitude\": 32.2917,\n      \"longitude\": -9.2372,\n      \"name\": \"Safi\"\n    },\n    {\n      \"latitude\": 31.7917,\n      \"longitude\": -7.0926,\n      \"name\": \"Beni Mellal\"\n    }\n  ],\n  \"includeReturn\": true,\n  \"userId\": \"user456\",\n  \"requestId\": \"req004\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/optimize",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "optimize"]
+            },
+            "description": "Optimisation d'une tournée avec 3 points intermédiaires"
+          },
+          "response": []
+        },
+        {
+          "name": "Grand Tour du Maroc (5 villes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 33.5731,\n    \"longitude\": -7.5898,\n    \"name\": \"Casablanca\"\n  },\n  \"destination\": {\n    \"latitude\": 33.5731,\n    \"longitude\": -7.5898,\n    \"name\": \"Casablanca\"\n  },\n  \"waypoints\": [\n    {\n      \"latitude\": 34.0209,\n      \"longitude\": -6.8416,\n      \"name\": \"Rabat\"\n    },\n    {\n      \"latitude\": 33.8959,\n      \"longitude\": -5.5544,\n      \"name\": \"Fès\"\n    },\n    {\n      \"latitude\": 34.0181,\n      \"longitude\": -5.0078,\n      \"name\": \"Meknès\"\n    },\n    {\n      \"latitude\": 31.6295,\n      \"longitude\": -7.9811,\n      \"name\": \"Marrakech\"\n    },\n    {\n      \"latitude\": 30.4278,\n      \"longitude\": -9.5981,\n      \"name\": \"Agadir\"\n    }\n  ],\n  \"includeReturn\": true,\n  \"userId\": \"user999\",\n  \"requestId\": \"req010\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/optimize",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "optimize"]
+            },
+            "description": "Circuit touristique des principales villes marocaines"
+          },
+          "response": []
+        },
+        {
+          "name": "Tournée Côtière (4 villes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 35.7595,\n    \"longitude\": -5.8340,\n    \"name\": \"Tangier\"\n  },\n  \"destination\": {\n    \"latitude\": 30.4278,\n    \"longitude\": -9.5981,\n    \"name\": \"Agadir\"\n  },\n  \"waypoints\": [\n    {\n      \"latitude\": 34.0209,\n      \"longitude\": -6.8416,\n      \"name\": \"Rabat\"\n    },\n    {\n      \"latitude\": 33.5731,\n      \"longitude\": -7.5898,\n      \"name\": \"Casablanca\"\n    },\n    {\n      \"latitude\": 33.2316,\n      \"longitude\": -8.5007,\n      \"name\": \"El Jadida\"\n    },\n    {\n      \"latitude\": 31.5085,\n      \"longitude\": -9.7595,\n      \"name\": \"Essaouira\"\n    }\n  ],\n  \"includeReturn\": false,\n  \"userId\": \"user789\",\n  \"requestId\": \"req012\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/optimize",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "optimize"]
+            },
+            "description": "Circuit le long de la côte atlantique"
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "OpenAPI JSON Specification",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:31030/api/v3/api-docs",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "31030",
-          "path": ["api", "v3", "api-docs"]
+      "name": "📜 Historique & Détails",
+      "description": "Consultation de l'historique des trajets et détails d'un trajet spécifique",
+      "item": [
+        {
+          "name": "Historique Utilisateur (Page 0)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/history?userId=user123&page=0&size=10",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "history"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user123",
+                  "description": "Identifiant de l'utilisateur"
+                },
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": "Numéro de page (0-indexed)"
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "description": "Nombre d'éléments par page"
+                }
+              ]
+            },
+            "description": "Récupère la première page de l'historique"
+          },
+          "response": []
+        },
+        {
+          "name": "Historique Utilisateur (Page 1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/history?userId=user123&page=1&size=5",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "history"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user123",
+                  "description": "Identifiant de l'utilisateur"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Deuxième page"
+                },
+                {
+                  "key": "size",
+                  "value": "5",
+                  "description": "5 éléments par page"
+                }
+              ]
+            },
+            "description": "Pagination de l'historique"
+          },
+          "response": []
+        },
+        {
+          "name": "Historique Autre Utilisateur",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/history?userId=user456&page=0&size=20",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "history"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user456",
+                  "description": "Autre utilisateur"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": "Plus d'éléments par page"
+                }
+              ]
+            },
+            "description": "Historique d'un autre utilisateur"
+          },
+          "response": []
+        },
+        {
+          "name": "Détail d'un Trajet par ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/:id",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "replace-with-actual-route-id",
+                  "description": "UUID du trajet (récupéré d'une requête précédente)"
+                }
+              ]
+            },
+            "description": "Récupère les détails complets d'un trajet spécifique"
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
+    },
+    {
+      "name": "🏙️ Villes",
+      "description": "Gestion des villes marocaines",
+      "item": [
+        {
+          "name": "Liste de Toutes les Villes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/ville",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "ville"]
+            },
+            "description": "Récupère la liste de toutes les villes connues du système"
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

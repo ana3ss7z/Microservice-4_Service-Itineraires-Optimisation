@@ -99,7 +99,7 @@ public class RouteService {
     @Cacheable("geocoding")
     public Waypoint geocodeAddress(String address) {
         try {
-            String url = String.format("%s/search?q=%s&format=json&limit=1&addressdetails=1",
+            String url = "%s/search?q=%s&format=json&limit=1&addressdetails=1".formatted(
                     nominatimUrl, address.replace(" ", "+"));
 
             String response = restTemplate.getForObject(url, String.class);
@@ -129,7 +129,7 @@ public class RouteService {
     @Cacheable("reverseGeocoding")
     public Waypoint reverseGeocode(double latitude, double longitude) {
         try {
-            String url = String.format("%s/reverse?lat=%f&lon=%f&format=json&addressdetails=1",
+            String url = "%s/reverse?lat=%f&lon=%f&format=json&addressdetails=1".formatted(
                     nominatimUrl, latitude, longitude);
 
             String response = restTemplate.getForObject(url, String.class);
@@ -425,17 +425,17 @@ public class RouteService {
                 ? request.getDestination().getName()
                 : request.getDestination().getCity();
 
-        instructions.add(String.format("Départ de %s", originName));
+        instructions.add("Départ de %s".formatted(originName));
 
         // Instructions intermédiaires
         for (int i = 1; i < steps.size() - 1; i++) {
             String stepName = steps.get(i).getName();
             if (stepName != null && !stepName.isEmpty()) {
-                instructions.add(String.format("Continuer sur %s", stepName));
+                instructions.add("Continuer sur %s".formatted(stepName));
             }
         }
 
-        instructions.add(String.format("Arrivée à %s", destName));
+        instructions.add("Arrivée à %s".formatted(destName));
 
         return instructions;
     }

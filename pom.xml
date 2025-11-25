@@ -5,14 +5,14 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
+        <version>3.5.8</version>
     </parent>
     <groupId>com.transport</groupId>
     <artifactId>itineraire-optimisation-service</artifactId>
     <version>1.0.0</version>
     <properties>
         <java.version>21</java.version>
-        <hibernate.spatial.version>6.4.1.Final</hibernate.spatial.version>
+        <hibernate.spatial.version>6.5.3.Final</hibernate.spatial.version>
     </properties>
     <dependencies>
         <dependency>
@@ -38,12 +38,10 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-spatial</artifactId>
-            <version>${hibernate.spatial.version}</version>
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-spatial</artifactId>
+            </dependency>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -53,7 +51,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.3.0</version>
+            <version>2.6.0</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

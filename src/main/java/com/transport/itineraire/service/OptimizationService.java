@@ -64,7 +64,7 @@ public class OptimizationService {
                     ? lastPoint.getName() : lastPoint.getCity();
             String firstName = firstPoint.getName() != null && !firstPoint.getName().isEmpty()
                     ? firstPoint.getName() : firstPoint.getCity();
-            instructions.add(String.format("Retour de %s à %s: %.2f km", lastName, firstName, returnDist));
+            instructions.add("Retour de %s à %s: %.2f km".formatted(lastName, firstName, returnDist));
             response.setInstructions(instructions);
         } else {
             response.setTotalDistanceKm(response.getDistanceKm());
@@ -178,7 +178,7 @@ public class OptimizationService {
             String fromName = getWaypointDisplayName(from);
             String toName = getWaypointDisplayName(to);
 
-            instructions.add(String.format("De %s à %s: %.2f km", fromName, toName, segmentDist));
+            instructions.add("De %s à %s: %.2f km".formatted(fromName, toName, segmentDist));
         }
 
         // CORRECTION: Génération de la polyline
