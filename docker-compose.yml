@@ -4,8 +4,8 @@ services:
     container_name: itineraire_db_ms4
     environment:
       POSTGRES_DB: itineraire_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: anass2002
+      POSTGRES_USER: itineraire_user
+      POSTGRES_PASSWORD: itineraire_password
     ports:
       - "5434:5432"
     volumes:
@@ -24,8 +24,8 @@ services:
     container_name: itineraire_service_ms4
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/itineraire_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: anass2002
+      SPRING_DATASOURCE_USERNAME: itineraire_user
+      SPRING_DATASOURCE_PASSWORD: itineraire_password
     ports:
       - "8082:8081"
     volumes:
