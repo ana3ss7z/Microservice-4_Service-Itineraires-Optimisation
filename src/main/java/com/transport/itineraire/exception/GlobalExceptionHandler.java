@@ -1,7 +1,8 @@
 package com.transport.itineraire.exception;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
