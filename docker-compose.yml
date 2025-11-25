@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgis/postgis:18.1-alpine3.22
+    image: postgis/postgis:16-3.4-alpine
     container_name: itineraire_db_ms4
     environment:
       POSTGRES_DB: itineraire_db
