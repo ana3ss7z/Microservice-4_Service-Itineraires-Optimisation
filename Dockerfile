@@ -9,8 +9,8 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Install tzdata first (cached layer) with faster mirror
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.20/main" > /etc/apk/repositories && \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v3.20/community" >> /etc/apk/repositories && \
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/latest-stable/community" >> /etc/apk/repositories && \
     apk add --no-cache tzdata
 
 ENV TZ=Africa/Casablanca
