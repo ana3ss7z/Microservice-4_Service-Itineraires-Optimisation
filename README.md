@@ -239,8 +239,8 @@ docker run -d \
   --name itineraire_service_ms4 \
   -p 8082:8081 \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5434/itineraire_db \
-  -e SPRING_DATASOURCE_USERNAME=postgres \
-  -e SPRING_DATASOURCE_PASSWORD=anass2002 \
+  -e SPRING_DATASOURCE_USERNAME=itineraire_user \
+  -e SPRING_DATASOURCE_PASSWORD=itineraire_password \
   itineraire-service:latest
 ```
 

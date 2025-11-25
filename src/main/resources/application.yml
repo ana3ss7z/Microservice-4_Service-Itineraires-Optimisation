@@ -7,8 +7,8 @@ spring:
     name: itineraire-optimisation-service
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/itineraire_db}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:anass2002}
+    username: ${SPRING_DATASOURCE_USERNAME:itineraire_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:itineraire_password}
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
