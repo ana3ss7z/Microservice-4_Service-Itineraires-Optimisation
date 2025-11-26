@@ -4,6 +4,11 @@ import com.transport.itineraire.entity.RouteEntity;
 import com.transport.itineraire.entity.VilleEntity;
 import com.transport.itineraire.model.*;
 import com.transport.itineraire.service.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/routes")
 @RequiredArgsConstructor
+@Tag(name = "Routes", description = "Endpoints pour le calcul et la gestion des itinéraires")
 public class RouteController {
 
     private final RouteService routeService;

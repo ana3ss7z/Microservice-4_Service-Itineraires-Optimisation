@@ -33,11 +33,6 @@ external:
       profile: car
 jwt:
   secret: mySecretKeyForJWTTokenGenerationAndValidation123456789
-springdoc:
-  api-docs:
-    enabled: false
-  swagger-ui:
-    enabled: false
 optimization:
   max-waypoints: 25
   algorithm: heuristic
