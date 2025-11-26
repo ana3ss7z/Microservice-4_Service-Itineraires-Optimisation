@@ -163,6 +163,186 @@ GET /routes/health
 
 ---
 
+## Build et déploiement sur serveur Linux
+
+### Prérequis
+
+- Java 21+ installé
+- Accès SSH au serveur (sans droits admin)
+- Maven wrapper (`./mvnw`) inclus dans le projet
+
+### Étapes de build et déploiement
+
+#### 1. Nettoyer le build précédent
+
+```bash
+# Supprimer le dossier target
+rm -rf target
+
+# Si erreur de permissions, forcer les droits
+chmod -R u+w target 2>/dev/null && rm -rf target
+```
+
+#### 2. Compiler et packager l'application
+
+```bash
+# Build avec Maven wrapper (sans tests)
+./mvnw clean package -DskipTests
+
+# Build avec mise à jour des dépendances
+./mvnw clean package -DskipTests -U
+
+# Vérifier que le JAR est créé
+ls -lh target/*.jar
+```
+
+#### 3. Arrêter l'application en cours (si elle tourne)
+
+```bash
+# Trouver le PID du processus Java
+ps aux | grep java | grep itineraire
+
+# Arrêter le processus (remplacer PID par le numéro trouvé)
+kill <PID>
+
+# Ou forcer l'arrêt si nécessaire
+kill -9 <PID>
+```
+
+#### 4. Démarrer la nouvelle version
+
+```bash
+# Lancer en arrière-plan avec nohup
+nohup java -jar target/itineraire-optimisation-service-1.0.0.jar > app.log 2>&1 &
+
+# Vérifier que l'application démarre
+tail -f app.log
+
+# Ou lancer avec Spring profiles
+nohup java -jar -Dspring.profiles.active=prod target/itineraire-optimisation-service-1.0.0.jar > app.log 2>&1 &
+```
+
+#### 5. Vérifier que l'application fonctionne
+
+```bash
+# Health check
+curl http://localhost:8081/api/routes/health
+
+# Depuis l'extérieur (remplacer par votre IP)
+curl http://172.30.80.11:31030/api/routes/health
+
+# Voir les logs en temps réel
+tail -f app.log
+```
+
+### Commandes rapides (tout-en-un)
+
+```bash
+# Build, arrêt et redémarrage complet
+rm -rf target && \
+./mvnw clean package -DskipTests && \
+kill $(ps aux | grep 'itineraire-optimisation-service' | grep -v grep | awk '{print $2}') 2>/dev/null ; \
+nohup java -jar target/itineraire-optimisation-service-1.0.0.jar > app.log 2>&1 & \
+sleep 5 && tail -f app.log
+```
+
+### Gestion des logs
+
+```bash
+# Voir les 100 dernières lignes
+tail -n 100 app.log
+
+# Suivre les logs en temps réel
+tail -f app.log
+
+# Rechercher des erreurs
+grep -i error app.log
+grep -i exception app.log
+
+# Nettoyer les anciens logs
+> app.log  # Vider le fichier
+```
+
+### Troubleshooting
+
+#### Erreur de permissions sur target/
+
+```bash
+# Donner les permissions d'écriture
+chmod -R u+w target
+rm -rf target
+./mvnw clean package -DskipTests
+```
+
+#### Port déjà utilisé
+
+```bash
+# Trouver quel processus utilise le port 8081
+lsof -i :8081
+netstat -tulpn | grep 8081
+
+# Arrêter le processus
+kill $(lsof -t -i:8081)
+```
+
+#### Mémoire insuffisante
+
+```bash
+# Lancer avec plus de mémoire
+nohup java -Xmx1024m -Xms512m -jar target/itineraire-optimisation-service-1.0.0.jar > app.log 2>&1 &
+```
+
+#### Vérifier la version Java
+
+```bash
+java -version
+# Doit afficher Java 21 ou supérieur
+```
+
+### Automatisation avec script de déploiement
+
+Créez un fichier `deploy.sh`:
+
+```bash
+#!/bin/bash
+
+echo "🔨 Building application..."
+rm -rf target
+./mvnw clean package -DskipTests -U
+
+if [ $? -ne 0 ]; then
+    echo "❌ Build failed!"
+    exit 1
+fi
+
+echo "🛑 Stopping old application..."
+PID=$(ps aux | grep 'itineraire-optimisation-service' | grep -v grep | awk '{print $2}')
+if [ ! -z "$PID" ]; then
+    kill $PID
+    sleep 3
+fi
+
+echo "🚀 Starting new application..."
+nohup java -jar target/itineraire-optimisation-service-1.0.0.jar > app.log 2>&1 &
+
+sleep 5
+
+echo "✅ Checking health..."
+curl -s http://localhost:8081/api/routes/health
+
+echo ""
+echo "📋 Application started! View logs with: tail -f app.log"
+```
+
+Rendre le script exécutable:
+
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+---
+
 ## Docker
 
 ### Prérequis
