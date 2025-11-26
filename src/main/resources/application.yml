@@ -35,13 +35,9 @@ jwt:
   secret: mySecretKeyForJWTTokenGenerationAndValidation123456789
 springdoc:
   api-docs:
-    path: /v3/api-docs
-    enabled: true
+    enabled: false
   swagger-ui:
-    path: /swagger-ui.html
-    enabled: true
-    operationsSorter: method
-  show-actuator: false
+    enabled: false
 optimization:
   max-waypoints: 25
   algorithm: heuristic
