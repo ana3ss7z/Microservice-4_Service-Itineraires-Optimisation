@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "http://172.30.80.11:8082/api",
+      "url": "http://172.30.80.11:31030/api",
       "description": "Serveur de développement local"
     }
   ],
@@ -88,9 +88,9 @@
           }
         ],
         "x-test-examples": {
-          "powershell": "# PowerShell - Calculer itinéraire par coordonnées\n$headers = @{\n    'Content-Type' = 'application/json'\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n$body = @{\n    origin = @{\n        name = 'Gare Casa Voyageurs'\n        latitude = 33.5883\n        longitude = -7.6114\n        city = 'Casablanca'\n    }\n    destination = @{\n        name = 'Gare Rabat Ville'\n        latitude = 34.0181\n        longitude = -6.8326\n        city = 'Rabat'\n    }\n    includeReturn = $true\n    userId = 'user123'\n} | ConvertTo-Json -Depth 3\n\nInvoke-RestMethod -Uri 'http://172.30.80.11:8082/api/routes/coordinates' -Method POST -Headers $headers -Body $body",
-          "curl": "# cURL - Calculer itinéraire par coordonnées\ncurl -X POST 'http://172.30.80.11:8082/api/routes/coordinates' \\\n  -H 'Content-Type: application/json' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -d '{\n    \"origin\": {\n      \"name\": \"Gare Casa Voyageurs\",\n      \"latitude\": 33.5883,\n      \"longitude\": -7.6114,\n      \"city\": \"Casablanca\"\n    },\n    \"destination\": {\n      \"name\": \"Gare Rabat Ville\",\n      \"latitude\": 34.0181,\n      \"longitude\": -6.8326,\n      \"city\": \"Rabat\"\n    },\n    \"includeReturn\": true,\n    \"userId\": \"user123\"\n  }'",
-          "fetch": "// JavaScript Fetch - Calculer itinéraire par coordonnées\nconst response = await fetch('http://172.30.80.11:8082/api/routes/coordinates', {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json',\n    'Authorization': 'Bearer YOUR_JWT_TOKEN'\n  },\n  body: JSON.stringify({\n    origin: {\n      name: 'Gare Casa Voyageurs',\n      latitude: 33.5883,\n      longitude: -7.6114,\n      city: 'Casablanca'\n    },\n    destination: {\n      name: 'Gare Rabat Ville',\n      latitude: 34.0181,\n      longitude: -6.8326,\n      city: 'Rabat'\n    },\n    includeReturn: true,\n    userId: 'user123'\n  })\n});\nconst data = await response.json();\nconsole.log(data);"
+          "powershell": "# PowerShell - Calculer itinéraire par coordonnées\n$headers = @{\n    'Content-Type' = 'application/json'\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n$body = @{\n    origin = @{\n        name = 'Gare Casa Voyageurs'\n        latitude = 33.5883\n        longitude = -7.6114\n        city = 'Casablanca'\n    }\n    destination = @{\n        name = 'Gare Rabat Ville'\n        latitude = 34.0181\n        longitude = -6.8326\n        city = 'Rabat'\n    }\n    includeReturn = $true\n    userId = 'user123'\n} | ConvertTo-Json -Depth 3\n\nInvoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/coordinates' -Method POST -Headers $headers -Body $body",
+          "curl": "# cURL - Calculer itinéraire par coordonnées\ncurl -X POST 'http://172.30.80.11:31030/api/routes/coordinates' \\\n  -H 'Content-Type: application/json' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -d '{\n    \"origin\": {\n      \"name\": \"Gare Casa Voyageurs\",\n      \"latitude\": 33.5883,\n      \"longitude\": -7.6114,\n      \"city\": \"Casablanca\"\n    },\n    \"destination\": {\n      \"name\": \"Gare Rabat Ville\",\n      \"latitude\": 34.0181,\n      \"longitude\": -6.8326,\n      \"city\": \"Rabat\"\n    },\n    \"includeReturn\": true,\n    \"userId\": \"user123\"\n  }'",
+          "fetch": "// JavaScript Fetch - Calculer itinéraire par coordonnées\nconst response = await fetch('http://172.30.80.11:31030/api/routes/coordinates', {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json',\n    'Authorization': 'Bearer YOUR_JWT_TOKEN'\n  },\n  body: JSON.stringify({\n    origin: {\n      name: 'Gare Casa Voyageurs',\n      latitude: 33.5883,\n      longitude: -7.6114,\n      city: 'Casablanca'\n    },\n    destination: {\n      name: 'Gare Rabat Ville',\n      latitude: 34.0181,\n      longitude: -6.8326,\n      city: 'Rabat'\n    },\n    includeReturn: true,\n    userId: 'user123'\n  })\n});\nconst data = await response.json();\nconsole.log(data);"
         }
       }
     },
@@ -143,9 +143,9 @@
           }
         ],
         "x-test-examples": {
-          "powershell": "# PowerShell - Calculer itinéraire par adresse\n$headers = @{\n    'Content-Type' = 'application/json'\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n$body = @{\n    originAddress = 'Avenue Mohammed V, Casablanca, Maroc'\n    destinationAddress = 'Avenue Hassan II, Rabat, Maroc'\n    includeReturn = $false\n    userId = 'user123'\n} | ConvertTo-Json\n\nInvoke-RestMethod -Uri 'http://172.30.80.11:8082/api/routes/address' -Method POST -Headers $headers -Body $body",
-          "curl": "# cURL - Calculer itinéraire par adresse\ncurl -X POST 'http://172.30.80.11:8082/api/routes/address' \\\n  -H 'Content-Type: application/json' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -d '{\n    \"originAddress\": \"Avenue Mohammed V, Casablanca, Maroc\",\n    \"destinationAddress\": \"Avenue Hassan II, Rabat, Maroc\",\n    \"includeReturn\": false,\n    \"userId\": \"user123\"\n  }'",
-          "fetch": "// JavaScript Fetch - Calculer itinéraire par adresse\nconst response = await fetch('http://172.30.80.11:8082/api/routes/address', {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json',\n    'Authorization': 'Bearer YOUR_JWT_TOKEN'\n  },\n  body: JSON.stringify({\n    originAddress: 'Avenue Mohammed V, Casablanca, Maroc',\n    destinationAddress: 'Avenue Hassan II, Rabat, Maroc',\n    includeReturn: false,\n    userId: 'user123'\n  })\n});\nconst data = await response.json();\nconsole.log(data);"
+          "powershell": "# PowerShell - Calculer itinéraire par adresse\n$headers = @{\n    'Content-Type' = 'application/json'\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n$body = @{\n    originAddress = 'Avenue Mohammed V, Casablanca, Maroc'\n    destinationAddress = 'Avenue Hassan II, Rabat, Maroc'\n    includeReturn = $false\n    userId = 'user123'\n} | ConvertTo-Json\n\nInvoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/address' -Method POST -Headers $headers -Body $body",
+          "curl": "# cURL - Calculer itinéraire par adresse\ncurl -X POST 'http://172.30.80.11:31030/api/routes/address' \\\n  -H 'Content-Type: application/json' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -d '{\n    \"originAddress\": \"Avenue Mohammed V, Casablanca, Maroc\",\n    \"destinationAddress\": \"Avenue Hassan II, Rabat, Maroc\",\n    \"includeReturn\": false,\n    \"userId\": \"user123\"\n  }'",
+          "fetch": "// JavaScript Fetch - Calculer itinéraire par adresse\nconst response = await fetch('http://172.30.80.11:31030/api/routes/address', {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json',\n    'Authorization': 'Bearer YOUR_JWT_TOKEN'\n  },\n  body: JSON.stringify({\n    originAddress: 'Avenue Mohammed V, Casablanca, Maroc',\n    destinationAddress: 'Avenue Hassan II, Rabat, Maroc',\n    includeReturn: false,\n    userId: 'user123'\n  })\n});\nconst data = await response.json();\nconsole.log(data);"
         }
       }
     },
@@ -222,9 +222,9 @@
           }
         ],
         "x-test-examples": {
-          "powershell": "# PowerShell - Optimiser itinéraire\n$headers = @{\n    'Content-Type' = 'application/json'\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n$body = @{\n    origin = @{\n        name = 'Départ'\n        latitude = 33.5883\n        longitude = -7.6114\n        city = 'Casablanca'\n    }\n    destination = @{\n        name = 'Arrivée'\n        latitude = 34.0181\n        longitude = -6.8326\n        city = 'Rabat'\n    }\n    waypoints = @(\n        @{ name = 'Étape 1'; latitude = 33.8; longitude = -7.2; city = 'Mohammedia' },\n        @{ name = 'Étape 2'; latitude = 33.9; longitude = -6.9; city = 'Temara' }\n    )\n    includeReturn = $true\n    userId = 'user123'\n} | ConvertTo-Json -Depth 4\n\nInvoke-RestMethod -Uri 'http://172.30.80.11:8082/api/routes/optimize' -Method POST -Headers $headers -Body $body",
-          "curl": "# cURL - Optimiser itinéraire\ncurl -X POST 'http://172.30.80.11:8082/api/routes/optimize' \\\n  -H 'Content-Type: application/json' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -d '{\n    \"origin\": {\n      \"name\": \"Départ\",\n      \"latitude\": 33.5883,\n      \"longitude\": -7.6114,\n      \"city\": \"Casablanca\"\n    },\n    \"destination\": {\n      \"name\": \"Arrivée\",\n      \"latitude\": 34.0181,\n      \"longitude\": -6.8326,\n      \"city\": \"Rabat\"\n    },\n    \"waypoints\": [\n      { \"name\": \"Étape 1\", \"latitude\": 33.8, \"longitude\": -7.2, \"city\": \"Mohammedia\" },\n      { \"name\": \"Étape 2\", \"latitude\": 33.9, \"longitude\": -6.9, \"city\": \"Temara\" }\n    ],\n    \"includeReturn\": true,\n    \"userId\": \"user123\"\n  }'",
-          "fetch": "// JavaScript Fetch - Optimiser itinéraire\nconst response = await fetch('http://172.30.80.11:8082/api/routes/optimize', {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json',\n    'Authorization': 'Bearer YOUR_JWT_TOKEN'\n  },\n  body: JSON.stringify({\n    origin: {\n      name: 'Départ',\n      latitude: 33.5883,\n      longitude: -7.6114,\n      city: 'Casablanca'\n    },\n    destination: {\n      name: 'Arrivée',\n      latitude: 34.0181,\n      longitude: -6.8326,\n      city: 'Rabat'\n    },\n    waypoints: [\n      { name: 'Étape 1', latitude: 33.8, longitude: -7.2, city: 'Mohammedia' },\n      { name: 'Étape 2', latitude: 33.9, longitude: -6.9, city: 'Temara' }\n    ],\n    includeReturn: true,\n    userId: 'user123'\n  })\n});\nconst data = await response.json();\nconsole.log(data);"
+          "powershell": "# PowerShell - Optimiser itinéraire\n$headers = @{\n    'Content-Type' = 'application/json'\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n$body = @{\n    origin = @{\n        name = 'Départ'\n        latitude = 33.5883\n        longitude = -7.6114\n        city = 'Casablanca'\n    }\n    destination = @{\n        name = 'Arrivée'\n        latitude = 34.0181\n        longitude = -6.8326\n        city = 'Rabat'\n    }\n    waypoints = @(\n        @{ name = 'Étape 1'; latitude = 33.8; longitude = -7.2; city = 'Mohammedia' },\n        @{ name = 'Étape 2'; latitude = 33.9; longitude = -6.9; city = 'Temara' }\n    )\n    includeReturn = $true\n    userId = 'user123'\n} | ConvertTo-Json -Depth 4\n\nInvoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/optimize' -Method POST -Headers $headers -Body $body",
+          "curl": "# cURL - Optimiser itinéraire\ncurl -X POST 'http://172.30.80.11:31030/api/routes/optimize' \\\n  -H 'Content-Type: application/json' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -d '{\n    \"origin\": {\n      \"name\": \"Départ\",\n      \"latitude\": 33.5883,\n      \"longitude\": -7.6114,\n      \"city\": \"Casablanca\"\n    },\n    \"destination\": {\n      \"name\": \"Arrivée\",\n      \"latitude\": 34.0181,\n      \"longitude\": -6.8326,\n      \"city\": \"Rabat\"\n    },\n    \"waypoints\": [\n      { \"name\": \"Étape 1\", \"latitude\": 33.8, \"longitude\": -7.2, \"city\": \"Mohammedia\" },\n      { \"name\": \"Étape 2\", \"latitude\": 33.9, \"longitude\": -6.9, \"city\": \"Temara\" }\n    ],\n    \"includeReturn\": true,\n    \"userId\": \"user123\"\n  }'",
+          "fetch": "// JavaScript Fetch - Optimiser itinéraire\nconst response = await fetch('http://172.30.80.11:31030/api/routes/optimize', {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json',\n    'Authorization': 'Bearer YOUR_JWT_TOKEN'\n  },\n  body: JSON.stringify({\n    origin: {\n      name: 'Départ',\n      latitude: 33.5883,\n      longitude: -7.6114,\n      city: 'Casablanca'\n    },\n    destination: {\n      name: 'Arrivée',\n      latitude: 34.0181,\n      longitude: -6.8326,\n      city: 'Rabat'\n    },\n    waypoints: [\n      { name: 'Étape 1', latitude: 33.8, longitude: -7.2, city: 'Mohammedia' },\n      { name: 'Étape 2', latitude: 33.9, longitude: -6.9, city: 'Temara' }\n    ],\n    includeReturn: true,\n    userId: 'user123'\n  })\n});\nconst data = await response.json();\nconsole.log(data);"
         }
       }
     },
@@ -292,9 +292,9 @@
           }
         ],
         "x-test-examples": {
-          "powershell": "# PowerShell - Récupérer historique des itinéraires\n$headers = @{\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n\n# Récupérer la première page avec 20 éléments\nInvoke-RestMethod -Uri 'http://172.30.80.11:8082/api/routes/history?userId=user123&page=0&size=20' -Method GET -Headers $headers\n\n# Récupérer la deuxième page\nInvoke-RestMethod -Uri 'http://172.30.80.11:8082/api/routes/history?userId=user123&page=1&size=20' -Method GET -Headers $headers",
-          "curl": "# cURL - Récupérer historique des itinéraires\n# Première page avec 20 éléments\ncurl -X GET 'http://172.30.80.11:8082/api/routes/history?userId=user123&page=0&size=20' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN'\n\n# Deuxième page\ncurl -X GET 'http://172.30.80.11:8082/api/routes/history?userId=user123&page=1&size=20' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN'",
-          "fetch": "// JavaScript Fetch - Récupérer historique des itinéraires\nconst userId = 'user123';\nconst page = 0;\nconst size = 20;\n\nconst response = await fetch(\n  `http://172.30.80.11:8082/api/routes/history?userId=${userId}&page=${page}&size=${size}`,\n  {\n    method: 'GET',\n    headers: {\n      'Authorization': 'Bearer YOUR_JWT_TOKEN'\n    }\n  }\n);\nconst data = await response.json();\nconsole.log(data);"
+          "powershell": "# PowerShell - Récupérer historique des itinéraires\n$headers = @{\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n\n# Récupérer la première page avec 20 éléments\nInvoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/history?userId=user123&page=0&size=20' -Method GET -Headers $headers\n\n# Récupérer la deuxième page\nInvoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/history?userId=user123&page=1&size=20' -Method GET -Headers $headers",
+          "curl": "# cURL - Récupérer historique des itinéraires\n# Première page avec 20 éléments\ncurl -X GET 'http://172.30.80.11:31030/api/routes/history?userId=user123&page=0&size=20' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN'\n\n# Deuxième page\ncurl -X GET 'http://172.30.80.11:31030/api/routes/history?userId=user123&page=1&size=20' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN'",
+          "fetch": "// JavaScript Fetch - Récupérer historique des itinéraires\nconst userId = 'user123';\nconst page = 0;\nconst size = 20;\n\nconst response = await fetch(\n  `http://172.30.80.11:31030/api/routes/history?userId=${userId}&page=${page}&size=${size}`,\n  {\n    method: 'GET',\n    headers: {\n      'Authorization': 'Bearer YOUR_JWT_TOKEN'\n    }\n  }\n);\nconst data = await response.json();\nconsole.log(data);"
         }
       }
     },
@@ -343,9 +343,9 @@
           }
         ],
         "x-test-examples": {
-          "powershell": "# PowerShell - Récupérer un itinéraire par ID\n$routeId = 'route-uuid-123'\n$headers = @{\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n\nInvoke-RestMethod -Uri \"http://172.30.80.11:8082/api/routes/$routeId\" -Method GET -Headers $headers",
-          "curl": "# cURL - Récupérer un itinéraire par ID\ncurl -X GET 'http://172.30.80.11:8082/api/routes/route-uuid-123' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN'",
-          "fetch": "// JavaScript Fetch - Récupérer un itinéraire par ID\nconst routeId = 'route-uuid-123';\n\nconst response = await fetch(`http://172.30.80.11:8082/api/routes/${routeId}`, {\n  method: 'GET',\n  headers: {\n    'Authorization': 'Bearer YOUR_JWT_TOKEN'\n  }\n});\nconst data = await response.json();\nconsole.log(data);"
+          "powershell": "# PowerShell - Récupérer un itinéraire par ID\n$routeId = 'route-uuid-123'\n$headers = @{\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n\nInvoke-RestMethod -Uri \"http://172.30.80.11:31030/api/routes/$routeId\" -Method GET -Headers $headers",
+          "curl": "# cURL - Récupérer un itinéraire par ID\ncurl -X GET 'http://172.30.80.11:31030/api/routes/route-uuid-123' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN'",
+          "fetch": "// JavaScript Fetch - Récupérer un itinéraire par ID\nconst routeId = 'route-uuid-123';\n\nconst response = await fetch(`http://172.30.80.11:31030/api/routes/${routeId}`, {\n  method: 'GET',\n  headers: {\n    'Authorization': 'Bearer YOUR_JWT_TOKEN'\n  }\n});\nconst data = await response.json();\nconsole.log(data);"
         }
       }
     },
@@ -372,9 +372,9 @@
           }
         },
         "x-test-examples": {
-          "powershell": "# PowerShell - Vérifier l'état du service\nInvoke-RestMethod -Uri 'http://172.30.80.11:8082/api/routes/health' -Method GET",
-          "curl": "# cURL - Vérifier l'état du service\ncurl -X GET 'http://172.30.80.11:8082/api/routes/health'",
-          "fetch": "// JavaScript Fetch - Vérifier l'état du service\nconst response = await fetch('http://172.30.80.11:8082/api/routes/health');\nconst status = await response.text();\nconsole.log(status);"
+          "powershell": "# PowerShell - Vérifier l'état du service\nInvoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/health' -Method GET",
+          "curl": "# cURL - Vérifier l'état du service\ncurl -X GET 'http://172.30.80.11:31030/api/routes/health'",
+          "fetch": "// JavaScript Fetch - Vérifier l'état du service\nconst response = await fetch('http://172.30.80.11:31030/api/routes/health');\nconst status = await response.text();\nconsole.log(status);"
         }
       }
     },
@@ -411,9 +411,9 @@
           }
         ],
         "x-test-examples": {
-          "powershell": "# PowerShell - Récupérer toutes les villes\n$headers = @{\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n\nInvoke-RestMethod -Uri 'http://172.30.80.11:8082/api/routes/ville' -Method GET -Headers $headers",
-          "curl": "# cURL - Récupérer toutes les villes\ncurl -X GET 'http://172.30.80.11:8082/api/routes/ville' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN'",
-          "fetch": "// JavaScript Fetch - Récupérer toutes les villes\nconst response = await fetch('http://172.30.80.11:8082/api/routes/ville', {\n  method: 'GET',\n  headers: {\n    'Authorization': 'Bearer YOUR_JWT_TOKEN'\n  }\n});\nconst cities = await response.json();\nconsole.log(cities);"
+          "powershell": "# PowerShell - Récupérer toutes les villes\n$headers = @{\n    'Authorization' = 'Bearer YOUR_JWT_TOKEN'\n}\n\nInvoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/ville' -Method GET -Headers $headers",
+          "curl": "# cURL - Récupérer toutes les villes\ncurl -X GET 'http://172.30.80.11:31030/api/routes/ville' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN'",
+          "fetch": "// JavaScript Fetch - Récupérer toutes les villes\nconst response = await fetch('http://172.30.80.11:31030/api/routes/ville', {\n  method: 'GET',\n  headers: {\n    'Authorization': 'Bearer YOUR_JWT_TOKEN'\n  }\n});\nconst cities = await response.json();\nconsole.log(cities);"
         }
       }
     }
