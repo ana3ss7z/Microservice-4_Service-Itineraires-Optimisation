@@ -7,7 +7,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://172.30.80.11:8082",
+      "value": "http://172.30.80.11:31030",
       "type": "string",
       "description": "URL de base du service (serveur production)"
     },
