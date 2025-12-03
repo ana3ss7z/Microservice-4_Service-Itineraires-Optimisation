@@ -16,8 +16,10 @@ import {
 import { getServerInfo, healthCheck } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
+import { useTheme } from "../context/ThemeContext";
 
 export default function ServerInfoPage() {
+  const { darkMode } = useTheme();
   const [serverInfo, setServerInfo] = useState(null);
   const [healthStatus, setHealthStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -78,13 +80,17 @@ export default function ServerInfoPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+          <h1
+            className={`text-2xl md:text-3xl font-bold ${
+              darkMode ? "text-white" : "text-gray-800"
+            } flex items-center gap-3`}
+          >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center shadow-lg">
               <Server className="w-6 h-6 text-white" />
             </div>
             Informations Serveur
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className={`${darkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
             État et informations du microservice
           </p>
         </div>
@@ -100,7 +106,11 @@ export default function ServerInfoPage() {
 
       {/* Last Refresh */}
       {lastRefresh && (
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div
+          className={`flex items-center gap-2 text-sm ${
+            darkMode ? "text-gray-400" : "text-gray-500"
+          }`}
+        >
           <Clock className="w-4 h-4" />
           Dernière mise à jour:{" "}
           {lastRefresh.toLocaleTimeString("fr-FR", {
@@ -157,14 +167,30 @@ export default function ServerInfoPage() {
           {/* Server Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Hostname */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
+            <div
+              className={`${
+                darkMode
+                  ? "bg-slate-800/70 border-slate-700/50"
+                  : "bg-white/70 border-white/50"
+              } backdrop-blur-sm rounded-2xl shadow-lg border p-6`}
+            >
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                   <Server className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Hostname</p>
-                  <p className="font-bold text-gray-800 text-lg">
+                  <p
+                    className={`text-sm ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    Hostname
+                  </p>
+                  <p
+                    className={`font-bold ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    } text-lg`}
+                  >
                     {serverInfo?.serverHostname ||
                       serverInfo?.hostname ||
                       serverInfo?.host ||
@@ -175,7 +201,13 @@ export default function ServerInfoPage() {
             </div>
 
             {/* IP Address */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
+            <div
+              className={`${
+                darkMode
+                  ? "bg-slate-800/70 border-slate-700/50"
+                  : "bg-white/70 border-white/50"
+              } backdrop-blur-sm rounded-2xl shadow-lg border p-6`}
+            >
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
                   <Globe className="w-6 h-6 text-white" />

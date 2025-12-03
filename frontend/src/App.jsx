@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster, ToastBar } from "react-hot-toast";
+import { X } from "lucide-react";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
@@ -25,19 +26,27 @@ function App() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <Toaster
           position="top-right"
+          gutter={12}
+          containerStyle={{
+            top: 80,
+          }}
           toastOptions={{
             duration: 4000,
             style: {
               background: "#fff",
               color: "#333",
-              boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.15)",
               borderRadius: "12px",
-              padding: "16px",
+              padding: "12px 16px",
+              maxWidth: "380px",
             },
             success: {
               iconTheme: {
                 primary: "#10b981",
                 secondary: "#fff",
+              },
+              style: {
+                border: "1px solid #d1fae5",
               },
             },
             error: {
@@ -45,9 +54,32 @@ function App() {
                 primary: "#ef4444",
                 secondary: "#fff",
               },
+              style: {
+                border: "1px solid #fecaca",
+              },
             },
           }}
-        />
+        >
+          {(t) => (
+            <ToastBar toast={t}>
+              {({ icon, message }) => (
+                <div className="flex items-center gap-2 w-full">
+                  {icon}
+                  <div className="flex-1">{message}</div>
+                  {t.type !== "loading" && (
+                    <button
+                      onClick={() => toast.dismiss(t.id)}
+                      className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all focus:outline-none ml-2"
+                      aria-label="Fermer"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </ToastBar>
+          )}
+        </Toaster>
 
         <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 

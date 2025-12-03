@@ -15,8 +15,10 @@ import {
 import { calculateRouteWithDemande } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
+import { useTheme } from "../context/ThemeContext";
 
 export default function DemandeRoute() {
+  const { darkMode } = useTheme();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
@@ -100,20 +102,28 @@ export default function DemandeRoute() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+          <h1
+            className={`text-2xl md:text-3xl font-bold ${
+              darkMode ? "text-white" : "text-gray-800"
+            } flex items-center gap-3`}
+          >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
               <Package className="w-6 h-6 text-white" />
             </div>
             Demande de Transport
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className={`${darkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
             Calcul avec volume et informations de marchandise
           </p>
         </div>
 
         <button
           onClick={loadExample}
-          className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors font-medium"
+          className={`px-4 py-2 ${
+            darkMode
+              ? "bg-orange-900/50 text-orange-400 hover:bg-orange-800/50"
+              : "bg-orange-100 text-orange-700 hover:bg-orange-200"
+          } rounded-lg transition-colors font-medium`}
         >
           📋 Charger un exemple
         </button>
@@ -123,7 +133,11 @@ export default function DemandeRoute() {
         {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+          className={`${
+            darkMode
+              ? "bg-slate-800 border-slate-700"
+              : "bg-white border-gray-100"
+          } rounded-2xl shadow-xl border overflow-hidden`}
         >
           <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-4">
             <h2 className="text-white font-bold text-lg">
@@ -137,33 +151,63 @@ export default function DemandeRoute() {
           <div className="p-6 space-y-6">
             {/* User Information Section */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-700 flex items-center gap-2 pb-2 border-b border-gray-100">
+              <h3
+                className={`font-semibold ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
+                } flex items-center gap-2 pb-2 border-b ${
+                  darkMode ? "border-slate-700" : "border-gray-100"
+                }`}
+              >
                 <User className="w-5 h-5 text-orange-500" />
                 Informations Client
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 mb-1 block">
+                  <label
+                    className={`text-sm font-medium ${
+                      darkMode ? "text-gray-400" : "text-gray-600"
+                    } mb-1 block`}
+                  >
                     Nom complet
                   </label>
-                  <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-transparent transition-all shadow-sm">
+                  <div
+                    className={`flex items-center gap-3 px-4 py-3 ${
+                      darkMode
+                        ? "bg-slate-700 border-slate-600"
+                        : "bg-white border-gray-200"
+                    } border rounded-xl focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-transparent transition-all shadow-sm`}
+                  >
                     <User className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     <input
                       type="text"
                       value={formData.fullName}
                       onChange={(e) => updateField("fullName", e.target.value)}
                       placeholder="Ahmed Ben Ali"
-                      className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-400"
+                      className={`flex-1 bg-transparent border-none outline-none ${
+                        darkMode
+                          ? "text-white placeholder-gray-500"
+                          : "text-gray-700 placeholder-gray-400"
+                      }`}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 mb-1 block">
+                  <label
+                    className={`text-sm font-medium ${
+                      darkMode ? "text-gray-400" : "text-gray-600"
+                    } mb-1 block`}
+                  >
                     Nom d&apos;utilisateur
                   </label>
-                  <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-transparent transition-all shadow-sm">
+                  <div
+                    className={`flex items-center gap-3 px-4 py-3 ${
+                      darkMode
+                        ? "bg-slate-700 border-slate-600"
+                        : "bg-white border-gray-200"
+                    } border rounded-xl focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-transparent transition-all shadow-sm`}
+                  >
                     <span className="text-orange-500 font-bold flex-shrink-0">
                       @
                     </span>
@@ -172,7 +216,11 @@ export default function DemandeRoute() {
                       value={formData.username}
                       onChange={(e) => updateField("username", e.target.value)}
                       placeholder="ahmed_benali"
-                      className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-400"
+                      className={`flex-1 bg-transparent border-none outline-none ${
+                        darkMode
+                          ? "text-white placeholder-gray-500"
+                          : "text-gray-700 placeholder-gray-400"
+                      }`}
                     />
                   </div>
                 </div>
@@ -180,33 +228,61 @@ export default function DemandeRoute() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 mb-1 block">
+                  <label
+                    className={`text-sm font-medium ${
+                      darkMode ? "text-gray-400" : "text-gray-600"
+                    } mb-1 block`}
+                  >
                     Email
                   </label>
-                  <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-transparent transition-all shadow-sm">
+                  <div
+                    className={`flex items-center gap-3 px-4 py-3 ${
+                      darkMode
+                        ? "bg-slate-700 border-slate-600"
+                        : "bg-white border-gray-200"
+                    } border rounded-xl focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-transparent transition-all shadow-sm`}
+                  >
                     <Mail className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => updateField("email", e.target.value)}
                       placeholder="email@example.com"
-                      className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-400"
+                      className={`flex-1 bg-transparent border-none outline-none ${
+                        darkMode
+                          ? "text-white placeholder-gray-500"
+                          : "text-gray-700 placeholder-gray-400"
+                      }`}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 mb-1 block">
+                  <label
+                    className={`text-sm font-medium ${
+                      darkMode ? "text-gray-400" : "text-gray-600"
+                    } mb-1 block`}
+                  >
                     Téléphone
                   </label>
-                  <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-transparent transition-all shadow-sm">
+                  <div
+                    className={`flex items-center gap-3 px-4 py-3 ${
+                      darkMode
+                        ? "bg-slate-700 border-slate-600"
+                        : "bg-white border-gray-200"
+                    } border rounded-xl focus-within:ring-2 focus-within:ring-orange-500 focus-within:border-transparent transition-all shadow-sm`}
+                  >
                     <Phone className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     <input
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => updateField("phone", e.target.value)}
                       placeholder="+212 6 XX XX XX XX"
-                      className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-400"
+                      className={`flex-1 bg-transparent border-none outline-none ${
+                        darkMode
+                          ? "text-white placeholder-gray-500"
+                          : "text-gray-700 placeholder-gray-400"
+                      }`}
                     />
                   </div>
                 </div>
@@ -215,16 +291,32 @@ export default function DemandeRoute() {
 
             {/* Route Information Section */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-700 flex items-center gap-2 pb-2 border-b border-gray-100">
+              <h3
+                className={`font-semibold ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
+                } flex items-center gap-2 pb-2 border-b ${
+                  darkMode ? "border-slate-700" : "border-gray-100"
+                }`}
+              >
                 <MapPin className="w-5 h-5 text-orange-500" />
                 Itinéraire
               </h3>
 
               <div>
-                <label className="text-sm font-medium text-gray-600 mb-1 block">
+                <label
+                  className={`text-sm font-medium ${
+                    darkMode ? "text-gray-400" : "text-gray-600"
+                  } mb-1 block`}
+                >
                   Adresse de départ *
                 </label>
-                <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-transparent transition-all shadow-sm">
+                <div
+                  className={`flex items-center gap-3 px-4 py-3 ${
+                    darkMode
+                      ? "bg-slate-700 border-slate-600"
+                      : "bg-white border-gray-200"
+                  } border rounded-xl focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-transparent transition-all shadow-sm`}
+                >
                   <div className="w-4 h-4 rounded-full bg-emerald-500 flex-shrink-0 shadow-sm"></div>
                   <input
                     type="text"
@@ -233,17 +325,31 @@ export default function DemandeRoute() {
                       updateField("adresseDepart", e.target.value)
                     }
                     placeholder="123 Rue Mohammed V, Casablanca"
-                    className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-400"
+                    className={`flex-1 bg-transparent border-none outline-none ${
+                      darkMode
+                        ? "text-white placeholder-gray-500"
+                        : "text-gray-700 placeholder-gray-400"
+                    }`}
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600 mb-1 block">
+                <label
+                  className={`text-sm font-medium ${
+                    darkMode ? "text-gray-400" : "text-gray-600"
+                  } mb-1 block`}
+                >
                   Adresse de destination *
                 </label>
-                <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-rose-500 focus-within:border-transparent transition-all shadow-sm">
+                <div
+                  className={`flex items-center gap-3 px-4 py-3 ${
+                    darkMode
+                      ? "bg-slate-700 border-slate-600"
+                      : "bg-white border-gray-200"
+                  } border rounded-xl focus-within:ring-2 focus-within:ring-rose-500 focus-within:border-transparent transition-all shadow-sm`}
+                >
                   <div className="w-4 h-4 rounded-full bg-rose-500 flex-shrink-0 shadow-sm"></div>
                   <input
                     type="text"
@@ -252,20 +358,34 @@ export default function DemandeRoute() {
                       updateField("adresseDestination", e.target.value)
                     }
                     placeholder="456 Avenue Hassan II, Rabat"
-                    className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-400"
+                    className={`flex-1 bg-transparent border-none outline-none ${
+                      darkMode
+                        ? "text-white placeholder-gray-500"
+                        : "text-gray-700 placeholder-gray-400"
+                    }`}
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-600 mb-2 block">
+                <label
+                  className={`text-sm font-medium ${
+                    darkMode ? "text-gray-400" : "text-gray-600"
+                  } mb-2 block`}
+                >
                   Date et heure de départ
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   {/* Date Picker */}
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
+                    <div
+                      className={`flex items-center gap-2 px-4 py-3 ${
+                        darkMode
+                          ? "bg-slate-700 border-slate-600"
+                          : "bg-gray-50 border-gray-200"
+                      } rounded-xl border`}
+                    >
                       <Calendar className="w-5 h-5 text-orange-500 flex-shrink-0" />
                       <select
                         value={
@@ -285,7 +405,9 @@ export default function DemandeRoute() {
                               `${year}-${month}-${day}`
                             );
                         }}
-                        className="bg-transparent border-none outline-none text-gray-700 font-medium cursor-pointer flex-1 min-w-0"
+                        className={`bg-transparent border-none outline-none ${
+                          darkMode ? "text-white" : "text-gray-700"
+                        } font-medium cursor-pointer flex-1 min-w-0`}
                       >
                         <option value="">Année</option>
                         {[2025, 2026, 2027].map((y) => (
@@ -294,7 +416,11 @@ export default function DemandeRoute() {
                           </option>
                         ))}
                       </select>
-                      <span className="text-gray-300">/</span>
+                      <span
+                        className={darkMode ? "text-gray-500" : "text-gray-300"}
+                      >
+                        /
+                      </span>
                       <select
                         value={
                           formData.departDate
@@ -313,7 +439,9 @@ export default function DemandeRoute() {
                               `${year}-${month}-${day}`
                             );
                         }}
-                        className="bg-transparent border-none outline-none text-gray-700 font-medium cursor-pointer w-12"
+                        className={`bg-transparent border-none outline-none ${
+                          darkMode ? "text-white" : "text-gray-700"
+                        } font-medium cursor-pointer w-12`}
                       >
                         <option value="">MM</option>
                         {Array.from({ length: 12 }, (_, i) =>
@@ -324,7 +452,11 @@ export default function DemandeRoute() {
                           </option>
                         ))}
                       </select>
-                      <span className="text-gray-300">/</span>
+                      <span
+                        className={darkMode ? "text-gray-500" : "text-gray-300"}
+                      >
+                        /
+                      </span>
                       <select
                         value={
                           formData.departDate
@@ -343,7 +475,9 @@ export default function DemandeRoute() {
                               `${year}-${month}-${day}`
                             );
                         }}
-                        className="bg-transparent border-none outline-none text-gray-700 font-medium cursor-pointer w-12"
+                        className={`bg-transparent border-none outline-none ${
+                          darkMode ? "text-white" : "text-gray-700"
+                        } font-medium cursor-pointer w-12`}
                       >
                         <option value="">JJ</option>
                         {Array.from({ length: 31 }, (_, i) =>

@@ -22,8 +22,10 @@ import {
 import { getUserInfo, getRouteById } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
+import { useTheme } from "../context/ThemeContext";
 
 export default function UserInfoPage() {
+  const { darkMode } = useTheme();
   const [userId, setUserId] = useState("");
   const [userInfo, setUserInfo] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -142,13 +144,17 @@ export default function UserInfoPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+          <h1
+            className={`text-2xl md:text-3xl font-bold flex items-center gap-3 ${
+              darkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg">
               <Users className="w-6 h-6 text-white" />
             </div>
             Informations Utilisateurs
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
             Consultez les informations détaillées des utilisateurs et leurs
             demandes
           </p>
@@ -156,8 +162,18 @@ export default function UserInfoPage() {
       </div>
 
       {/* Predefined Users Grid */}
-      <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+      <div
+        className={`backdrop-blur-sm rounded-2xl shadow-lg border p-6 ${
+          darkMode
+            ? "bg-slate-800/70 border-slate-700"
+            : "bg-white/70 border-white/50"
+        }`}
+      >
+        <h2
+          className={`text-lg font-semibold mb-4 flex items-center gap-2 ${
+            darkMode ? "text-white" : "text-gray-800"
+          }`}
+        >
           <User className="w-5 h-5 text-indigo-500" />
           Utilisateurs Disponibles
         </h2>
@@ -168,31 +184,59 @@ export default function UserInfoPage() {
               onClick={() => handleUserSelect(user.id)}
               className={`p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
                 userId === user.id
-                  ? "border-indigo-500 bg-indigo-50 shadow-lg"
+                  ? darkMode
+                    ? "border-indigo-500 bg-indigo-900/30 shadow-lg"
+                    : "border-indigo-500 bg-indigo-50 shadow-lg"
+                  : darkMode
+                  ? "border-slate-600 hover:border-indigo-400 bg-slate-700"
                   : "border-gray-200 hover:border-indigo-300 bg-white"
               }`}
             >
               <div className="text-3xl mb-2">{user.icon}</div>
-              <p className="font-medium text-gray-800 text-sm truncate">
+              <p
+                className={`font-medium text-sm truncate ${
+                  darkMode ? "text-white" : "text-gray-800"
+                }`}
+              >
                 {user.name}
               </p>
-              <p className="text-xs text-gray-500">{user.id}</p>
+              <p
+                className={`text-xs ${
+                  darkMode ? "text-gray-400" : "text-gray-500"
+                }`}
+              >
+                {user.id}
+              </p>
             </button>
           ))}
         </div>
       </div>
 
       {/* Custom Search */}
-      <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
+      <div
+        className={`backdrop-blur-sm rounded-2xl shadow-lg border p-6 ${
+          darkMode
+            ? "bg-slate-800/70 border-slate-700"
+            : "bg-white/70 border-white/50"
+        }`}
+      >
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search
+              className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${
+                darkMode ? "text-gray-500" : "text-gray-400"
+              }`}
+            />
             <input
               type="text"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
               placeholder="Entrez un ID utilisateur personnalisé..."
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                darkMode
+                  ? "bg-slate-700 border-slate-600 text-white placeholder-gray-400"
+                  : "bg-white border-gray-200"
+              }`}
             />
           </div>
           <button
@@ -267,41 +311,85 @@ export default function UserInfoPage() {
 
       {/* User Routes List */}
       {!loading && userInfo.length > 0 && (
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+        <div
+          className={`backdrop-blur-sm rounded-2xl shadow-lg border overflow-hidden ${
+            darkMode
+              ? "bg-slate-800/70 border-slate-700"
+              : "bg-white/70 border-white/50"
+          }`}
+        >
+          <div
+            className={`p-6 border-b ${
+              darkMode ? "border-slate-700" : "border-gray-100"
+            }`}
+          >
+            <h2
+              className={`text-lg font-semibold flex items-center gap-2 ${
+                darkMode ? "text-white" : "text-gray-800"
+              }`}
+            >
               <Activity className="w-5 h-5 text-indigo-500" />
               Demandes de l&apos;utilisateur ({userInfo.length})
             </h2>
           </div>
 
-          <div className="divide-y divide-gray-100">
+          <div
+            className={`divide-y ${
+              darkMode ? "divide-slate-700" : "divide-gray-100"
+            }`}
+          >
             {userInfo.map((route, index) => (
               <div
                 key={route.id || index}
-                className="p-5 hover:bg-gray-50/50 transition-colors"
+                className={`p-5 transition-colors ${
+                  darkMode ? "hover:bg-slate-700/50" : "hover:bg-gray-50/50"
+                }`}
               >
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                   {/* User Info */}
                   <div className="flex-1">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center">
-                        <User className="w-6 h-6 text-indigo-600" />
+                      <div
+                        className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                          darkMode
+                            ? "bg-gradient-to-br from-indigo-600 to-indigo-700"
+                            : "bg-gradient-to-br from-indigo-100 to-indigo-200"
+                        }`}
+                      >
+                        <User
+                          className={`w-6 h-6 ${
+                            darkMode ? "text-white" : "text-indigo-600"
+                          }`}
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-gray-800">
+                          <h3
+                            className={`font-semibold ${
+                              darkMode ? "text-white" : "text-gray-800"
+                            }`}
+                          >
                             {route.fullName || route.username || "Utilisateur"}
                           </h3>
                           {route.username && (
-                            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-xs">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs ${
+                                darkMode
+                                  ? "bg-indigo-900/50 text-indigo-300"
+                                  : "bg-indigo-100 text-indigo-700"
+                              }`}
+                            >
                               @{route.username}
                             </span>
                           )}
                         </div>
 
                         {/* Contact Info */}
-                        <div className="flex flex-wrap gap-3 mt-2 text-sm text-gray-500">
+                        <div
+                          className={`flex flex-wrap gap-3 mt-2 text-sm ${
+                            darkMode ? "text-gray-400" : "text-gray-500"
+                          }`}
+                        >
                           {route.email && (
                             <span className="flex items-center gap-1">
                               <Mail className="w-4 h-4" />
@@ -323,7 +411,11 @@ export default function UserInfoPage() {
                               route.originAddress ||
                               "Départ"}
                           </span>
-                          <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <ArrowRight
+                            className={`w-4 h-4 flex-shrink-0 ${
+                              darkMode ? "text-gray-500" : "text-gray-400"
+                            }`}
+                          />
                           <span className="text-morocco-red font-medium truncate max-w-[200px]">
                             {route.adresseDestination ||
                               route.destinationAddress ||
@@ -336,18 +428,34 @@ export default function UserInfoPage() {
 
                   {/* Marchandise & Volume */}
                   {(route.natureMarchandise || route.volume) && (
-                    <div className="lg:w-48 p-3 bg-orange-50 rounded-xl">
-                      <div className="flex items-center gap-2 text-orange-700">
+                    <div
+                      className={`lg:w-48 p-3 rounded-xl ${
+                        darkMode ? "bg-orange-900/30" : "bg-orange-50"
+                      }`}
+                    >
+                      <div
+                        className={`flex items-center gap-2 ${
+                          darkMode ? "text-orange-400" : "text-orange-700"
+                        }`}
+                      >
                         <Package className="w-4 h-4" />
                         <span className="text-sm font-medium">Marchandise</span>
                       </div>
                       {route.natureMarchandise && (
-                        <p className="text-sm text-gray-700 mt-1 truncate">
+                        <p
+                          className={`text-sm mt-1 truncate ${
+                            darkMode ? "text-gray-300" : "text-gray-700"
+                          }`}
+                        >
                           {route.natureMarchandise}
                         </p>
                       )}
                       {route.volume && (
-                        <p className="text-lg font-bold text-orange-600 mt-1">
+                        <p
+                          className={`text-lg font-bold mt-1 ${
+                            darkMode ? "text-orange-400" : "text-orange-600"
+                          }`}
+                        >
                           {route.volume} m³
                         </p>
                       )}
@@ -360,13 +468,25 @@ export default function UserInfoPage() {
                       <p className="text-2xl font-bold text-emerald-600">
                         {route.totalDistanceKm?.toFixed(1) || "-"}
                       </p>
-                      <p className="text-xs text-gray-500">km</p>
+                      <p
+                        className={`text-xs ${
+                          darkMode ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
+                        km
+                      </p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-blue-600">
                         {formatDuration(route.totalDurationMin)}
                       </p>
-                      <p className="text-xs text-gray-500">durée</p>
+                      <p
+                        className={`text-xs ${
+                          darkMode ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
+                        durée
+                      </p>
                     </div>
                   </div>
 
@@ -374,7 +494,11 @@ export default function UserInfoPage() {
                   <div className="flex items-center gap-3">
                     {route.dateDepart && (
                       <div className="text-right">
-                        <div className="flex items-center gap-1 text-gray-500 text-sm">
+                        <div
+                          className={`flex items-center gap-1 text-sm ${
+                            darkMode ? "text-gray-400" : "text-gray-500"
+                          }`}
+                        >
                           <Calendar className="w-4 h-4" />
                           <span>{formatDate(route.dateDepart)}</span>
                         </div>
@@ -383,7 +507,11 @@ export default function UserInfoPage() {
                     {route.id && (
                       <button
                         onClick={() => viewRouteDetails(route.id)}
-                        className="p-2 hover:bg-indigo-100 rounded-lg transition-colors"
+                        className={`p-2 rounded-lg transition-colors ${
+                          darkMode
+                            ? "hover:bg-indigo-900/50"
+                            : "hover:bg-indigo-100"
+                        }`}
                         title="Voir les détails"
                       >
                         <Eye className="w-5 h-5 text-indigo-600" />
@@ -397,22 +525,34 @@ export default function UserInfoPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="p-4 border-t border-gray-100 flex items-center justify-between">
+            <div
+              className={`p-4 border-t flex items-center justify-between ${
+                darkMode ? "border-slate-700" : "border-gray-100"
+              }`}
+            >
               <button
                 onClick={() => setPage(Math.max(0, page - 1))}
                 disabled={page === 0}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
+                  darkMode
+                    ? "hover:bg-slate-700 text-gray-300"
+                    : "hover:bg-gray-100"
+                }`}
               >
                 <ChevronLeft className="w-5 h-5" />
                 Précédent
               </button>
-              <span className="text-gray-600">
+              <span className={darkMode ? "text-gray-400" : "text-gray-600"}>
                 Page {page + 1} / {totalPages}
               </span>
               <button
                 onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
                 disabled={page >= totalPages - 1}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
+                  darkMode
+                    ? "hover:bg-slate-700 text-gray-300"
+                    : "hover:bg-gray-100"
+                }`}
               >
                 Suivant
                 <ChevronRight className="w-5 h-5" />
@@ -424,14 +564,32 @@ export default function UserInfoPage() {
 
       {/* Empty State */}
       {!loading && userInfo.length === 0 && userId && (
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-12 text-center">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-            <Users className="w-10 h-10 text-gray-400" />
+        <div
+          className={`backdrop-blur-sm rounded-2xl shadow-lg border p-12 text-center ${
+            darkMode
+              ? "bg-slate-800/70 border-slate-700"
+              : "bg-white/70 border-white/50"
+          }`}
+        >
+          <div
+            className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${
+              darkMode ? "bg-slate-700" : "bg-gray-100"
+            }`}
+          >
+            <Users
+              className={`w-10 h-10 ${
+                darkMode ? "text-gray-500" : "text-gray-400"
+              }`}
+            />
           </div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+          <h3
+            className={`text-xl font-semibold mb-2 ${
+              darkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
             Aucune information trouvée
           </h3>
-          <p className="text-gray-500">
+          <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
             Aucune demande trouvée pour l&apos;utilisateur &quot;{userId}&quot;
           </p>
         </div>
@@ -439,14 +597,32 @@ export default function UserInfoPage() {
 
       {/* Initial State */}
       {!loading && userInfo.length === 0 && !userId && (
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-12 text-center">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
-            <Users className="w-10 h-10 text-indigo-500" />
+        <div
+          className={`backdrop-blur-sm rounded-2xl shadow-lg border p-12 text-center ${
+            darkMode
+              ? "bg-slate-800/70 border-slate-700"
+              : "bg-white/70 border-white/50"
+          }`}
+        >
+          <div
+            className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${
+              darkMode ? "bg-indigo-900/50" : "bg-indigo-100"
+            }`}
+          >
+            <Users
+              className={`w-10 h-10 ${
+                darkMode ? "text-indigo-400" : "text-indigo-500"
+              }`}
+            />
           </div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+          <h3
+            className={`text-xl font-semibold mb-2 ${
+              darkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
             Sélectionnez un utilisateur
           </h3>
-          <p className="text-gray-500">
+          <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
             Cliquez sur un utilisateur ci-dessus ou entrez un ID personnalisé
           </p>
         </div>
@@ -455,20 +631,44 @@ export default function UserInfoPage() {
       {/* Route Details Modal */}
       {selectedRoute && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-auto">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white">
-              <h3 className="text-xl font-bold text-gray-800">
+          <div
+            className={`rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-auto ${
+              darkMode ? "bg-slate-800" : "bg-white"
+            }`}
+          >
+            <div
+              className={`p-6 border-b flex items-center justify-between sticky top-0 ${
+                darkMode
+                  ? "border-slate-700 bg-slate-800"
+                  : "border-gray-100 bg-white"
+              }`}
+            >
+              <h3
+                className={`text-xl font-bold ${
+                  darkMode ? "text-white" : "text-gray-800"
+                }`}
+              >
                 Détails de la Route
               </h3>
               <button
                 onClick={() => setSelectedRoute(null)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className={`p-2 rounded-lg transition-colors ${
+                  darkMode
+                    ? "hover:bg-slate-700 text-gray-400"
+                    : "hover:bg-gray-100"
+                }`}
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-4">
-              <pre className="bg-gray-50 rounded-xl p-4 overflow-auto text-sm">
+              <pre
+                className={`rounded-xl p-4 overflow-auto text-sm ${
+                  darkMode
+                    ? "bg-slate-900 text-gray-300"
+                    : "bg-gray-50 text-gray-700"
+                }`}
+              >
                 {JSON.stringify(selectedRoute, null, 2)}
               </pre>
             </div>

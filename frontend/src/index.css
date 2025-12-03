@@ -178,6 +178,17 @@ html.dark .Toastify__toast {
   color: #f1f5f9 !important;
 }
 
+/* React-hot-toast specific dark mode */
+html.dark [data-sonner-toaster],
+html.dark [data-sonner-toast],
+html.dark [role="status"] > div,
+html.dark .go2072408551,
+html.dark .go4109123758 {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+
 /* Code blocks */
 html.dark code {
   background-color: #334155 !important;
@@ -218,8 +229,19 @@ html.dark tr:hover {
 }
 
 /* Modal/overlay backgrounds */
-html.dark .backdrop-blur-sm {
+html.dark .backdrop-blur-sm:not(.from-slate-800):not([class*="bg-slate"]) {
   background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Backdrop blur cards */
+html.dark .bg-white\/70,
+html.dark [class*="bg-white/70"] {
+  background-color: rgba(30, 41, 59, 0.7) !important;
+}
+
+html.dark .border-white\/50,
+html.dark [class*="border-white/50"] {
+  border-color: rgba(71, 85, 105, 0.5) !important;
 }
 
 /* Divider lines */
@@ -233,6 +255,42 @@ html.dark .divide-gray-200 > * + * {
 html.dark .ring-gray-200,
 html.dark .ring-gray-300 {
   --tw-ring-color: #475569 !important;
+}
+
+/* More gradient backgrounds for dark mode */
+html.dark .bg-gradient-to-br.from-slate-50,
+html.dark .bg-gradient-to-br.from-blue-50,
+html.dark .bg-gradient-to-br.from-indigo-100 {
+  background: linear-gradient(to bottom right, #0f172a, #1e293b) !important;
+}
+
+html.dark .from-slate-50 {
+  --tw-gradient-from: #0f172a !important;
+}
+
+html.dark .via-blue-50 {
+  --tw-gradient-via: #1e293b !important;
+}
+
+html.dark .to-indigo-100 {
+  --tw-gradient-to: #1e293b !important;
+}
+
+/* React-hot-toast dark mode */
+html.dark [role="status"],
+html.dark .go2072408551 {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+/* Main content background in dark mode */
+html.dark .min-h-screen.bg-gradient-to-br {
+  background: linear-gradient(
+    to bottom right,
+    #0f172a,
+    #1e293b,
+    #1e293b
+  ) !important;
 }
 
 /* Custom scrollbar */

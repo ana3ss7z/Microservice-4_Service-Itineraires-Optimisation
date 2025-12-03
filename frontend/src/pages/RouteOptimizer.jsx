@@ -14,6 +14,7 @@ import MapView from "../components/MapView";
 import RouteResultCard from "../components/RouteResultCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
+import { useTheme } from "../context/ThemeContext";
 
 // Villes marocaines prédéfinies
 const moroccanCities = [
@@ -36,6 +37,7 @@ const moroccanCities = [
 ];
 
 export default function RouteOptimizer() {
+  const { darkMode } = useTheme();
   const [waypoints, setWaypoints] = useState([
     { id: 1, name: "Casablanca", latitude: 33.5731, longitude: -7.5898 },
     { id: 2, name: "Rabat", latitude: 34.0209, longitude: -6.8416 },
@@ -194,13 +196,17 @@ export default function RouteOptimizer() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+          <h1
+            className={`text-2xl md:text-3xl font-bold ${
+              darkMode ? "text-white" : "text-gray-800"
+            } flex items-center gap-3`}
+          >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
               <Route className="w-6 h-6 text-white" />
             </div>
             Optimiser une Tournée
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className={`${darkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
             Algorithme TSP - Plus proche voisin
           </p>
         </div>
@@ -209,19 +215,31 @@ export default function RouteOptimizer() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => loadExample("grand-tour")}
-            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm font-medium"
+            className={`px-4 py-2 ${
+              darkMode
+                ? "bg-purple-900/50 text-purple-400 hover:bg-purple-800/50"
+                : "bg-purple-100 text-purple-700 hover:bg-purple-200"
+            } rounded-lg transition-colors text-sm font-medium`}
           >
             🏛️ Grand Tour
           </button>
           <button
             onClick={() => loadExample("coastal")}
-            className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+            className={`px-4 py-2 ${
+              darkMode
+                ? "bg-blue-900/50 text-blue-400 hover:bg-blue-800/50"
+                : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+            } rounded-lg transition-colors text-sm font-medium`}
           >
             🌊 Côte Atlantique
           </button>
           <button
             onClick={() => loadExample("imperial")}
-            className="px-4 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors text-sm font-medium"
+            className={`px-4 py-2 ${
+              darkMode
+                ? "bg-amber-900/50 text-amber-400 hover:bg-amber-800/50"
+                : "bg-amber-100 text-amber-700 hover:bg-amber-200"
+            } rounded-lg transition-colors text-sm font-medium`}
           >
             👑 Villes Impériales
           </button>
@@ -230,7 +248,13 @@ export default function RouteOptimizer() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div
+          className={`${
+            darkMode
+              ? "bg-slate-800 border-slate-700"
+              : "bg-white border-gray-100"
+          } rounded-2xl shadow-xl border overflow-hidden`}
+        >
           <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
             <h2 className="text-white font-bold text-lg">Points de passage</h2>
             <p className="text-purple-100 text-sm">
@@ -240,7 +264,11 @@ export default function RouteOptimizer() {
 
           <div className="p-6 space-y-4">
             {/* Quick Add Cities */}
-            <div className="flex flex-wrap gap-1.5 p-3 bg-gray-50 rounded-xl">
+            <div
+              className={`flex flex-wrap gap-1.5 p-3 ${
+                darkMode ? "bg-slate-700" : "bg-gray-50"
+              } rounded-xl`}
+            >
               {moroccanCities.slice(0, 10).map((city) => (
                 <button
                   key={city.name}
@@ -272,7 +300,11 @@ export default function RouteOptimizer() {
                       ];
                     });
                   }}
-                  className="px-2 py-1 text-xs rounded-md bg-white text-gray-600 hover:bg-purple-100 hover:text-purple-700 transition-colors border border-gray-200"
+                  className={`px-2 py-1 text-xs rounded-md ${
+                    darkMode
+                      ? "bg-slate-600 text-gray-300 hover:bg-purple-900/50 hover:text-purple-400 border-slate-600"
+                      : "bg-white text-gray-600 hover:bg-purple-100 hover:text-purple-700 border-gray-200"
+                  } transition-colors border`}
                 >
                   + {city.name}
                 </button>
@@ -284,9 +316,17 @@ export default function RouteOptimizer() {
               {waypoints.map((wp, index) => (
                 <div
                   key={wp.id}
-                  className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-purple-200 transition-colors group"
+                  className={`flex items-center gap-3 p-4 ${
+                    darkMode
+                      ? "bg-slate-700 border-slate-600 hover:border-purple-500"
+                      : "bg-gray-50 border-gray-100 hover:border-purple-200"
+                  } rounded-xl border transition-colors group`}
                 >
-                  <div className="flex items-center gap-2 text-gray-400">
+                  <div
+                    className={`flex items-center gap-2 ${
+                      darkMode ? "text-gray-400" : "text-gray-400"
+                    }`}
+                  >
                     <GripVertical className="w-4 h-4 cursor-grab" />
                     <span
                       className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white ${
@@ -313,7 +353,11 @@ export default function RouteOptimizer() {
                         );
                         if (city) selectCity(wp.id, city);
                       }}
-                      className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                      className={`px-3 py-2 ${
+                        darkMode
+                          ? "bg-slate-600 border-slate-500 text-white"
+                          : "bg-white border-gray-200"
+                      } border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none`}
                     >
                       <option value="">Ville...</option>
                       {moroccanCities.map((city) => (
@@ -333,7 +377,11 @@ export default function RouteOptimizer() {
                           parseFloat(e.target.value)
                         )
                       }
-                      className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                      className={`px-3 py-2 ${
+                        darkMode
+                          ? "bg-slate-600 border-slate-500 text-white"
+                          : "bg-white border-gray-200"
+                      } border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none`}
                       placeholder="Lat"
                     />
                     <input
@@ -347,14 +395,22 @@ export default function RouteOptimizer() {
                           parseFloat(e.target.value)
                         )
                       }
-                      className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                      className={`px-3 py-2 ${
+                        darkMode
+                          ? "bg-slate-600 border-slate-500 text-white"
+                          : "bg-white border-gray-200"
+                      } border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none`}
                       placeholder="Lng"
                     />
                   </div>
 
                   <button
                     onClick={() => removeWaypoint(wp.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                    className={`p-2 ${
+                      darkMode
+                        ? "text-gray-400 hover:text-red-400 hover:bg-red-900/30"
+                        : "text-gray-400 hover:text-red-500 hover:bg-red-50"
+                    } rounded-lg transition-colors opacity-0 group-hover:opacity-100`}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -366,7 +422,11 @@ export default function RouteOptimizer() {
             <button
               onClick={addWaypoint}
               disabled={waypoints.length >= 15}
-              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-purple-400 hover:text-purple-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              className={`w-full py-3 border-2 border-dashed ${
+                darkMode
+                  ? "border-slate-600 text-gray-400 hover:border-purple-500 hover:text-purple-400"
+                  : "border-gray-300 text-gray-500 hover:border-purple-400 hover:text-purple-600"
+              } rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50`}
             >
               <Plus className="w-5 h-5" />
               Ajouter un point ({waypoints.length}/15)
@@ -374,7 +434,11 @@ export default function RouteOptimizer() {
 
             {/* User ID */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label
+                className={`text-sm font-medium ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
                 Identifiant Utilisateur
               </label>
               <input
@@ -382,20 +446,44 @@ export default function RouteOptimizer() {
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
                 placeholder="driver_001"
-                className="input-field"
+                className={`input-field ${
+                  darkMode
+                    ? "bg-slate-700 border-slate-600 text-white placeholder-gray-400"
+                    : ""
+                }`}
               />
             </div>
 
             {/* Include Return */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div
+              className={`flex items-center justify-between p-4 ${
+                darkMode ? "bg-slate-700" : "bg-gray-50"
+              } rounded-xl`}
+            >
               <div>
-                <p className="font-medium text-gray-700">Retour au départ</p>
-                <p className="text-sm text-gray-500">Circuit fermé</p>
+                <p
+                  className={`font-medium ${
+                    darkMode ? "text-white" : "text-gray-700"
+                  }`}
+                >
+                  Retour au départ
+                </p>
+                <p
+                  className={`text-sm ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  Circuit fermé
+                </p>
               </div>
               <button
                 onClick={() => setIncludeReturn(!includeReturn)}
                 className={`w-14 h-8 rounded-full transition-colors flex items-center px-1 ${
-                  includeReturn ? "bg-purple-500" : "bg-gray-300"
+                  includeReturn
+                    ? "bg-purple-500"
+                    : darkMode
+                    ? "bg-slate-600"
+                    : "bg-gray-300"
                 }`}
               >
                 <div
@@ -430,11 +518,31 @@ export default function RouteOptimizer() {
         {/* Map & Results */}
         <div className="space-y-6">
           {/* Map */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div
+            className={`${
+              darkMode
+                ? "bg-slate-800 border-slate-700"
+                : "bg-white border-gray-100"
+            } rounded-2xl shadow-xl border overflow-hidden`}
+          >
+            <div
+              className={`px-6 py-4 border-b ${
+                darkMode ? "border-slate-700" : "border-gray-100"
+              } flex items-center justify-between`}
+            >
               <div>
-                <h3 className="font-bold text-gray-800">Carte des points</h3>
-                <span className="text-sm text-gray-500">
+                <h3
+                  className={`font-bold ${
+                    darkMode ? "text-white" : "text-gray-800"
+                  }`}
+                >
+                  Carte des points
+                </h3>
+                <span
+                  className={`text-sm ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
                   {waypoints.length} points
                 </span>
               </div>
@@ -443,6 +551,8 @@ export default function RouteOptimizer() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                   mapSelectionMode
                     ? "bg-amber-500 text-white shadow-lg"
+                    : darkMode
+                    ? "bg-slate-700 text-gray-300 hover:bg-amber-900/50 hover:text-amber-400"
                     : "bg-gray-100 text-gray-700 hover:bg-amber-100 hover:text-amber-700"
                 }`}
               >
@@ -465,7 +575,13 @@ export default function RouteOptimizer() {
 
           {/* Loading */}
           {loading && (
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 flex items-center justify-center">
+            <div
+              className={`${
+                darkMode
+                  ? "bg-slate-800 border-slate-700"
+                  : "bg-white border-gray-100"
+              } rounded-2xl shadow-xl border p-8 flex items-center justify-center`}
+            >
               <LoadingSpinner text="Optimisation de la tournée..." />
             </div>
           )}

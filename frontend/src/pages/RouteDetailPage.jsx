@@ -20,8 +20,10 @@ import { getRouteById } from "../services/api";
 import MapView from "../components/MapView";
 import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
+import { useTheme } from "../context/ThemeContext";
 
 export default function RouteDetailPage() {
+  const { darkMode } = useTheme();
   const { id } = useParams();
   const navigate = useNavigate();
   const [route, setRoute] = useState(null);
@@ -112,16 +114,30 @@ export default function RouteDetailPage() {
   if (error) {
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+        <div
+          className={`rounded-2xl shadow-lg p-8 text-center ${
+            darkMode ? "bg-slate-800" : "bg-white"
+          }`}
+        >
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">
+          <h2
+            className={`text-xl font-bold mb-2 ${
+              darkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
             Trajet non trouvé
           </h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <p className={`mb-6 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+            {error}
+          </p>
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => navigate(-1)}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                darkMode
+                  ? "bg-slate-700 text-gray-300 hover:bg-slate-600"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
             >
               <ArrowLeft className="w-4 h-4" />
               Retour
@@ -165,21 +181,39 @@ export default function RouteDetailPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 rounded-lg bg-white shadow-sm hover:shadow-md transition-all"
+            className={`p-2 rounded-lg shadow-sm hover:shadow-md transition-all ${
+              darkMode ? "bg-slate-800 text-gray-300" : "bg-white text-gray-600"
+            }`}
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1
+              className={`text-2xl font-bold ${
+                darkMode ? "text-white" : "text-gray-800"
+              }`}
+            >
               Détails du Trajet
             </h1>
-            <p className="text-gray-500 text-sm flex items-center gap-2">
-              <span className="font-mono bg-gray-100 px-2 py-0.5 rounded text-xs">
+            <p
+              className={`text-sm flex items-center gap-2 ${
+                darkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
+              <span
+                className={`font-mono px-2 py-0.5 rounded text-xs ${
+                  darkMode ? "bg-slate-700" : "bg-gray-100"
+                }`}
+              >
                 {id.substring(0, 8)}...
               </span>
               <button
                 onClick={() => copyToClipboard(id)}
-                className="text-gray-400 hover:text-orange-500 transition-colors"
+                className={`transition-colors ${
+                  darkMode
+                    ? "text-gray-500 hover:text-orange-400"
+                    : "text-gray-400 hover:text-orange-500"
+                }`}
               >
                 <Copy className="w-3.5 h-3.5" />
               </button>
@@ -190,7 +224,9 @@ export default function RouteDetailPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={exportRouteData}
-            className="px-4 py-2 bg-white text-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center gap-2"
+            className={`px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all flex items-center gap-2 ${
+              darkMode ? "bg-slate-800 text-gray-300" : "bg-white text-gray-700"
+            }`}
           >
             <Download className="w-4 h-4" />
             Exporter
@@ -206,26 +242,48 @@ export default function RouteDetailPage() {
       </div>
 
       {/* Status Badge */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
+      <div
+        className={`rounded-2xl shadow-lg p-6 ${
+          darkMode ? "bg-slate-800" : "bg-white"
+        }`}
+      >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div
               className={`p-3 rounded-xl ${
-                route.status === "SUCCESS" ? "bg-emerald-100" : "bg-amber-100"
+                route.status === "SUCCESS"
+                  ? darkMode
+                    ? "bg-emerald-900/50"
+                    : "bg-emerald-100"
+                  : darkMode
+                  ? "bg-amber-900/50"
+                  : "bg-amber-100"
               }`}
             >
               {route.status === "SUCCESS" ? (
-                <CheckCircle className="w-8 h-8 text-emerald-600" />
+                <CheckCircle
+                  className={`w-8 h-8 ${
+                    darkMode ? "text-emerald-400" : "text-emerald-600"
+                  }`}
+                />
               ) : (
-                <AlertCircle className="w-8 h-8 text-amber-600" />
+                <AlertCircle
+                  className={`w-8 h-8 ${
+                    darkMode ? "text-amber-400" : "text-amber-600"
+                  }`}
+                />
               )}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-800">
+              <h2
+                className={`text-xl font-bold ${
+                  darkMode ? "text-white" : "text-gray-800"
+                }`}
+              >
                 {route.originCity || "Départ"} →{" "}
                 {route.destinationCity || "Arrivée"}
               </h2>
-              <p className="text-gray-500">
+              <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
                 Calculé le {formatDate(route.createdAt || route.calculatedAt)}
               </p>
             </div>
@@ -233,19 +291,35 @@ export default function RouteDetailPage() {
 
           <div className="flex items-center gap-3">
             {route.isOptimized && (
-              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  darkMode
+                    ? "bg-purple-900/50 text-purple-300"
+                    : "bg-purple-100 text-purple-700"
+                }`}
+              >
                 Optimisé
               </span>
             )}
             {route.includeReturn && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  darkMode
+                    ? "bg-blue-900/50 text-blue-300"
+                    : "bg-blue-100 text-blue-700"
+                }`}
+              >
                 Aller-Retour
               </span>
             )}
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
                 route.status === "SUCCESS"
-                  ? "bg-emerald-100 text-emerald-700"
+                  ? darkMode
+                    ? "bg-emerald-900/50 text-emerald-300"
+                    : "bg-emerald-100 text-emerald-700"
+                  : darkMode
+                  ? "bg-amber-900/50 text-amber-300"
                   : "bg-amber-100 text-amber-700"
               }`}
             >
@@ -280,48 +354,112 @@ export default function RouteDetailPage() {
           </div>
 
           {/* Detailed Stats */}
-          <div className="bg-white rounded-2xl shadow-lg p-5">
-            <h3 className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+          <div
+            className={`rounded-2xl shadow-lg p-5 ${
+              darkMode ? "bg-slate-800" : "bg-white"
+            }`}
+          >
+            <h3
+              className={`font-semibold mb-4 flex items-center gap-2 ${
+                darkMode ? "text-gray-200" : "text-gray-700"
+              }`}
+            >
               <Route className="w-5 h-5 text-orange-500" />
               Détails du Parcours
             </h3>
             <div className="space-y-3">
               {route.distanceKm && (
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Distance aller</span>
-                  <span className="font-medium text-gray-800">
+                <div
+                  className={`flex justify-between items-center py-2 border-b ${
+                    darkMode ? "border-slate-700" : "border-gray-100"
+                  }`}
+                >
+                  <span
+                    className={darkMode ? "text-gray-400" : "text-gray-600"}
+                  >
+                    Distance aller
+                  </span>
+                  <span
+                    className={`font-medium ${
+                      darkMode ? "text-gray-200" : "text-gray-800"
+                    }`}
+                  >
                     {route.distanceKm?.toFixed(1)} km
                   </span>
                 </div>
               )}
               {route.durationMin && (
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Durée aller</span>
-                  <span className="font-medium text-gray-800">
+                <div
+                  className={`flex justify-between items-center py-2 border-b ${
+                    darkMode ? "border-slate-700" : "border-gray-100"
+                  }`}
+                >
+                  <span
+                    className={darkMode ? "text-gray-400" : "text-gray-600"}
+                  >
+                    Durée aller
+                  </span>
+                  <span
+                    className={`font-medium ${
+                      darkMode ? "text-gray-200" : "text-gray-800"
+                    }`}
+                  >
                     {formatDuration(route.durationMin)}
                   </span>
                 </div>
               )}
               {route.returnDistanceKm && (
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Distance retour</span>
-                  <span className="font-medium text-gray-800">
+                <div
+                  className={`flex justify-between items-center py-2 border-b ${
+                    darkMode ? "border-slate-700" : "border-gray-100"
+                  }`}
+                >
+                  <span
+                    className={darkMode ? "text-gray-400" : "text-gray-600"}
+                  >
+                    Distance retour
+                  </span>
+                  <span
+                    className={`font-medium ${
+                      darkMode ? "text-gray-200" : "text-gray-800"
+                    }`}
+                  >
                     {route.returnDistanceKm?.toFixed(1)} km
                   </span>
                 </div>
               )}
               {route.returnDurationMin && (
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600">Durée retour</span>
-                  <span className="font-medium text-gray-800">
+                <div
+                  className={`flex justify-between items-center py-2 border-b ${
+                    darkMode ? "border-slate-700" : "border-gray-100"
+                  }`}
+                >
+                  <span
+                    className={darkMode ? "text-gray-400" : "text-gray-600"}
+                  >
+                    Durée retour
+                  </span>
+                  <span
+                    className={`font-medium ${
+                      darkMode ? "text-gray-200" : "text-gray-800"
+                    }`}
+                  >
                     {formatDuration(route.returnDurationMin)}
                   </span>
                 </div>
               )}
               {route.calculatedBy && (
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-gray-600">Méthode</span>
-                  <span className="font-medium text-gray-800">
+                  <span
+                    className={darkMode ? "text-gray-400" : "text-gray-600"}
+                  >
+                    Méthode
+                  </span>
+                  <span
+                    className={`font-medium ${
+                      darkMode ? "text-gray-200" : "text-gray-800"
+                    }`}
+                  >
                     {route.calculatedBy}
                   </span>
                 </div>
@@ -331,48 +469,112 @@ export default function RouteDetailPage() {
 
           {/* User Info */}
           {(route.userId || route.username || route.email) && (
-            <div className="bg-white rounded-2xl shadow-lg p-5">
-              <h3 className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+            <div
+              className={`rounded-2xl shadow-lg p-5 ${
+                darkMode ? "bg-slate-800" : "bg-white"
+              }`}
+            >
+              <h3
+                className={`font-semibold mb-4 flex items-center gap-2 ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                }`}
+              >
                 <User className="w-5 h-5 text-orange-500" />
                 Informations Utilisateur
               </h3>
               <div className="space-y-3">
                 {route.fullName && (
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Nom</span>
-                    <span className="font-medium text-gray-800">
+                  <div
+                    className={`flex justify-between items-center py-2 border-b ${
+                      darkMode ? "border-slate-700" : "border-gray-100"
+                    }`}
+                  >
+                    <span
+                      className={darkMode ? "text-gray-400" : "text-gray-600"}
+                    >
+                      Nom
+                    </span>
+                    <span
+                      className={`font-medium ${
+                        darkMode ? "text-gray-200" : "text-gray-800"
+                      }`}
+                    >
                       {route.fullName}
                     </span>
                   </div>
                 )}
                 {route.username && (
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Username</span>
-                    <span className="font-medium text-gray-800">
+                  <div
+                    className={`flex justify-between items-center py-2 border-b ${
+                      darkMode ? "border-slate-700" : "border-gray-100"
+                    }`}
+                  >
+                    <span
+                      className={darkMode ? "text-gray-400" : "text-gray-600"}
+                    >
+                      Username
+                    </span>
+                    <span
+                      className={`font-medium ${
+                        darkMode ? "text-gray-200" : "text-gray-800"
+                      }`}
+                    >
                       @{route.username}
                     </span>
                   </div>
                 )}
                 {route.email && (
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Email</span>
-                    <span className="font-medium text-gray-800 text-sm">
+                  <div
+                    className={`flex justify-between items-center py-2 border-b ${
+                      darkMode ? "border-slate-700" : "border-gray-100"
+                    }`}
+                  >
+                    <span
+                      className={darkMode ? "text-gray-400" : "text-gray-600"}
+                    >
+                      Email
+                    </span>
+                    <span
+                      className={`font-medium text-sm ${
+                        darkMode ? "text-gray-200" : "text-gray-800"
+                      }`}
+                    >
                       {route.email}
                     </span>
                   </div>
                 )}
                 {route.phone && (
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Téléphone</span>
-                    <span className="font-medium text-gray-800">
+                  <div
+                    className={`flex justify-between items-center py-2 border-b ${
+                      darkMode ? "border-slate-700" : "border-gray-100"
+                    }`}
+                  >
+                    <span
+                      className={darkMode ? "text-gray-400" : "text-gray-600"}
+                    >
+                      Téléphone
+                    </span>
+                    <span
+                      className={`font-medium ${
+                        darkMode ? "text-gray-200" : "text-gray-800"
+                      }`}
+                    >
                       {route.phone}
                     </span>
                   </div>
                 )}
                 {route.userId && (
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-gray-600">User ID</span>
-                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                    <span
+                      className={darkMode ? "text-gray-400" : "text-gray-600"}
+                    >
+                      User ID
+                    </span>
+                    <span
+                      className={`font-mono text-xs px-2 py-1 rounded ${
+                        darkMode ? "bg-slate-700 text-gray-300" : "bg-gray-100"
+                      }`}
+                    >
                       {route.userId}
                     </span>
                   </div>
@@ -383,32 +585,72 @@ export default function RouteDetailPage() {
 
           {/* Merchandise Info */}
           {(route.volume || route.natureMarchandise) && (
-            <div className="bg-white rounded-2xl shadow-lg p-5">
-              <h3 className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+            <div
+              className={`rounded-2xl shadow-lg p-5 ${
+                darkMode ? "bg-slate-800" : "bg-white"
+              }`}
+            >
+              <h3
+                className={`font-semibold mb-4 flex items-center gap-2 ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                }`}
+              >
                 <Package className="w-5 h-5 text-orange-500" />
                 Marchandise
               </h3>
               <div className="space-y-3">
                 {route.volume && (
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Volume</span>
-                    <span className="font-medium text-gray-800">
+                  <div
+                    className={`flex justify-between items-center py-2 border-b ${
+                      darkMode ? "border-slate-700" : "border-gray-100"
+                    }`}
+                  >
+                    <span
+                      className={darkMode ? "text-gray-400" : "text-gray-600"}
+                    >
+                      Volume
+                    </span>
+                    <span
+                      className={`font-medium ${
+                        darkMode ? "text-gray-200" : "text-gray-800"
+                      }`}
+                    >
                       {route.volume} m³
                     </span>
                   </div>
                 )}
                 {route.natureMarchandise && (
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Nature</span>
-                    <span className="font-medium text-gray-800">
+                  <div
+                    className={`flex justify-between items-center py-2 border-b ${
+                      darkMode ? "border-slate-700" : "border-gray-100"
+                    }`}
+                  >
+                    <span
+                      className={darkMode ? "text-gray-400" : "text-gray-600"}
+                    >
+                      Nature
+                    </span>
+                    <span
+                      className={`font-medium ${
+                        darkMode ? "text-gray-200" : "text-gray-800"
+                      }`}
+                    >
                       {route.natureMarchandise}
                     </span>
                   </div>
                 )}
                 {route.dateDepart && (
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-gray-600">Date départ</span>
-                    <span className="font-medium text-gray-800">
+                    <span
+                      className={darkMode ? "text-gray-400" : "text-gray-600"}
+                    >
+                      Date départ
+                    </span>
+                    <span
+                      className={`font-medium ${
+                        darkMode ? "text-gray-200" : "text-gray-800"
+                      }`}
+                    >
                       {formatDate(route.dateDepart)}
                     </span>
                   </div>
@@ -422,8 +664,16 @@ export default function RouteDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Map */}
           {mapPoints.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg p-5">
-              <h3 className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+            <div
+              className={`rounded-2xl shadow-lg p-5 ${
+                darkMode ? "bg-slate-800" : "bg-white"
+              }`}
+            >
+              <h3
+                className={`font-semibold mb-4 flex items-center gap-2 ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                }`}
+              >
                 <Map className="w-5 h-5 text-orange-500" />
                 Carte du Trajet
               </h3>
@@ -434,31 +684,59 @@ export default function RouteDetailPage() {
           )}
 
           {/* Addresses */}
-          <div className="bg-white rounded-2xl shadow-lg p-5">
-            <h3 className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+          <div
+            className={`rounded-2xl shadow-lg p-5 ${
+              darkMode ? "bg-slate-800" : "bg-white"
+            }`}
+          >
+            <h3
+              className={`font-semibold mb-4 flex items-center gap-2 ${
+                darkMode ? "text-gray-200" : "text-gray-700"
+              }`}
+            >
               <MapPin className="w-5 h-5 text-orange-500" />
               Adresses
             </h3>
             <div className="space-y-4">
               {/* Origin */}
-              <div className="flex items-start gap-4 p-4 bg-emerald-50 rounded-xl">
+              <div
+                className={`flex items-start gap-4 p-4 rounded-xl ${
+                  darkMode ? "bg-emerald-900/30" : "bg-emerald-50"
+                }`}
+              >
                 <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-emerald-600 font-medium mb-1">
+                  <p
+                    className={`text-sm font-medium mb-1 ${
+                      darkMode ? "text-emerald-400" : "text-emerald-600"
+                    }`}
+                  >
                     Point de départ
                   </p>
-                  <p className="font-semibold text-gray-800">
+                  <p
+                    className={`font-semibold ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    }`}
+                  >
                     {route.originCity || route.adresseDepart || "Non spécifié"}
                   </p>
                   {route.adresseDepart && route.originCity && (
-                    <p className="text-sm text-gray-600">
+                    <p
+                      className={`text-sm ${
+                        darkMode ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
                       {route.adresseDepart}
                     </p>
                   )}
                   {route.originLatitude && route.originLongitude && (
-                    <p className="text-xs text-gray-400 mt-1 font-mono">
+                    <p
+                      className={`text-xs mt-1 font-mono ${
+                        darkMode ? "text-gray-500" : "text-gray-400"
+                      }`}
+                    >
                       {route.originLatitude.toFixed(4)},{" "}
                       {route.originLongitude.toFixed(4)}
                     </p>
@@ -468,32 +746,60 @@ export default function RouteDetailPage() {
 
               {/* Arrow */}
               <div className="flex justify-center">
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                  <ArrowRight className="w-4 h-4 text-gray-400 rotate-90" />
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    darkMode ? "bg-slate-700" : "bg-gray-100"
+                  }`}
+                >
+                  <ArrowRight
+                    className={`w-4 h-4 rotate-90 ${
+                      darkMode ? "text-gray-500" : "text-gray-400"
+                    }`}
+                  />
                 </div>
               </div>
 
               {/* Destination */}
-              <div className="flex items-start gap-4 p-4 bg-rose-50 rounded-xl">
+              <div
+                className={`flex items-start gap-4 p-4 rounded-xl ${
+                  darkMode ? "bg-rose-900/30" : "bg-rose-50"
+                }`}
+              >
                 <div className="w-10 h-10 rounded-full bg-rose-500 flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-rose-600 font-medium mb-1">
+                  <p
+                    className={`text-sm font-medium mb-1 ${
+                      darkMode ? "text-rose-400" : "text-rose-600"
+                    }`}
+                  >
                     Point d&apos;arrivée
                   </p>
-                  <p className="font-semibold text-gray-800">
+                  <p
+                    className={`font-semibold ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    }`}
+                  >
                     {route.destinationCity ||
                       route.adresseDestination ||
                       "Non spécifié"}
                   </p>
                   {route.adresseDestination && route.destinationCity && (
-                    <p className="text-sm text-gray-600">
+                    <p
+                      className={`text-sm ${
+                        darkMode ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
                       {route.adresseDestination}
                     </p>
                   )}
                   {route.destinationLatitude && route.destinationLongitude && (
-                    <p className="text-xs text-gray-400 mt-1 font-mono">
+                    <p
+                      className={`text-xs mt-1 font-mono ${
+                        darkMode ? "text-gray-500" : "text-gray-400"
+                      }`}
+                    >
                       {route.destinationLatitude.toFixed(4)},{" "}
                       {route.destinationLongitude.toFixed(4)}
                     </p>
@@ -505,8 +811,16 @@ export default function RouteDetailPage() {
 
           {/* Instructions (if available) */}
           {route.instructions && route.instructions.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg p-5">
-              <h3 className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+            <div
+              className={`rounded-2xl shadow-lg p-5 ${
+                darkMode ? "bg-slate-800" : "bg-white"
+              }`}
+            >
+              <h3
+                className={`font-semibold mb-4 flex items-center gap-2 ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                }`}
+              >
                 <Navigation className="w-5 h-5 text-orange-500" />
                 Instructions
               </h3>
@@ -514,12 +828,22 @@ export default function RouteDetailPage() {
                 {route.instructions.map((instruction, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                    className={`flex items-center gap-3 p-3 rounded-lg ${
+                      darkMode ? "bg-slate-700" : "bg-gray-50"
+                    }`}
                   >
-                    <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-medium">
+                    <span
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${
+                        darkMode
+                          ? "bg-orange-900/50 text-orange-400"
+                          : "bg-orange-100 text-orange-600"
+                      }`}
+                    >
                       {index + 1}
                     </span>
-                    <p className="text-gray-700">{instruction}</p>
+                    <p className={darkMode ? "text-gray-300" : "text-gray-700"}>
+                      {instruction}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -529,26 +853,48 @@ export default function RouteDetailPage() {
       </div>
 
       {/* Related Actions */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
-        <h3 className="font-semibold text-gray-700 mb-4">Actions Rapides</h3>
+      <div
+        className={`rounded-2xl shadow-lg p-6 ${
+          darkMode ? "bg-slate-800" : "bg-white"
+        }`}
+      >
+        <h3
+          className={`font-semibold mb-4 ${
+            darkMode ? "text-gray-200" : "text-gray-700"
+          }`}
+        >
+          Actions Rapides
+        </h3>
         <div className="flex flex-wrap gap-3">
           <Link
             to="/calculator"
-            className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors flex items-center gap-2"
+            className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+              darkMode
+                ? "bg-emerald-900/50 text-emerald-300 hover:bg-emerald-900/70"
+                : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+            }`}
           >
             <MapPin className="w-4 h-4" />
             Nouveau calcul
           </Link>
           <Link
             to="/optimizer"
-            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-2"
+            className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+              darkMode
+                ? "bg-purple-900/50 text-purple-300 hover:bg-purple-900/70"
+                : "bg-purple-100 text-purple-700 hover:bg-purple-200"
+            }`}
           >
             <Route className="w-4 h-4" />
             Optimiser une tournée
           </Link>
           <Link
             to="/history"
-            className="px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg hover:bg-cyan-200 transition-colors flex items-center gap-2"
+            className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+              darkMode
+                ? "bg-cyan-900/50 text-cyan-300 hover:bg-cyan-900/70"
+                : "bg-cyan-100 text-cyan-700 hover:bg-cyan-200"
+            }`}
           >
             <Clock className="w-4 h-4" />
             Voir l&apos;historique
@@ -556,7 +902,11 @@ export default function RouteDetailPage() {
           {route.userId && (
             <Link
               to={`/users?userId=${route.userId}`}
-              className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors flex items-center gap-2"
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                darkMode
+                  ? "bg-indigo-900/50 text-indigo-300 hover:bg-indigo-900/70"
+                  : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+              }`}
             >
               <User className="w-4 h-4" />
               Voir utilisateur

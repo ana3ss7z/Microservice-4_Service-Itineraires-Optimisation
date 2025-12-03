@@ -190,13 +190,13 @@ export default function SettingsPage() {
               </div>
               <button
                 onClick={toggleDarkMode}
-                className={`relative w-14 h-8 rounded-full transition-colors ${
+                className={`relative w-14 h-7 rounded-full transition-colors ${
                   darkMode ? "bg-indigo-500" : "bg-gray-300"
                 }`}
               >
                 <span
-                  className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    darkMode ? "translate-x-7" : "translate-x-1"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    darkMode ? "translate-x-6" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -409,7 +409,7 @@ export default function SettingsPage() {
                   onClick={() =>
                     updateNotification(item.key, !notifications[item.key])
                   }
-                  className={`relative w-12 h-7 rounded-full transition-colors ${
+                  className={`relative w-12 h-6 rounded-full transition-colors ${
                     notifications[item.key]
                       ? "bg-amber-500"
                       : darkMode
@@ -418,10 +418,10 @@ export default function SettingsPage() {
                   }`}
                 >
                   <span
-                    className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
                       notifications[item.key]
                         ? "translate-x-5"
-                        : "translate-x-0.5"
+                        : "translate-x-0"
                     }`}
                   />
                 </button>

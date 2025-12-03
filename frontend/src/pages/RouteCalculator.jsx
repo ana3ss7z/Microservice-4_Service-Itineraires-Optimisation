@@ -18,6 +18,7 @@ import MapView from "../components/MapView";
 import RouteResultCard from "../components/RouteResultCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
+import { useTheme } from "../context/ThemeContext";
 
 // Villes marocaines prédéfinies pour faciliter la saisie
 const moroccanCities = [
@@ -38,6 +39,7 @@ const moroccanCities = [
 ];
 
 export default function RouteCalculator() {
+  const { darkMode } = useTheme();
   const [mode, setMode] = useState("coordinates"); // 'coordinates' or 'address'
   const [includeReturn, setIncludeReturn] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -149,24 +151,36 @@ export default function RouteCalculator() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+          <h1
+            className={`text-2xl md:text-3xl font-bold ${
+              darkMode ? "text-white" : "text-gray-800"
+            } flex items-center gap-3`}
+          >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
               <Calculator className="w-6 h-6 text-white" />
             </div>
             Calculer un Itinéraire
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className={`${darkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
             Calcul de route entre deux points au Maroc
           </p>
         </div>
 
         {/* Mode Toggle */}
-        <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-xl">
+        <div
+          className={`flex items-center gap-2 ${
+            darkMode ? "bg-slate-700" : "bg-gray-100"
+          } p-1 rounded-xl`}
+        >
           <button
             onClick={() => setMode("coordinates")}
             className={`px-4 py-2 rounded-lg font-medium transition-all ${
               mode === "coordinates"
-                ? "bg-white text-primary-600 shadow-md"
+                ? darkMode
+                  ? "bg-slate-600 text-emerald-400 shadow-md"
+                  : "bg-white text-primary-600 shadow-md"
+                : darkMode
+                ? "text-gray-400 hover:text-gray-300"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -177,7 +191,11 @@ export default function RouteCalculator() {
             onClick={() => setMode("address")}
             className={`px-4 py-2 rounded-lg font-medium transition-all ${
               mode === "address"
-                ? "bg-white text-primary-600 shadow-md"
+                ? darkMode
+                  ? "bg-slate-600 text-emerald-400 shadow-md"
+                  : "bg-white text-primary-600 shadow-md"
+                : darkMode
+                ? "text-gray-400 hover:text-gray-300"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -189,7 +207,13 @@ export default function RouteCalculator() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div
+          className={`${
+            darkMode
+              ? "bg-slate-800 border-slate-700"
+              : "bg-white border-gray-100"
+          } rounded-2xl shadow-xl border overflow-hidden`}
+        >
           <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4">
             <h2 className="text-white font-bold text-lg">
               Paramètres du trajet
@@ -202,7 +226,11 @@ export default function RouteCalculator() {
           <div className="p-6 space-y-6">
             {/* Quick City Select */}
             <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700">
+              <label
+                className={`block text-sm font-medium ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
                 Sélection rapide
               </label>
               <div className="flex flex-wrap gap-2">
@@ -210,14 +238,22 @@ export default function RouteCalculator() {
                   <div key={city.name} className="flex gap-1">
                     <button
                       onClick={() => selectCity("origin", city)}
-                      className="px-3 py-1.5 text-xs rounded-l-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors"
+                      className={`px-3 py-1.5 text-xs rounded-l-lg ${
+                        darkMode
+                          ? "bg-emerald-900/50 text-emerald-400 hover:bg-emerald-800/50"
+                          : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                      } transition-colors`}
                       title={`Départ: ${city.name}`}
                     >
                       ↗ {city.name}
                     </button>
                     <button
                       onClick={() => selectCity("dest", city)}
-                      className="px-3 py-1.5 text-xs rounded-r-lg bg-rose-100 text-rose-700 hover:bg-rose-200 transition-colors"
+                      className={`px-3 py-1.5 text-xs rounded-r-lg ${
+                        darkMode
+                          ? "bg-rose-900/50 text-rose-400 hover:bg-rose-800/50"
+                          : "bg-rose-100 text-rose-700 hover:bg-rose-200"
+                      } transition-colors`}
                       title={`Arrivée: ${city.name}`}
                     >
                       ↘
@@ -231,7 +267,11 @@ export default function RouteCalculator() {
               <>
                 {/* Origin Coordinates */}
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <label
+                    className={`flex items-center gap-2 text-sm font-medium ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
                     <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
                     Point de Départ
                   </label>
@@ -242,7 +282,11 @@ export default function RouteCalculator() {
                       value={originLat}
                       onChange={(e) => setOriginLat(e.target.value)}
                       placeholder="Latitude"
-                      className="input-field"
+                      className={`input-field ${
+                        darkMode
+                          ? "bg-slate-700 border-slate-600 text-white placeholder-gray-400"
+                          : ""
+                      }`}
                     />
                     <input
                       type="number"
@@ -250,14 +294,22 @@ export default function RouteCalculator() {
                       value={originLng}
                       onChange={(e) => setOriginLng(e.target.value)}
                       placeholder="Longitude"
-                      className="input-field"
+                      className={`input-field ${
+                        darkMode
+                          ? "bg-slate-700 border-slate-600 text-white placeholder-gray-400"
+                          : ""
+                      }`}
                     />
                   </div>
                 </div>
 
                 {/* Destination Coordinates */}
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <label
+                    className={`flex items-center gap-2 text-sm font-medium ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
                     <div className="w-3 h-3 rounded-full bg-rose-500"></div>
                     Point d'Arrivée
                   </label>
@@ -268,7 +320,11 @@ export default function RouteCalculator() {
                       value={destLat}
                       onChange={(e) => setDestLat(e.target.value)}
                       placeholder="Latitude"
-                      className="input-field"
+                      className={`input-field ${
+                        darkMode
+                          ? "bg-slate-700 border-slate-600 text-white placeholder-gray-400"
+                          : ""
+                      }`}
                     />
                     <input
                       type="number"
@@ -276,7 +332,11 @@ export default function RouteCalculator() {
                       value={destLng}
                       onChange={(e) => setDestLng(e.target.value)}
                       placeholder="Longitude"
-                      className="input-field"
+                      className={`input-field ${
+                        darkMode
+                          ? "bg-slate-700 border-slate-600 text-white placeholder-gray-400"
+                          : ""
+                      }`}
                     />
                   </div>
                 </div>
@@ -285,7 +345,11 @@ export default function RouteCalculator() {
               <>
                 {/* Origin Address */}
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <label
+                    className={`flex items-center gap-2 text-sm font-medium ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
                     <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
                     Adresse de Départ
                   </label>
@@ -294,13 +358,21 @@ export default function RouteCalculator() {
                     value={originAddress}
                     onChange={(e) => setOriginAddress(e.target.value)}
                     placeholder="Ex: Casablanca, Morocco"
-                    className="input-field"
+                    className={`input-field ${
+                      darkMode
+                        ? "bg-slate-700 border-slate-600 text-white placeholder-gray-400"
+                        : ""
+                    }`}
                   />
                 </div>
 
                 {/* Destination Address */}
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <label
+                    className={`flex items-center gap-2 text-sm font-medium ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
                     <div className="w-3 h-3 rounded-full bg-rose-500"></div>
                     Adresse d'Arrivée
                   </label>
@@ -309,7 +381,11 @@ export default function RouteCalculator() {
                     value={destAddress}
                     onChange={(e) => setDestAddress(e.target.value)}
                     placeholder="Ex: Rabat, Morocco"
-                    className="input-field"
+                    className={`input-field ${
+                      darkMode
+                        ? "bg-slate-700 border-slate-600 text-white placeholder-gray-400"
+                        : ""
+                    }`}
                   />
                 </div>
               </>
@@ -317,7 +393,11 @@ export default function RouteCalculator() {
 
             {/* User ID */}
             <div className="space-y-3">
-              <label className="text-sm font-medium text-gray-700">
+              <label
+                className={`text-sm font-medium ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
                 Identifiant Utilisateur
               </label>
               <input
@@ -325,22 +405,44 @@ export default function RouteCalculator() {
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
                 placeholder="user_001"
-                className="input-field"
+                className={`input-field ${
+                  darkMode
+                    ? "bg-slate-700 border-slate-600 text-white placeholder-gray-400"
+                    : ""
+                }`}
               />
             </div>
 
             {/* Include Return Toggle */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div
+              className={`flex items-center justify-between p-4 ${
+                darkMode ? "bg-slate-700" : "bg-gray-50"
+              } rounded-xl`}
+            >
               <div>
-                <p className="font-medium text-gray-700">Inclure le retour</p>
-                <p className="text-sm text-gray-500">
+                <p
+                  className={`font-medium ${
+                    darkMode ? "text-white" : "text-gray-700"
+                  }`}
+                >
+                  Inclure le retour
+                </p>
+                <p
+                  className={`text-sm ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
                   Calcule aussi le trajet retour
                 </p>
               </div>
               <button
                 onClick={() => setIncludeReturn(!includeReturn)}
                 className={`w-14 h-8 rounded-full transition-colors flex items-center px-1 ${
-                  includeReturn ? "bg-emerald-500" : "bg-gray-300"
+                  includeReturn
+                    ? "bg-emerald-500"
+                    : darkMode
+                    ? "bg-slate-600"
+                    : "bg-gray-300"
                 }`}
               >
                 <div
@@ -376,14 +478,32 @@ export default function RouteCalculator() {
         {/* Map & Results */}
         <div className="space-y-6">
           {/* Map */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-800">Carte</h3>
+          <div
+            className={`${
+              darkMode
+                ? "bg-slate-800 border-slate-700"
+                : "bg-white border-gray-100"
+            } rounded-2xl shadow-xl border overflow-hidden`}
+          >
+            <div
+              className={`px-6 py-4 border-b ${
+                darkMode ? "border-slate-700" : "border-gray-100"
+              } flex items-center justify-between`}
+            >
+              <h3
+                className={`font-bold ${
+                  darkMode ? "text-white" : "text-gray-800"
+                }`}
+              >
+                Carte
+              </h3>
               <button
                 onClick={startMapSelection}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
                   mapSelectionMode
                     ? "bg-amber-500 text-white shadow-lg"
+                    : darkMode
+                    ? "bg-slate-700 text-gray-300 hover:bg-emerald-900/50 hover:text-emerald-400"
                     : "bg-gray-100 text-gray-700 hover:bg-emerald-100 hover:text-emerald-700"
                 }`}
               >
@@ -408,7 +528,13 @@ export default function RouteCalculator() {
 
           {/* Loading State */}
           {loading && (
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 flex items-center justify-center">
+            <div
+              className={`${
+                darkMode
+                  ? "bg-slate-800 border-slate-700"
+                  : "bg-white border-gray-100"
+              } rounded-2xl shadow-xl border p-8 flex items-center justify-center`}
+            >
               <LoadingSpinner text="Calcul de l'itinéraire..." />
             </div>
           )}

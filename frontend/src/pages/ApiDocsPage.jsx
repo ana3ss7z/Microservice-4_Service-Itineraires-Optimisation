@@ -17,6 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useTheme } from "../context/ThemeContext";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8082";
@@ -191,6 +192,7 @@ const methodColors = {
 export default function ApiDocsPage() {
   const [expandedEndpoint, setExpandedEndpoint] = useState(null);
   const [copiedText, setCopiedText] = useState(null);
+  const { darkMode } = useTheme();
 
   const copyToClipboard = (text, label) => {
     navigator.clipboard.writeText(text);
@@ -212,13 +214,17 @@ export default function ApiDocsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+          <h1
+            className={`text-2xl md:text-3xl font-bold flex items-center gap-3 ${
+              darkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
               <Book className="w-6 h-6 text-white" />
             </div>
             Documentation API
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
             Référence complète des endpoints de l&apos;API Itinéraires &
             Optimisation
           </p>
@@ -235,7 +241,11 @@ export default function ApiDocsPage() {
           </button>
           <button
             onClick={openOpenAPI}
-            className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-md"
+            className={`px-4 py-2 text-white rounded-lg transition-colors flex items-center gap-2 shadow-md ${
+              darkMode
+                ? "bg-slate-600 hover:bg-slate-700"
+                : "bg-gray-700 hover:bg-gray-800"
+            }`}
           >
             <Code className="w-4 h-4" />
             OpenAPI JSON
@@ -270,7 +280,9 @@ export default function ApiDocsPage() {
         {endpoints.map((category) => (
           <div
             key={category.category}
-            className="bg-white rounded-2xl shadow-lg overflow-hidden"
+            className={`rounded-2xl shadow-lg overflow-hidden ${
+              darkMode ? "bg-slate-800" : "bg-white"
+            }`}
           >
             {/* Category Header */}
             <div className={`px-6 py-4 bg-gradient-to-r ${category.color}`}>
@@ -281,13 +293,22 @@ export default function ApiDocsPage() {
             </div>
 
             {/* Endpoints List */}
-            <div className="divide-y divide-gray-100">
+            <div
+              className={`divide-y ${
+                darkMode ? "divide-slate-700" : "divide-gray-100"
+              }`}
+            >
               {category.items.map((endpoint, idx) => {
                 const key = `${category.category}-${idx}`;
                 const isExpanded = expandedEndpoint === key;
 
                 return (
-                  <div key={key} className="hover:bg-gray-50 transition-colors">
+                  <div
+                    key={key}
+                    className={`transition-colors ${
+                      darkMode ? "hover:bg-slate-700" : "hover:bg-gray-50"
+                    }`}
+                  >
                     {/* Endpoint Row */}
                     <button
                       onClick={() =>
@@ -302,49 +323,103 @@ export default function ApiDocsPage() {
                       >
                         {endpoint.method}
                       </span>
-                      <code className="flex-1 font-mono text-gray-700">
+                      <code
+                        className={`flex-1 font-mono ${
+                          darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
                         {endpoint.path}
                       </code>
-                      <span className="text-gray-500 text-sm hidden md:block">
+                      <span
+                        className={`text-sm hidden md:block ${
+                          darkMode ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
                         {endpoint.description}
                       </span>
                       {isExpanded ? (
-                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                        <ChevronDown
+                          className={`w-5 h-5 ${
+                            darkMode ? "text-gray-500" : "text-gray-400"
+                          }`}
+                        />
                       ) : (
-                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                        <ChevronRight
+                          className={`w-5 h-5 ${
+                            darkMode ? "text-gray-500" : "text-gray-400"
+                          }`}
+                        />
                       )}
                     </button>
 
                     {/* Expanded Details */}
                     {isExpanded && (
-                      <div className="px-6 pb-6 space-y-4 bg-gray-50 border-t border-gray-100">
-                        <p className="text-gray-600 pt-4">
+                      <div
+                        className={`px-6 pb-6 space-y-4 border-t ${
+                          darkMode
+                            ? "bg-slate-700/50 border-slate-600"
+                            : "bg-gray-50 border-gray-100"
+                        }`}
+                      >
+                        <p
+                          className={`pt-4 ${
+                            darkMode ? "text-gray-300" : "text-gray-600"
+                          }`}
+                        >
                           {endpoint.description}
                         </p>
 
                         {/* Parameters */}
                         {endpoint.params && (
                           <div>
-                            <h4 className="font-semibold text-gray-700 mb-2">
+                            <h4
+                              className={`font-semibold mb-2 ${
+                                darkMode ? "text-gray-200" : "text-gray-700"
+                              }`}
+                            >
                               Paramètres
                             </h4>
-                            <div className="bg-white rounded-xl p-4 border border-gray-200">
+                            <div
+                              className={`rounded-xl p-4 border ${
+                                darkMode
+                                  ? "bg-slate-800 border-slate-600"
+                                  : "bg-white border-gray-200"
+                              }`}
+                            >
                               <table className="w-full text-sm">
                                 <thead>
-                                  <tr className="text-left text-gray-500">
+                                  <tr
+                                    className={`text-left ${
+                                      darkMode
+                                        ? "text-gray-400"
+                                        : "text-gray-500"
+                                    }`}
+                                  >
                                     <th className="pb-2">Nom</th>
                                     <th className="pb-2">Type</th>
                                     <th className="pb-2">Requis</th>
                                     <th className="pb-2">Défaut</th>
                                   </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody
+                                  className={`divide-y ${
+                                    darkMode
+                                      ? "divide-slate-600"
+                                      : "divide-gray-100"
+                                  }`}
+                                >
                                   {endpoint.params.map((param) => (
                                     <tr key={param.name}>
                                       <td className="py-2 font-mono text-orange-600">
                                         {param.name}
                                       </td>
-                                      <td className="py-2 text-gray-600">
+                                      <td
+                                        className={`py-2 ${
+                                          darkMode
+                                            ? "text-gray-300"
+                                            : "text-gray-600"
+                                        }`}
+                                      >
                                         {param.type}
                                       </td>
                                       <td className="py-2">
@@ -353,12 +428,24 @@ export default function ApiDocsPage() {
                                             Oui
                                           </span>
                                         ) : (
-                                          <span className="text-gray-400">
+                                          <span
+                                            className={
+                                              darkMode
+                                                ? "text-gray-500"
+                                                : "text-gray-400"
+                                            }
+                                          >
                                             Non
                                           </span>
                                         )}
                                       </td>
-                                      <td className="py-2 text-gray-500">
+                                      <td
+                                        className={`py-2 ${
+                                          darkMode
+                                            ? "text-gray-400"
+                                            : "text-gray-500"
+                                        }`}
+                                      >
                                         {param.default ?? "-"}
                                       </td>
                                     </tr>
@@ -373,7 +460,11 @@ export default function ApiDocsPage() {
                         {endpoint.body && (
                           <div>
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-semibold text-gray-700">
+                              <h4
+                                className={`font-semibold ${
+                                  darkMode ? "text-gray-200" : "text-gray-700"
+                                }`}
+                              >
                                 Corps de la requête
                               </h4>
                               <button
@@ -383,7 +474,11 @@ export default function ApiDocsPage() {
                                     key
                                   )
                                 }
-                                className="text-sm text-gray-500 hover:text-orange-500 flex items-center gap-1"
+                                className={`text-sm flex items-center gap-1 ${
+                                  darkMode
+                                    ? "text-gray-400 hover:text-orange-400"
+                                    : "text-gray-500 hover:text-orange-500"
+                                }`}
                               >
                                 {copiedText === key ? (
                                   <Check className="w-4 h-4" />
@@ -403,11 +498,25 @@ export default function ApiDocsPage() {
 
                         {/* Full URL */}
                         <div>
-                          <h4 className="font-semibold text-gray-700 mb-2">
+                          <h4
+                            className={`font-semibold mb-2 ${
+                              darkMode ? "text-gray-200" : "text-gray-700"
+                            }`}
+                          >
                             URL complète
                           </h4>
-                          <div className="flex items-center gap-2 bg-white rounded-xl p-3 border border-gray-200">
-                            <code className="flex-1 font-mono text-sm text-gray-700 break-all">
+                          <div
+                            className={`flex items-center gap-2 rounded-xl p-3 border ${
+                              darkMode
+                                ? "bg-slate-800 border-slate-600"
+                                : "bg-white border-gray-200"
+                            }`}
+                          >
+                            <code
+                              className={`flex-1 font-mono text-sm break-all ${
+                                darkMode ? "text-gray-300" : "text-gray-700"
+                              }`}
+                            >
                               {API_BASE_URL}/api{endpoint.path}
                             </code>
                             <button
@@ -417,12 +526,20 @@ export default function ApiDocsPage() {
                                   `url-${key}`
                                 )
                               }
-                              className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                              className={`p-2 rounded-lg transition-colors flex-shrink-0 ${
+                                darkMode
+                                  ? "hover:bg-slate-700"
+                                  : "hover:bg-gray-100"
+                              }`}
                             >
                               {copiedText === `url-${key}` ? (
                                 <Check className="w-4 h-4 text-emerald-500" />
                               ) : (
-                                <Copy className="w-4 h-4 text-gray-400" />
+                                <Copy
+                                  className={`w-4 h-4 ${
+                                    darkMode ? "text-gray-500" : "text-gray-400"
+                                  }`}
+                                />
                               )}
                             </button>
                           </div>
@@ -440,11 +557,25 @@ export default function ApiDocsPage() {
       {/* Additional Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Rate Limits */}
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
-          <h3 className="font-bold text-amber-800 mb-3 flex items-center gap-2">
+        <div
+          className={`rounded-2xl p-6 border ${
+            darkMode
+              ? "bg-amber-900/30 border-amber-700"
+              : "bg-amber-50 border-amber-200"
+          }`}
+        >
+          <h3
+            className={`font-bold mb-3 flex items-center gap-2 ${
+              darkMode ? "text-amber-400" : "text-amber-800"
+            }`}
+          >
             ⚠️ Limitations
           </h3>
-          <ul className="space-y-2 text-amber-700 text-sm">
+          <ul
+            className={`space-y-2 text-sm ${
+              darkMode ? "text-amber-300" : "text-amber-700"
+            }`}
+          >
             <li>• Max 15 waypoints par optimisation</li>
             <li>• Nominatim: 1 requête/seconde (reverse geocoding)</li>
             <li>• Distance calculée à vol d&apos;oiseau (Haversine)</li>
@@ -453,14 +584,32 @@ export default function ApiDocsPage() {
         </div>
 
         {/* Response Format */}
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
-          <h3 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+        <div
+          className={`rounded-2xl p-6 border ${
+            darkMode
+              ? "bg-blue-900/30 border-blue-700"
+              : "bg-blue-50 border-blue-200"
+          }`}
+        >
+          <h3
+            className={`font-bold mb-3 flex items-center gap-2 ${
+              darkMode ? "text-blue-400" : "text-blue-800"
+            }`}
+          >
             📝 Format de réponse
           </h3>
-          <p className="text-blue-700 text-sm mb-3">
+          <p
+            className={`text-sm mb-3 ${
+              darkMode ? "text-blue-300" : "text-blue-700"
+            }`}
+          >
             Toutes les réponses sont en JSON avec les champs suivants:
           </p>
-          <ul className="space-y-1 text-blue-600 text-sm font-mono">
+          <ul
+            className={`space-y-1 text-sm font-mono ${
+              darkMode ? "text-blue-300" : "text-blue-600"
+            }`}
+          >
             <li>• status: &quot;SUCCESS&quot; | &quot;ERROR&quot;</li>
             <li>• message: Description</li>
             <li>• data: Données de réponse</li>
