@@ -44,7 +44,9 @@ public class RouteService {
             RouteResponse routeResponse = parseOsrmResponse(response, request);
 
             // CORRECTION: Calcul du retour si demandé
+            log.info("includeReturn value: {}", request.getIncludeReturn());
             if (Boolean.TRUE.equals(request.getIncludeReturn())) {
+                log.info("Calculating return route...");
                 RouteRequest returnRequest = RouteRequest.builder()
                         .origin(request.getDestination())
                         .destination(request.getOrigin())
@@ -52,6 +54,7 @@ public class RouteService {
                         .build();
 
                 RouteResponse returnRoute = calculateRouteFromCoordinates(returnRequest);
+                log.info("Return route calculated: distance={}, duration={}", returnRoute.getDistanceKm(), returnRoute.getDurationMin());
                 routeResponse.setReturnDistanceKm(returnRoute.getDistanceKm());
                 routeResponse.setReturnDurationMin(returnRoute.getDurationMin());
                 routeResponse.setTotalDistanceKm(
