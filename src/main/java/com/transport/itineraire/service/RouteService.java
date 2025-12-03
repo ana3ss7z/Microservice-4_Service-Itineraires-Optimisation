@@ -6,7 +6,6 @@ import com.transport.itineraire.model.*;
 import com.transport.itineraire.repository.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.locationtech.jts.geom.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -29,7 +28,6 @@ public class RouteService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final VilleService villeService;
-    private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Value("${external.api.nominatim.base-url}") private String nominatimUrl;
     @Value("${external.api.osrm.base-url}") private String osrmUrl;
@@ -63,6 +61,8 @@ public class RouteService {
                         routeResponse.getDurationMin() + returnRoute.getDurationMin()
                 );
             } else {
+                routeResponse.setReturnDistanceKm(0.0);
+                routeResponse.setReturnDurationMin(0);
                 routeResponse.setTotalDistanceKm(routeResponse.getDistanceKm());
                 routeResponse.setTotalDurationMin(routeResponse.getDurationMin());
             }
@@ -443,25 +443,13 @@ public class RouteService {
     @Transactional
     private void saveRoute(RouteRequest request, RouteResponse response) {
         try {
-            Point originPoint = geometryFactory.createPoint(
-                    new Coordinate(request.getOrigin().getLongitude(), request.getOrigin().getLatitude())
-            );
-            originPoint.setSRID(4326);
-
-            Point destPoint = geometryFactory.createPoint(
-                    new Coordinate(request.getDestination().getLongitude(), request.getDestination().getLatitude())
-            );
-            destPoint.setSRID(4326);
-
             RouteEntity entity = RouteEntity.builder()
                     .userId(request.getUserId())
                     .requestId(request.getRequestId())
-                    .originPoint(originPoint)
                     .originAddress(request.getOrigin().getAddress())
                     .originCity(request.getOrigin().getCity())
                     .originLatitude(request.getOrigin().getLatitude())
                     .originLongitude(request.getOrigin().getLongitude())
-                    .destinationPoint(destPoint)
                     .destinationAddress(request.getDestination().getAddress())
                     .destinationCity(request.getDestination().getCity())
                     .destinationLatitude(request.getDestination().getLatitude())

@@ -1,14 +1,11 @@
 package com.transport.itineraire.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import org.locationtech.jts.geom.Point;
 import java.time.LocalDateTime;
 
 /**
  * Entité JPA pour stocker l'historique des itinéraires calculés
- * CORRECTION: Ajout de @JsonIgnore sur les Points pour éviter la sérialisation infinie
  */
 @Entity
 @Table(name = "routes")
@@ -22,24 +19,13 @@ public class RouteEntity {
     private String userId;
     private String requestId;
 
-    // CORRECTION: Ajout @JsonIgnore pour éviter la sérialisation des géométries PostGIS
-    @JsonIgnore
-    @Column(columnDefinition = "geometry(Point,4326)")
-    private Point originPoint;
-
     private String originAddress;
     private String originCity;
-
-    @JsonIgnore
-    @Column(columnDefinition = "geometry(Point,4326)")
-    private Point destinationPoint;
+    private Double originLatitude;
+    private Double originLongitude;
 
     private String destinationAddress;
     private String destinationCity;
-
-    // Coordonnées stockées séparément pour la sérialisation JSON
-    private Double originLatitude;
-    private Double originLongitude;
     private Double destinationLatitude;
     private Double destinationLongitude;
 

@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transport.itineraire.entity.RouteEntity;
 import com.transport.itineraire.model.*;
 import com.transport.itineraire.repository.RouteRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.locationtech.jts.geom.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -23,7 +21,6 @@ public class OptimizationService {
     private final RouteRepository repository;
     private final RouteService routeService;
     private final ObjectMapper objectMapper;
-    private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Value("${optimization.max-waypoints}") private Integer maxWaypoints;
 
@@ -67,6 +64,8 @@ public class OptimizationService {
             instructions.add("Retour de %s à %s: %.2f km".formatted(lastName, firstName, returnDist));
             response.setInstructions(instructions);
         } else {
+            response.setReturnDistanceKm(0.0);
+            response.setReturnDurationMin(0);
             response.setTotalDistanceKm(response.getDistanceKm());
             response.setTotalDurationMin(response.getDurationMin());
         }
@@ -269,25 +268,13 @@ public class OptimizationService {
             Waypoint first = optimized.get(0);
             Waypoint last = optimized.get(optimized.size() - 1);
 
-            Point originPoint = geometryFactory.createPoint(
-                    new Coordinate(first.getLongitude(), first.getLatitude())
-            );
-            originPoint.setSRID(4326);
-
-            Point destPoint = geometryFactory.createPoint(
-                    new Coordinate(last.getLongitude(), last.getLatitude())
-            );
-            destPoint.setSRID(4326);
-
             RouteEntity entity = RouteEntity.builder()
                     .userId(request.getUserId())
                     .requestId(request.getRequestId())
-                    .originPoint(originPoint)
                     .originAddress(first.getAddress())
                     .originCity(first.getCity())
                     .originLatitude(first.getLatitude())
                     .originLongitude(first.getLongitude())
-                    .destinationPoint(destPoint)
                     .destinationAddress(last.getAddress())
                     .destinationCity(last.getCity())
                     .destinationLatitude(last.getLatitude())
