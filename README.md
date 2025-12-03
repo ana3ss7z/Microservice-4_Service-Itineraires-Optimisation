@@ -93,6 +93,11 @@ Contient les mêmes champs que l'entité sauvegardée (sans géométrie PostGIS)
 
 ```json
 {
+  "userId": "user123",
+  "username": "ahmed_benali",
+  "email": "ahmed.benali@email.com",
+  "fullName": "Ahmed Ben Ali",
+  "phone": "+212 6 12 34 56 78",
   "volume": 15.5,
   "natureMarchandise": "Meubles de salon",
   "dateDepart": "2025-12-15T10:00:00",
@@ -107,6 +112,10 @@ Contient les mêmes champs que l'entité sauvegardée (sans géométrie PostGIS)
 {
   "routeId": "550e8400-e29b-41d4-a716-446655440000",
   "userId": "user123",
+  "username": "ahmed_benali",
+  "email": "ahmed.benali@email.com",
+  "fullName": "Ahmed Ben Ali",
+  "phone": "+212 6 12 34 56 78",
   "adresseDepart": "123 Rue Mohammed V, Casablanca",
   "adresseDestination": "456 Avenue Hassan II, Rabat",
   "originLatitude": 33.5731,
@@ -199,10 +208,15 @@ GET /routes/health
 ### 7. Calcul d'itinéraire avec demande et volume
 
 ```http
-POST /routes/demande-info?userId=user123
+POST /routes/demande-info
 Content-Type: application/json
 
 {
+  "userId": "user123",
+  "username": "ahmed_benali",
+  "email": "ahmed.benali@email.com",
+  "fullName": "Ahmed Ben Ali",
+  "phone": "+212 6 12 34 56 78",
   "volume": 15.5,
   "natureMarchandise": "Meubles de salon",
   "dateDepart": "2025-12-15T10:00:00",
@@ -211,7 +225,7 @@ Content-Type: application/json
 }
 ```
 
-**Réponse** : `UserRouteInfoDTO` contenant `totalDistanceKm`, `totalDurationMin` et les informations de volume.
+**Réponse** : `UserRouteInfoDTO` contenant `totalDistanceKm`, `totalDurationMin`, les informations de volume et les détails utilisateur (email, username, fullName, phone).
 
 ### 8. Récupérer les informations complètes d'un utilisateur
 
@@ -219,7 +233,7 @@ Content-Type: application/json
 GET /routes/user-info?userId=user123&page=0&size=10
 ```
 
-Retourne une liste de `UserRouteInfoDTO` avec toutes les informations de routes incluant `totalDistanceKm`, `totalDurationMin` et les détails de volume/marchandise.
+Retourne une liste de `UserRouteInfoDTO` avec toutes les informations de routes incluant `totalDistanceKm`, `totalDurationMin`, les détails de volume/marchandise et les informations utilisateur.
 
 ---
 

@@ -562,21 +562,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"volume\": 15.5,\n  \"natureMarchandise\": \"Meubles de salon\",\n  \"dateDepart\": \"2025-12-15T10:00:00\",\n  \"adresseDepart\": \"123 Rue Mohammed V, Casablanca\",\n  \"adresseDestination\": \"456 Avenue Hassan II, Rabat\"\n}"
+              "raw": "{\n  \"userId\": \"user123\",\n  \"username\": \"ahmed_benali\",\n  \"email\": \"ahmed.benali@email.com\",\n  \"fullName\": \"Ahmed Ben Ali\",\n  \"phone\": \"+212 6 12 34 56 78\",\n  \"volume\": 15.5,\n  \"natureMarchandise\": \"Meubles de salon\",\n  \"dateDepart\": \"2025-12-15T10:00:00\",\n  \"adresseDepart\": \"123 Rue Mohammed V, Casablanca\",\n  \"adresseDestination\": \"456 Avenue Hassan II, Rabat\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}{{api_prefix}}/routes/demande-info?userId=user123",
+              "raw": "{{base_url}}{{api_prefix}}/routes/demande-info",
               "host": ["{{base_url}}{{api_prefix}}"],
-              "path": ["routes", "demande-info"],
-              "query": [
-                {
-                  "key": "userId",
-                  "value": "user123",
-                  "description": "Identifiant de l'utilisateur"
-                }
-              ]
+              "path": ["routes", "demande-info"]
             },
-            "description": "Calcule un itinéraire avec les informations de demande (volume, nature de marchandise). Retourne totalDistanceKm, totalDurationMin et les détails de volume."
+            "description": "Calcule un itinéraire avec les informations de demande (volume, nature de marchandise) et les détails utilisateur (email, username, phone). Retourne totalDistanceKm, totalDurationMin et les détails complets."
           },
           "response": []
         },
@@ -592,21 +585,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"volume\": 25.0,\n  \"natureMarchandise\": \"Électroménager\",\n  \"dateDepart\": \"2025-12-20T08:30:00\",\n  \"adresseDepart\": \"Fes, Morocco\",\n  \"adresseDestination\": \"Marrakech, Morocco\"\n}"
+              "raw": "{\n  \"userId\": \"user456\",\n  \"username\": \"fatima_alaoui\",\n  \"email\": \"fatima.alaoui@email.com\",\n  \"fullName\": \"Fatima El Alaoui\",\n  \"phone\": \"+212 6 98 76 54 32\",\n  \"volume\": 25.0,\n  \"natureMarchandise\": \"Électroménager\",\n  \"dateDepart\": \"2025-12-20T08:30:00\",\n  \"adresseDepart\": \"Fes, Morocco\",\n  \"adresseDestination\": \"Marrakech, Morocco\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}{{api_prefix}}/routes/demande-info?userId=user456",
+              "raw": "{{base_url}}{{api_prefix}}/routes/demande-info",
               "host": ["{{base_url}}{{api_prefix}}"],
-              "path": ["routes", "demande-info"],
-              "query": [
-                {
-                  "key": "userId",
-                  "value": "user456",
-                  "description": "Identifiant de l'utilisateur"
-                }
-              ]
+              "path": ["routes", "demande-info"]
             },
-            "description": "Calcule un itinéraire pour une demande d'électroménager entre Fès et Marrakech"
+            "description": "Calcule un itinéraire pour une demande d'électroménager entre Fès et Marrakech avec informations utilisateur complètes"
           },
           "response": []
         },
@@ -622,21 +608,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"volume\": 50.0,\n  \"natureMarchandise\": \"Produits alimentaires réfrigérés\",\n  \"dateDepart\": \"2025-12-18T06:00:00\",\n  \"adresseDepart\": \"Agadir, Morocco\",\n  \"adresseDestination\": \"Casablanca, Morocco\"\n}"
+              "raw": "{\n  \"userId\": \"user789\",\n  \"username\": \"omar_tazi\",\n  \"email\": \"omar.tazi@entreprise.ma\",\n  \"fullName\": \"Omar Tazi\",\n  \"phone\": \"+212 5 22 33 44 55\",\n  \"volume\": 50.0,\n  \"natureMarchandise\": \"Produits alimentaires réfrigérés\",\n  \"dateDepart\": \"2025-12-18T06:00:00\",\n  \"adresseDepart\": \"Agadir, Morocco\",\n  \"adresseDestination\": \"Casablanca, Morocco\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}{{api_prefix}}/routes/demande-info?userId=user789",
+              "raw": "{{base_url}}{{api_prefix}}/routes/demande-info",
               "host": ["{{base_url}}{{api_prefix}}"],
-              "path": ["routes", "demande-info"],
-              "query": [
-                {
-                  "key": "userId",
-                  "value": "user789",
-                  "description": "Identifiant de l'utilisateur"
-                }
-              ]
+              "path": ["routes", "demande-info"]
             },
-            "description": "Calcule un itinéraire pour une livraison de produits alimentaires"
+            "description": "Calcule un itinéraire pour une livraison de produits alimentaires avec informations utilisateur complètes"
           },
           "response": []
         },

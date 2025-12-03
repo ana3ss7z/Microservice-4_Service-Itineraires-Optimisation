@@ -86,8 +86,10 @@ public class RouteController {
         @ApiResponse(responseCode = "400", description = "Requête invalide")
     })
     public ResponseEntity<UserRouteInfoDTO> calculateRouteWithDemandeInfo(
-            @RequestBody DemandeRequestDTO demandeRequest,
-            @RequestParam(defaultValue = "user_default") String userId) {
+            @RequestBody DemandeRequestDTO demandeRequest) {
+
+        // Utiliser userId du body ou valeur par défaut
+        String userId = demandeRequest.getUserId() != null ? demandeRequest.getUserId() : "user_default";
 
         // Créer la requête de route à partir des adresses de la demande
         RouteRequest routeRequest = RouteRequest.builder()
@@ -100,10 +102,14 @@ public class RouteController {
         // Calculer la route
         RouteResponse routeResponse = routeService.calculateRouteFromAddress(routeRequest);
 
-        // Construire la réponse complète avec les informations de demande
+        // Construire la réponse complète avec les informations de demande et utilisateur
         UserRouteInfoDTO userRouteInfo = UserRouteInfoDTO.builder()
                 .routeId(routeResponse.getRouteId())
                 .userId(userId)
+                .username(demandeRequest.getUsername())
+                .email(demandeRequest.getEmail())
+                .fullName(demandeRequest.getFullName())
+                .phone(demandeRequest.getPhone())
                 .adresseDepart(demandeRequest.getAdresseDepart())
                 .adresseDestination(demandeRequest.getAdresseDestination())
                 .totalDistanceKm(routeResponse.getTotalDistanceKm())

@@ -22,6 +22,12 @@ public class UserRouteInfoDTO {
     private String routeId;
     private String userId;
 
+    // Informations utilisateur
+    private String username;
+    private String email;
+    private String fullName;
+    private String phone;
+
     // Adresses
     private String adresseDepart;
     private String adresseDestination;

@@ -17,6 +17,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class DemandeRequestDTO {
 
+    // Informations utilisateur
+    private String userId;
+    private String username;
+    private String email;
+    private String fullName;
+    private String phone;
+
+    // Informations de la demande
     private Double volume;
     private String natureMarchandise;
 
