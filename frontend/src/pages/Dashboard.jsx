@@ -23,6 +23,7 @@ import {
   getCurrentLocation,
   getServerInfo,
 } from "../services/api";
+import { useTheme } from "../context/ThemeContext";
 import toast from "react-hot-toast";
 
 const quickActions = [
@@ -105,6 +106,7 @@ const predefinedUsers = [
 ];
 
 export default function Dashboard() {
+  const { darkMode } = useTheme();
   const [serviceStatus, setServiceStatus] = useState("checking");
   const [citiesCount, setCitiesCount] = useState(0);
   const [location, setLocation] = useState(null);
@@ -236,7 +238,11 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
+        <h2
+          className={`text-xl font-bold mb-4 ${
+            darkMode ? "text-white" : "text-gray-800"
+          }`}
+        >
           Actions Rapides
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -246,7 +252,11 @@ export default function Dashboard() {
               <Link
                 key={action.path}
                 to={action.path}
-                className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 card-hover"
+                className={`group rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 card-hover ${
+                  darkMode
+                    ? "bg-slate-800 border border-slate-700"
+                    : "bg-white border border-gray-100"
+                }`}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div
@@ -254,10 +264,18 @@ export default function Dashboard() {
                 >
                   <Icon className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="font-bold text-gray-800 text-lg mb-1">
+                <h3
+                  className={`font-bold text-lg mb-1 ${
+                    darkMode ? "text-white" : "text-gray-800"
+                  }`}
+                >
                   {action.title}
                 </h3>
-                <p className="text-gray-500 text-sm mb-4">
+                <p
+                  className={`text-sm mb-4 ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
                   {action.description}
                 </p>
                 <div className="flex items-center text-primary-600 font-medium text-sm group-hover:gap-2 transition-all">
@@ -271,9 +289,19 @@ export default function Dashboard() {
       </div>
 
       {/* Users Section */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+      <div
+        className={`rounded-2xl p-6 shadow-lg ${
+          darkMode
+            ? "bg-slate-800 border border-slate-700"
+            : "bg-white border border-gray-100"
+        }`}
+      >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="font-bold text-gray-800 text-lg flex items-center gap-3">
+          <h3
+            className={`font-bold text-lg flex items-center gap-3 ${
+              darkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
               <Users className="w-5 h-5 text-white" />
             </div>
@@ -292,20 +320,44 @@ export default function Dashboard() {
             <Link
               key={user.id}
               to={`/users`}
-              className="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl hover:from-indigo-50 hover:to-indigo-100 transition-all duration-200 border border-gray-200 hover:border-indigo-300"
+              className={`group p-4 rounded-xl transition-all duration-200 ${
+                darkMode
+                  ? "bg-slate-700 hover:bg-indigo-900/30 border border-slate-600 hover:border-indigo-500"
+                  : "bg-gradient-to-br from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-indigo-100 border border-gray-200 hover:border-indigo-300"
+              }`}
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-xl bg-white shadow flex items-center justify-center text-2xl">
+                <div
+                  className={`w-12 h-12 rounded-xl shadow flex items-center justify-center text-2xl ${
+                    darkMode ? "bg-slate-600" : "bg-white"
+                  }`}
+                >
                   {user.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-800 truncate">
+                  <p
+                    className={`font-semibold truncate ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    }`}
+                  >
                     {user.name}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">{user.id}</p>
+                  <p
+                    className={`text-xs truncate ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    {user.id}
+                  </p>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 truncate">{user.email}</p>
+              <p
+                className={`text-xs truncate ${
+                  darkMode ? "text-gray-400" : "text-gray-500"
+                }`}
+              >
+                {user.email}
+              </p>
             </Link>
           ))}
         </div>
@@ -314,10 +366,28 @@ export default function Dashboard() {
       {/* Info Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* API Endpoints Card */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-          <h3 className="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-              <Activity className="w-5 h-5 text-blue-600" />
+        <div
+          className={`rounded-2xl p-6 shadow-lg ${
+            darkMode
+              ? "bg-slate-800 border border-slate-700"
+              : "bg-white border border-gray-100"
+          }`}
+        >
+          <h3
+            className={`font-bold text-lg mb-4 flex items-center gap-2 ${
+              darkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
+            <div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                darkMode ? "bg-blue-900/50" : "bg-blue-100"
+              }`}
+            >
+              <Activity
+                className={`w-5 h-5 ${
+                  darkMode ? "text-blue-400" : "text-blue-600"
+                }`}
+              />
             </div>
             Endpoints API Disponibles
           </h3>
@@ -363,72 +433,170 @@ export default function Dashboard() {
             ].map((endpoint, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                  darkMode ? "hover:bg-slate-700" : "hover:bg-gray-50"
+                }`}
               >
                 <span
                   className={`px-2 py-1 rounded text-xs font-bold ${
                     endpoint.method === "POST"
-                      ? "bg-green-100 text-green-700"
+                      ? darkMode
+                        ? "bg-green-900/50 text-green-400"
+                        : "bg-green-100 text-green-700"
+                      : darkMode
+                      ? "bg-blue-900/50 text-blue-400"
                       : "bg-blue-100 text-blue-700"
                   }`}
                 >
                   {endpoint.method}
                 </span>
-                <code className="text-sm text-gray-600 flex-1 truncate">
+                <code
+                  className={`text-sm flex-1 truncate ${
+                    darkMode ? "text-gray-300" : "text-gray-600"
+                  }`}
+                >
                   {endpoint.path}
                 </code>
-                <span className="text-xs text-gray-400">{endpoint.desc}</span>
+                <span
+                  className={`text-xs ${
+                    darkMode ? "text-gray-500" : "text-gray-400"
+                  }`}
+                >
+                  {endpoint.desc}
+                </span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Server Info Card */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-          <h3 className="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
-              <Server className="w-5 h-5 text-slate-600" />
+        <div
+          className={`rounded-2xl p-6 shadow-lg ${
+            darkMode
+              ? "bg-slate-800 border border-slate-700"
+              : "bg-white border border-gray-100"
+          }`}
+        >
+          <h3
+            className={`font-bold text-lg mb-4 flex items-center gap-2 ${
+              darkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
+            <div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                darkMode ? "bg-slate-700" : "bg-slate-100"
+              }`}
+            >
+              <Server
+                className={`w-5 h-5 ${
+                  darkMode ? "text-slate-400" : "text-slate-600"
+                }`}
+              />
             </div>
             Informations Serveur
           </h3>
           {serverInfo ? (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <p className="text-xs text-gray-500 mb-1">Hostname</p>
-                  <p className="font-semibold text-gray-800 truncate">
+                <div
+                  className={`p-4 rounded-xl ${
+                    darkMode ? "bg-slate-700" : "bg-gray-50"
+                  }`}
+                >
+                  <p
+                    className={`text-xs mb-1 ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    Hostname
+                  </p>
+                  <p
+                    className={`font-semibold truncate ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    }`}
+                  >
                     {serverInfo.hostname || serverInfo.host || "-"}
                   </p>
                 </div>
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <p className="text-xs text-gray-500 mb-1">IP Serveur</p>
-                  <p className="font-semibold text-gray-800">
+                <div
+                  className={`p-4 rounded-xl ${
+                    darkMode ? "bg-slate-700" : "bg-gray-50"
+                  }`}
+                >
+                  <p
+                    className={`text-xs mb-1 ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    IP Serveur
+                  </p>
+                  <p
+                    className={`font-semibold ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    }`}
+                  >
                     {serverInfo.ip || serverInfo.ipAddress || "-"}
                   </p>
                 </div>
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <p className="text-xs text-gray-500 mb-1">OS</p>
-                  <p className="font-semibold text-gray-800 truncate">
+                <div
+                  className={`p-4 rounded-xl ${
+                    darkMode ? "bg-slate-700" : "bg-gray-50"
+                  }`}
+                >
+                  <p
+                    className={`text-xs mb-1 ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    OS
+                  </p>
+                  <p
+                    className={`font-semibold truncate ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    }`}
+                  >
                     {serverInfo.os || serverInfo.operatingSystem || "-"}
                   </p>
                 </div>
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <p className="text-xs text-gray-500 mb-1">Java</p>
-                  <p className="font-semibold text-gray-800 truncate">
+                <div
+                  className={`p-4 rounded-xl ${
+                    darkMode ? "bg-slate-700" : "bg-gray-50"
+                  }`}
+                >
+                  <p
+                    className={`text-xs mb-1 ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    Java
+                  </p>
+                  <p
+                    className={`font-semibold truncate ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    }`}
+                  >
                     {serverInfo.javaVersion || serverInfo.java || "-"}
                   </p>
                 </div>
               </div>
               <Link
                 to="/server"
-                className="block w-full text-center py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
+                className={`block w-full text-center py-3 rounded-xl font-medium transition-colors ${
+                  darkMode
+                    ? "bg-slate-700 hover:bg-slate-600 text-gray-200"
+                    : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                }`}
               >
                 Voir plus de détails
               </Link>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              <Server className="w-12 h-12 mx-auto mb-2 opacity-50" />
+            <div
+              className={`text-center py-8 ${
+                darkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
+              <Server className={`w-12 h-12 mx-auto mb-2 opacity-50`} />
               <p>Chargement des infos serveur...</p>
             </div>
           )}
@@ -436,10 +604,28 @@ export default function Dashboard() {
       </div>
 
       {/* Features Card */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-        <h3 className="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-purple-600" />
+      <div
+        className={`rounded-2xl p-6 shadow-lg ${
+          darkMode
+            ? "bg-slate-800 border border-slate-700"
+            : "bg-white border border-gray-100"
+        }`}
+      >
+        <h3
+          className={`font-bold text-lg mb-4 flex items-center gap-2 ${
+            darkMode ? "text-white" : "text-gray-800"
+          }`}
+        >
+          <div
+            className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              darkMode ? "bg-purple-900/50" : "bg-purple-100"
+            }`}
+          >
+            <TrendingUp
+              className={`w-5 h-5 ${
+                darkMode ? "text-purple-400" : "text-purple-600"
+              }`}
+            />
           </div>
           Fonctionnalités
         </h3>
@@ -473,12 +659,26 @@ export default function Dashboard() {
           ].map((feature, i) => (
             <div
               key={i}
-              className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl"
+              className={`flex items-start gap-3 p-4 rounded-xl ${
+                darkMode ? "bg-slate-700" : "bg-gray-50"
+              }`}
             >
               <span className="text-2xl">{feature.icon}</span>
               <div>
-                <p className="font-medium text-gray-800">{feature.title}</p>
-                <p className="text-xs text-gray-500">{feature.desc}</p>
+                <p
+                  className={`font-medium ${
+                    darkMode ? "text-white" : "text-gray-800"
+                  }`}
+                >
+                  {feature.title}
+                </p>
+                <p
+                  className={`text-xs ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  {feature.desc}
+                </p>
               </div>
             </div>
           ))}

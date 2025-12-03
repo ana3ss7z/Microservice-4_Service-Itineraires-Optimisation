@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   History,
   Search,
@@ -11,20 +12,72 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
+  Download,
+  Filter,
+  X,
 } from "lucide-react";
 import { getRouteHistory, getUserInfo, getRouteById } from "../services/api";
+import { exportRoutesReport } from "../utils/exportUtils";
 import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
 
 export default function RouteHistory() {
   const [userId, setUserId] = useState("user_001");
   const [routes, setRoutes] = useState([]);
+  const [filteredRoutes, setFilteredRoutes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [viewMode, setViewMode] = useState("history"); // 'history' or 'user-info'
+
+  // Filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Apply filters whenever routes or filters change
+  useEffect(() => {
+    let result = [...routes];
+
+    // Status filter
+    if (statusFilter !== "all") {
+      result = result.filter((r) => r.status === statusFilter);
+    }
+
+    // Search query filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (r) =>
+          (r.originCity || r.adresseDepart || "")
+            .toLowerCase()
+            .includes(query) ||
+          (r.destinationCity || r.adresseDestination || "")
+            .toLowerCase()
+            .includes(query) ||
+          (r.natureMarchandise || "").toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredRoutes(result);
+  }, [routes, statusFilter, searchQuery]);
+
+  const handleExport = (format) => {
+    if (filteredRoutes.length === 0) {
+      toast.error("Aucune donnée à exporter");
+      return;
+    }
+    exportRoutesReport(filteredRoutes, format);
+    toast.success(`Export ${format.toUpperCase()} réussi!`);
+  };
+
+  const clearFilters = () => {
+    setStatusFilter("all");
+    setSearchQuery("");
+  };
 
   const fetchHistory = async () => {
     if (!userId.trim()) {
@@ -151,7 +204,7 @@ export default function RouteHistory() {
               />
             </div>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end gap-2">
             <button
               onClick={fetchHistory}
               disabled={loading}
@@ -164,8 +217,92 @@ export default function RouteHistory() {
               )}
               Rechercher
             </button>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`px-4 py-3 rounded-xl border transition-all flex items-center gap-2 ${
+                showFilters
+                  ? "bg-cyan-50 border-cyan-300 text-cyan-700"
+                  : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <Filter className="w-5 h-5" />
+            </button>
           </div>
         </div>
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Search in results */}
+              <div className="flex-1 min-w-[200px]">
+                <label className="text-xs font-medium text-gray-500 mb-1 block">
+                  Rechercher dans les résultats
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Ville, marchandise..."
+                    className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">
+                  Statut
+                </label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none"
+                >
+                  <option value="all">Tous</option>
+                  <option value="SUCCESS">Succès</option>
+                  <option value="ERROR">Erreur</option>
+                </select>
+              </div>
+
+              {/* Export Buttons */}
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">
+                  Exporter
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleExport("json")}
+                    className="px-3 py-2 bg-gray-700 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-1"
+                  >
+                    <Download className="w-4 h-4" />
+                    JSON
+                  </button>
+                  <button
+                    onClick={() => handleExport("csv")}
+                    className="px-3 py-2 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1"
+                  >
+                    <Download className="w-4 h-4" />
+                    CSV
+                  </button>
+                </div>
+              </div>
+
+              {/* Clear Filters */}
+              {(statusFilter !== "all" || searchQuery) && (
+                <button
+                  onClick={clearFilters}
+                  className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                >
+                  <X className="w-4 h-4" />
+                  Réinitialiser
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Results */}
@@ -179,7 +316,9 @@ export default function RouteHistory() {
                 : "Informations Utilisateur"}
             </h3>
             <span className="text-sm text-gray-500">
-              {routes.length} résultat(s)
+              {filteredRoutes.length} résultat(s)
+              {filteredRoutes.length !== routes.length &&
+                ` (${routes.length} total)`}
             </span>
           </div>
 
@@ -187,7 +326,7 @@ export default function RouteHistory() {
             <div className="p-12 flex justify-center">
               <LoadingSpinner text="Chargement..." />
             </div>
-          ) : routes.length === 0 ? (
+          ) : filteredRoutes.length === 0 ? (
             <div className="p-12 text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                 <History className="w-8 h-8 text-gray-400" />
@@ -196,13 +335,15 @@ export default function RouteHistory() {
                 Aucun résultat
               </h4>
               <p className="text-gray-500">
-                Entrez un ID utilisateur et cliquez sur rechercher
+                {routes.length > 0
+                  ? "Aucun trajet ne correspond aux filtres"
+                  : "Entrez un ID utilisateur et cliquez sur rechercher"}
               </p>
             </div>
           ) : (
             <>
               <div className="divide-y divide-gray-100">
-                {routes.map((route, index) => (
+                {filteredRoutes.map((route, index) => (
                   <div
                     key={route.routeId || route.id || index}
                     className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
@@ -270,9 +411,14 @@ export default function RouteHistory() {
                         <p className="text-xs text-gray-400">
                           {formatDate(route.createdAt || route.calculatedAt)}
                         </p>
-                        <button className="mt-2 text-cyan-600 hover:text-cyan-700">
+                        <Link
+                          to={`/route/${route.routeId || route.id}`}
+                          className="mt-2 text-cyan-600 hover:text-cyan-700 inline-flex items-center gap-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Eye className="w-5 h-5" />
-                        </button>
+                          <ExternalLink className="w-3 h-3" />
+                        </Link>
                       </div>
                     </div>
                   </div>

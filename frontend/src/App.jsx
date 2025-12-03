@@ -7,12 +7,14 @@ import RouteCalculator from "./pages/RouteCalculator";
 import RouteOptimizer from "./pages/RouteOptimizer";
 import DemandeRoute from "./pages/DemandeRoute";
 import RouteHistory from "./pages/RouteHistory";
+import RouteDetailPage from "./pages/RouteDetailPage";
 import UserInfoPage from "./pages/UserInfoPage";
 import LocationPage from "./pages/LocationPage";
 import CitiesPage from "./pages/CitiesPage";
 import ServerInfoPage from "./pages/ServerInfoPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import ApiDocsPage from "./pages/ApiDocsPage";
 import { useState } from "react";
 
 function App() {
@@ -64,12 +66,14 @@ function App() {
                 <Route path="/optimizer" element={<RouteOptimizer />} />
                 <Route path="/demande" element={<DemandeRoute />} />
                 <Route path="/history" element={<RouteHistory />} />
+                <Route path="/route/:id" element={<RouteDetailPage />} />
                 <Route path="/users" element={<UserInfoPage />} />
                 <Route path="/location" element={<LocationPage />} />
                 <Route path="/cities" element={<CitiesPage />} />
                 <Route path="/server" element={<ServerInfoPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/api-docs" element={<ApiDocsPage />} />
               </Routes>
             </div>
           </main>

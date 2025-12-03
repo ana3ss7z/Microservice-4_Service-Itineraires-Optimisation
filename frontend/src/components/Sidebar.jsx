@@ -9,11 +9,11 @@ import {
   Building2,
   Users,
   Server,
-  Settings,
-  Bell,
   X,
   ChevronRight,
+  Book,
 } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
 
 const menuItems = [
   {
@@ -70,10 +70,17 @@ const menuItems = [
     icon: Server,
     color: "from-slate-500 to-slate-600",
   },
+  {
+    path: "/api-docs",
+    name: "Documentation API",
+    icon: Book,
+    color: "from-violet-500 to-purple-600",
+  },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
+  const { darkMode } = useTheme();
 
   return (
     <>
@@ -87,16 +94,26 @@ export default function Sidebar({ isOpen, onClose }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-72 bg-white/90 backdrop-blur-xl border-r border-gray-200/50 shadow-xl z-40 transition-transform duration-300 overflow-y-auto ${
+        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-72 ${
+          darkMode ? "bg-slate-800/90" : "bg-white/90"
+        } backdrop-blur-xl border-r ${
+          darkMode ? "border-slate-700" : "border-gray-200/50"
+        } shadow-xl z-40 transition-transform duration-300 overflow-y-auto ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Close button for mobile */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className={`absolute top-4 right-4 lg:hidden p-2 rounded-lg ${
+            darkMode ? "hover:bg-slate-700" : "hover:bg-gray-100"
+          } transition-colors`}
         >
-          <X className="w-5 h-5 text-gray-500" />
+          <X
+            className={`w-5 h-5 ${
+              darkMode ? "text-gray-400" : "text-gray-500"
+            }`}
+          />
         </button>
 
         {/* Navigation */}
@@ -116,7 +133,11 @@ export default function Sidebar({ isOpen, onClose }) {
                       } text-white shadow-lg shadow-${
                         item.color.split("-")[1]
                       }-500/30`
-                    : "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
+                    : `${
+                        darkMode
+                          ? "hover:bg-slate-700 text-gray-300 hover:text-white"
+                          : "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
+                      }`
                 }`}
               >
                 <div
@@ -134,10 +155,26 @@ export default function Sidebar({ isOpen, onClose }) {
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 border-t border-gray-100 bg-gradient-to-t from-white via-white to-transparent">
+        <div
+          className={`absolute bottom-0 left-0 right-0 p-5 border-t ${
+            darkMode
+              ? "border-slate-700 bg-gradient-to-t from-slate-800 via-slate-800 to-transparent"
+              : "border-gray-100 bg-gradient-to-t from-white via-white to-transparent"
+          }`}
+        >
           <div className="text-center">
-            <p className="text-xs text-gray-400">Microservice 4</p>
-            <p className="text-sm font-medium text-gray-600">
+            <p
+              className={`text-xs ${
+                darkMode ? "text-gray-500" : "text-gray-400"
+              }`}
+            >
+              Microservice 4
+            </p>
+            <p
+              className={`text-sm font-medium ${
+                darkMode ? "text-gray-300" : "text-gray-600"
+              }`}
+            >
               Itinéraires & Optimisation
             </p>
           </div>

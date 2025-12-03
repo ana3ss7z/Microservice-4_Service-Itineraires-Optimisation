@@ -1,9 +1,191 @@
 import { useState, useEffect } from "react";
-import { Building2, Search, MapPin, RefreshCw, Map } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import {
+  Building2,
+  Search,
+  MapPin,
+  RefreshCw,
+  Map,
+  Navigation,
+  Globe,
+  Info,
+  Users,
+  Thermometer,
+  Clock,
+  Phone,
+  Mail,
+  ExternalLink,
+} from "lucide-react";
 import { getAllCities } from "../services/api";
+import { useTheme } from "../context/ThemeContext";
 import MapView from "../components/MapView";
 import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
+
+// Extended city info (local data since API doesn't provide this)
+const cityInfoMap = {
+  casablanca: {
+    population: "3,359,818",
+    region: "Casablanca-Settat",
+    timezone: "GMT+1",
+    climate: "Méditerranéen",
+    description: "Plus grande ville du Maroc et capitale économique",
+    attractions: ["Mosquée Hassan II", "Corniche", "Morocco Mall"],
+    code: "+212 522",
+  },
+  rabat: {
+    population: "577,827",
+    region: "Rabat-Salé-Kénitra",
+    timezone: "GMT+1",
+    climate: "Méditerranéen",
+    description: "Capitale du Maroc et centre administratif",
+    attractions: ["Tour Hassan", "Kasbah des Oudayas", "Chellah"],
+    code: "+212 537",
+  },
+  marrakech: {
+    population: "928,850",
+    region: "Marrakech-Safi",
+    timezone: "GMT+1",
+    climate: "Semi-aride",
+    description: "Ville impériale et capitale touristique",
+    attractions: ["Jemaa el-Fna", "Jardin Majorelle", "Palais Bahia"],
+    code: "+212 524",
+  },
+  fès: {
+    population: "1,112,072",
+    region: "Fès-Meknès",
+    timezone: "GMT+1",
+    climate: "Méditerranéen",
+    description: "Plus ancienne ville impériale et capitale spirituelle",
+    attractions: ["Médina de Fès", "Université Al Quaraouiyine", "Tanneries"],
+    code: "+212 535",
+  },
+  tanger: {
+    population: "947,952",
+    region: "Tanger-Tétouan-Al Hoceïma",
+    timezone: "GMT+1",
+    climate: "Méditerranéen",
+    description: "Porte de l'Afrique sur le détroit de Gibraltar",
+    attractions: ["Kasbah", "Grottes d'Hercule", "Cap Spartel"],
+    code: "+212 539",
+  },
+  agadir: {
+    population: "421,844",
+    region: "Souss-Massa",
+    timezone: "GMT+1",
+    climate: "Semi-aride",
+    description: "Station balnéaire sur la côte atlantique",
+    attractions: ["Plage d'Agadir", "Kasbah", "Vallée du Paradis"],
+    code: "+212 528",
+  },
+  meknès: {
+    population: "632,079",
+    region: "Fès-Meknès",
+    timezone: "GMT+1",
+    climate: "Méditerranéen",
+    description: "Ville impériale fondée au XIe siècle",
+    attractions: ["Bab Mansour", "Mausolée Moulay Ismaïl", "Volubilis"],
+    code: "+212 535",
+  },
+  oujda: {
+    population: "494,252",
+    region: "Oriental",
+    timezone: "GMT+1",
+    climate: "Semi-aride",
+    description: "Capitale de l'Oriental à la frontière algérienne",
+    attractions: ["Parc Lalla Meryem", "Médina", "Sidi Yahia"],
+    code: "+212 536",
+  },
+  tétouan: {
+    population: "380,787",
+    region: "Tanger-Tétouan-Al Hoceïma",
+    timezone: "GMT+1",
+    climate: "Méditerranéen",
+    description: "Ville blanche au pied des montagnes du Rif",
+    attractions: ["Médina UNESCO", "Place Hassan II", "Musée archéologique"],
+    code: "+212 539",
+  },
+  "el jadida": {
+    population: "194,934",
+    region: "Casablanca-Settat",
+    timezone: "GMT+1",
+    climate: "Méditerranéen",
+    description: "Ancienne cité portugaise classée UNESCO",
+    attractions: ["Cité Portugaise", "Citerne portugaise", "Plage"],
+    code: "+212 523",
+  },
+  essaouira: {
+    population: "77,966",
+    region: "Marrakech-Safi",
+    timezone: "GMT+1",
+    climate: "Méditerranéen",
+    description: "Ville côtière connue pour ses vents et son art",
+    attractions: ["Médina UNESCO", "Port de pêche", "Îles Purpuraires"],
+    code: "+212 524",
+  },
+  nador: {
+    population: "161,726",
+    region: "Oriental",
+    timezone: "GMT+1",
+    climate: "Méditerranéen",
+    description: "Ville portuaire sur la lagune de Marchica",
+    attractions: [
+      "Lagune de Marchica",
+      "Mont Gourougou",
+      "Cap des Trois Fourches",
+    ],
+    code: "+212 536",
+  },
+  kénitra: {
+    population: "431,282",
+    region: "Rabat-Salé-Kénitra",
+    timezone: "GMT+1",
+    climate: "Méditerranéen",
+    description: "Ville portuaire sur le fleuve Sebou",
+    attractions: ["Forêt de Maâmora", "Plage Mehdia", "Kasbah Mehdia"],
+    code: "+212 537",
+  },
+  "beni mellal": {
+    population: "192,676",
+    region: "Béni Mellal-Khénifra",
+    timezone: "GMT+1",
+    climate: "Semi-aride",
+    description: "Ville agricole au pied du Moyen Atlas",
+    attractions: [
+      "Cascades d'Ouzoud",
+      "Ain Asserdoun",
+      "Kasbah de Beni Mellal",
+    ],
+    code: "+212 523",
+  },
+  safi: {
+    population: "308,508",
+    region: "Marrakech-Safi",
+    timezone: "GMT+1",
+    climate: "Méditerranéen",
+    description: "Capitale de la céramique marocaine",
+    attractions: ["Poteries", "Château de Mer", "Médina"],
+    code: "+212 524",
+  },
+};
+
+// Get city info based on name
+const getCityInfo = (cityName) => {
+  if (!cityName) return null;
+  const key = cityName
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  for (const [name, info] of Object.entries(cityInfoMap)) {
+    const normalizedName = name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    if (key.includes(normalizedName) || normalizedName.includes(key)) {
+      return info;
+    }
+  }
+  return null;
+};
 
 export default function CitiesPage() {
   const [cities, setCities] = useState([]);
@@ -11,6 +193,20 @@ export default function CitiesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCity, setSelectedCity] = useState(null);
+  const location = useLocation();
+  const { darkMode } = useTheme();
+
+  // Handle navigation from search
+  useEffect(() => {
+    if (location.state?.selectedCity) {
+      const navCity = location.state.selectedCity;
+      setSelectedCity({
+        name: navCity.name,
+        latitude: navCity.lat,
+        longitude: navCity.lng,
+      });
+    }
+  }, [location.state]);
 
   useEffect(() => {
     fetchCities();
@@ -63,18 +259,27 @@ export default function CitiesPage() {
         }))
         .filter((c) => c.latitude && c.longitude);
 
+  // Get extended info for selected city
+  const selectedCityInfo = selectedCity
+    ? getCityInfo(selectedCity.name || selectedCity.nom)
+    : null;
+
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+          <h1
+            className={`text-2xl md:text-3xl font-bold flex items-center gap-3 ${
+              darkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg">
               <Building2 className="w-6 h-6 text-white" />
             </div>
             Villes du Maroc 🇲🇦
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
             Liste des villes disponibles dans le système
           </p>
         </div>
@@ -92,15 +297,29 @@ export default function CitiesPage() {
       {/* Search & Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Search */}
-        <div className="md:col-span-2 bg-white rounded-2xl shadow-xl border border-gray-100 p-4">
+        <div
+          className={`md:col-span-2 rounded-2xl shadow-xl p-4 ${
+            darkMode
+              ? "bg-slate-800 border border-slate-700"
+              : "bg-white border border-gray-100"
+          }`}
+        >
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search
+              className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${
+                darkMode ? "text-gray-500" : "text-gray-400"
+              }`}
+            />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Rechercher une ville..."
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none"
+              className={`w-full pl-12 pr-4 py-3 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none ${
+                darkMode
+                  ? "bg-slate-700 border border-slate-600 text-white placeholder-gray-400"
+                  : "bg-gray-50 border border-gray-200 text-gray-800"
+              }`}
             />
           </div>
         </div>
@@ -124,7 +343,13 @@ export default function CitiesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Cities List */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div
+          className={`rounded-2xl shadow-xl overflow-hidden ${
+            darkMode
+              ? "bg-slate-800 border border-slate-700"
+              : "bg-white border border-gray-100"
+          }`}
+        >
           <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-amber-500 to-orange-500">
             <h3 className="text-white font-bold text-lg flex items-center gap-2">
               <MapPin className="w-5 h-5" />
@@ -138,11 +363,19 @@ export default function CitiesPage() {
             </div>
           ) : filteredCities.length === 0 ? (
             <div className="p-12 text-center">
-              <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h4 className="text-lg font-medium text-gray-700 mb-2">
+              <Building2
+                className={`w-16 h-16 mx-auto mb-4 ${
+                  darkMode ? "text-gray-600" : "text-gray-300"
+                }`}
+              />
+              <h4
+                className={`text-lg font-medium mb-2 ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                }`}
+              >
                 Aucune ville trouvée
               </h4>
-              <p className="text-gray-500">
+              <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
                 {searchTerm
                   ? "Essayez une autre recherche"
                   : "Les villes ne sont pas encore chargées"}
@@ -150,28 +383,50 @@ export default function CitiesPage() {
             </div>
           ) : (
             <div className="max-h-[500px] overflow-y-auto">
-              <div className="divide-y divide-gray-100">
+              <div
+                className={`divide-y ${
+                  darkMode ? "divide-slate-700" : "divide-gray-100"
+                }`}
+              >
                 {filteredCities.map((city, index) => (
                   <div
                     key={city.id || index}
-                    className={`p-4 hover:bg-amber-50 cursor-pointer transition-colors ${
+                    className={`p-4 cursor-pointer transition-colors ${
                       selectedCity?.id === city.id ||
                       selectedCity?.name === city.name
-                        ? "bg-amber-50 border-l-4 border-amber-500"
-                        : ""
+                        ? darkMode
+                          ? "bg-amber-900/30 border-l-4 border-amber-500"
+                          : "bg-amber-50 border-l-4 border-amber-500"
+                        : darkMode
+                        ? "hover:bg-slate-700"
+                        : "hover:bg-amber-50"
                     }`}
                     onClick={() => setSelectedCity(city)}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                          darkMode
+                            ? "bg-amber-900/50"
+                            : "bg-gradient-to-br from-amber-100 to-orange-100"
+                        }`}
+                      >
                         <span className="text-lg">🏙️</span>
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-800">
+                        <h4
+                          className={`font-semibold ${
+                            darkMode ? "text-white" : "text-gray-800"
+                          }`}
+                        >
                           {city.name || city.nom || "N/A"}
                         </h4>
                         {(city.latitude || city.lat) && (
-                          <p className="text-sm text-gray-500">
+                          <p
+                            className={`text-sm ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}
+                          >
                             {(city.latitude || city.lat)?.toFixed(4)},{" "}
                             {(city.longitude || city.lng)?.toFixed(4)}
                           </p>
@@ -189,13 +444,33 @@ export default function CitiesPage() {
         {/* Map & Selected City Info */}
         <div className="space-y-6">
           {/* Map */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-800 flex items-center gap-2">
+          <div
+            className={`rounded-2xl shadow-xl overflow-hidden ${
+              darkMode
+                ? "bg-slate-800 border border-slate-700"
+                : "bg-white border border-gray-100"
+            }`}
+          >
+            <div
+              className={`px-6 py-4 flex items-center justify-between ${
+                darkMode
+                  ? "border-b border-slate-700"
+                  : "border-b border-gray-100"
+              }`}
+            >
+              <h3
+                className={`font-bold flex items-center gap-2 ${
+                  darkMode ? "text-white" : "text-gray-800"
+                }`}
+              >
                 <Map className="w-5 h-5 text-amber-500" />
                 Carte
               </h3>
-              <span className="text-sm text-gray-500">
+              <span
+                className={`text-sm ${
+                  darkMode ? "text-gray-400" : "text-gray-500"
+                }`}
+              >
                 {mapWaypoints.length} point(s) affiché(s)
               </span>
             </div>
@@ -218,41 +493,269 @@ export default function CitiesPage() {
 
           {/* Selected City Details */}
           {selectedCity && (
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fadeIn">
+            <div
+              className={`rounded-2xl shadow-xl overflow-hidden animate-fadeIn ${
+                darkMode
+                  ? "bg-slate-800 border border-slate-700"
+                  : "bg-white border border-gray-100"
+              }`}
+            >
               <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-amber-500 to-orange-500">
-                <h3 className="text-white font-bold text-lg">
-                  Détails de la ville
+                <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                  <Info className="w-5 h-5" />
+                  Informations de la ville
                 </h3>
               </div>
               <div className="p-6">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
+                  <div
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
+                      darkMode
+                        ? "bg-amber-900/50"
+                        : "bg-gradient-to-br from-amber-100 to-orange-100"
+                    }`}
+                  >
                     <span className="text-3xl">🏙️</span>
                   </div>
                   <div>
-                    <h4 className="text-2xl font-bold text-gray-800">
+                    <h4
+                      className={`text-2xl font-bold ${
+                        darkMode ? "text-white" : "text-gray-800"
+                      }`}
+                    >
                       {selectedCity.name || selectedCity.nom}
                     </h4>
-                    <p className="text-gray-500">Maroc 🇲🇦</p>
+                    <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
+                      Maroc 🇲🇦
+                    </p>
                   </div>
                 </div>
 
+                {/* Extended Info */}
+                {selectedCityInfo && (
+                  <div className="space-y-4 mb-6">
+                    {/* Description */}
+                    <div
+                      className={`p-4 rounded-xl ${
+                        darkMode
+                          ? "bg-slate-700"
+                          : "bg-gradient-to-br from-amber-50 to-orange-50"
+                      }`}
+                    >
+                      <p
+                        className={darkMode ? "text-gray-200" : "text-gray-700"}
+                      >
+                        {selectedCityInfo.description}
+                      </p>
+                    </div>
+
+                    {/* Key Info Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div
+                        className={`p-3 rounded-xl flex items-center gap-3 ${
+                          darkMode ? "bg-slate-700" : "bg-gray-50"
+                        }`}
+                      >
+                        <Users className="w-5 h-5 text-amber-500" />
+                        <div>
+                          <p
+                            className={`text-xs ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}
+                          >
+                            Population
+                          </p>
+                          <p
+                            className={`font-semibold ${
+                              darkMode ? "text-white" : "text-gray-800"
+                            }`}
+                          >
+                            {selectedCityInfo.population}
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        className={`p-3 rounded-xl flex items-center gap-3 ${
+                          darkMode ? "bg-slate-700" : "bg-gray-50"
+                        }`}
+                      >
+                        <Globe className="w-5 h-5 text-amber-500" />
+                        <div>
+                          <p
+                            className={`text-xs ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}
+                          >
+                            Région
+                          </p>
+                          <p
+                            className={`font-semibold text-sm ${
+                              darkMode ? "text-white" : "text-gray-800"
+                            }`}
+                          >
+                            {selectedCityInfo.region}
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        className={`p-3 rounded-xl flex items-center gap-3 ${
+                          darkMode ? "bg-slate-700" : "bg-gray-50"
+                        }`}
+                      >
+                        <Clock className="w-5 h-5 text-amber-500" />
+                        <div>
+                          <p
+                            className={`text-xs ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}
+                          >
+                            Fuseau horaire
+                          </p>
+                          <p
+                            className={`font-semibold ${
+                              darkMode ? "text-white" : "text-gray-800"
+                            }`}
+                          >
+                            {selectedCityInfo.timezone}
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        className={`p-3 rounded-xl flex items-center gap-3 ${
+                          darkMode ? "bg-slate-700" : "bg-gray-50"
+                        }`}
+                      >
+                        <Thermometer className="w-5 h-5 text-amber-500" />
+                        <div>
+                          <p
+                            className={`text-xs ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}
+                          >
+                            Climat
+                          </p>
+                          <p
+                            className={`font-semibold ${
+                              darkMode ? "text-white" : "text-gray-800"
+                            }`}
+                          >
+                            {selectedCityInfo.climate}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Phone Code */}
+                    <div
+                      className={`p-3 rounded-xl flex items-center gap-3 ${
+                        darkMode ? "bg-slate-700" : "bg-gray-50"
+                      }`}
+                    >
+                      <Phone className="w-5 h-5 text-amber-500" />
+                      <div>
+                        <p
+                          className={`text-xs ${
+                            darkMode ? "text-gray-400" : "text-gray-500"
+                          }`}
+                        >
+                          Code téléphonique
+                        </p>
+                        <p
+                          className={`font-semibold ${
+                            darkMode ? "text-white" : "text-gray-800"
+                          }`}
+                        >
+                          {selectedCityInfo.code}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Attractions */}
+                    {selectedCityInfo.attractions && (
+                      <div>
+                        <p
+                          className={`text-xs uppercase tracking-wide mb-2 ${
+                            darkMode ? "text-gray-400" : "text-gray-500"
+                          }`}
+                        >
+                          Sites d'intérêt
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedCityInfo.attractions.map(
+                            (attraction, idx) => (
+                              <span
+                                key={idx}
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                  darkMode
+                                    ? "bg-amber-900/50 text-amber-300"
+                                    : "bg-amber-100 text-amber-700"
+                                }`}
+                              >
+                                {attraction}
+                              </span>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* GPS Coordinates */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-gray-50 rounded-xl">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">
-                      Latitude
-                    </p>
-                    <p className="text-lg font-mono font-medium">
+                  <div
+                    className={`p-4 rounded-xl ${
+                      darkMode ? "bg-slate-700" : "bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Navigation
+                        className={`w-4 h-4 ${
+                          darkMode ? "text-gray-500" : "text-gray-400"
+                        }`}
+                      />
+                      <p
+                        className={`text-xs uppercase tracking-wide ${
+                          darkMode ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
+                        Latitude
+                      </p>
+                    </div>
+                    <p
+                      className={`text-lg font-mono font-medium ${
+                        darkMode ? "text-white" : "text-gray-800"
+                      }`}
+                    >
                       {(selectedCity.latitude || selectedCity.lat)?.toFixed(
                         6
                       ) || "N/A"}
                     </p>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-xl">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">
-                      Longitude
-                    </p>
-                    <p className="text-lg font-mono font-medium">
+                  <div
+                    className={`p-4 rounded-xl ${
+                      darkMode ? "bg-slate-700" : "bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Navigation
+                        className={`w-4 h-4 rotate-90 ${
+                          darkMode ? "text-gray-500" : "text-gray-400"
+                        }`}
+                      />
+                      <p
+                        className={`text-xs uppercase tracking-wide ${
+                          darkMode ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
+                        Longitude
+                      </p>
+                    </div>
+                    <p
+                      className={`text-lg font-mono font-medium ${
+                        darkMode ? "text-white" : "text-gray-800"
+                      }`}
+                    >
                       {(selectedCity.longitude || selectedCity.lng)?.toFixed(
                         6
                       ) || "N/A"}
@@ -261,56 +764,142 @@ export default function CitiesPage() {
                 </div>
 
                 {selectedCity.id && (
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">
+                  <div
+                    className={`mt-4 pt-4 ${
+                      darkMode
+                        ? "border-t border-slate-600"
+                        : "border-t border-gray-100"
+                    }`}
+                  >
+                    <p
+                      className={`text-xs uppercase tracking-wide ${
+                        darkMode ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    >
                       ID
                     </p>
-                    <code className="text-sm bg-gray-100 px-2 py-1 rounded">
+                    <code
+                      className={`text-sm px-2 py-1 rounded ${
+                        darkMode
+                          ? "bg-slate-700 text-gray-200"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
                       {selectedCity.id}
                     </code>
                   </div>
                 )}
 
-                <button
-                  onClick={() => setSelectedCity(null)}
-                  className="mt-6 w-full py-3 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  Fermer
-                </button>
+                {/* Action Buttons */}
+                <div className="mt-6 flex gap-3">
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${
+                      selectedCity.latitude || selectedCity.lat
+                    },${selectedCity.longitude || selectedCity.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Voir sur Google Maps
+                  </a>
+                  <button
+                    onClick={() => setSelectedCity(null)}
+                    className={`px-6 py-3 rounded-xl transition-colors ${
+                      darkMode
+                        ? "border border-slate-600 text-gray-300 hover:bg-slate-700"
+                        : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    Fermer
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
           {/* Popular Cities */}
           {!selectedCity && (
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6">
-              <h3 className="font-bold text-gray-700 mb-4">
+            <div
+              className={`rounded-2xl p-6 ${
+                darkMode
+                  ? "bg-slate-800 border border-slate-700"
+                  : "bg-gradient-to-br from-amber-50 to-orange-50"
+              }`}
+            >
+              <h3
+                className={`font-bold mb-4 ${
+                  darkMode ? "text-white" : "text-gray-700"
+                }`}
+              >
                 Villes Principales
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { name: "Casablanca", emoji: "🏢" },
-                  { name: "Rabat", emoji: "🏛️" },
-                  { name: "Marrakech", emoji: "🕌" },
-                  { name: "Fès", emoji: "🏺" },
-                  { name: "Tanger", emoji: "⛴️" },
-                  { name: "Agadir", emoji: "🏖️" },
+                  {
+                    name: "Casablanca",
+                    emoji: "🏢",
+                    lat: 33.5731,
+                    lng: -7.5898,
+                  },
+                  { name: "Rabat", emoji: "🏛️", lat: 34.0209, lng: -6.8416 },
+                  {
+                    name: "Marrakech",
+                    emoji: "🕌",
+                    lat: 31.6295,
+                    lng: -7.9811,
+                  },
+                  { name: "Fès", emoji: "🏺", lat: 34.0181, lng: -5.0078 },
+                  { name: "Tanger", emoji: "⛴️", lat: 35.7595, lng: -5.834 },
+                  { name: "Agadir", emoji: "🏖️", lat: 30.4278, lng: -9.5981 },
                 ].map((city) => (
                   <button
                     key={city.name}
                     onClick={() => {
-                      const found = cities.find((c) =>
-                        (c.name || c.nom)
+                      // Normalize function for comparison
+                      const normalize = (str) =>
+                        str
                           ?.toLowerCase()
-                          .includes(city.name.toLowerCase())
-                      );
-                      if (found) setSelectedCity(found);
-                      else toast.error(`${city.name} non trouvée`);
+                          .normalize("NFD")
+                          .replace(/[\u0300-\u036f]/g, "")
+                          .trim() || "";
+
+                      const cityNameNorm = normalize(city.name);
+
+                      // Try to find in API cities
+                      const found = cities.find((c) => {
+                        const apiName = normalize(c.name || c.nom);
+                        return (
+                          apiName.includes(cityNameNorm) ||
+                          cityNameNorm.includes(apiName)
+                        );
+                      });
+
+                      if (found) {
+                        setSelectedCity(found);
+                      } else {
+                        // Fallback: create city object with known coordinates
+                        const fallbackCity = {
+                          name: city.name,
+                          nom: city.name,
+                          latitude: city.lat,
+                          longitude: city.lng,
+                          lat: city.lat,
+                          lng: city.lng,
+                        };
+                        setSelectedCity(fallbackCity);
+                      }
                     }}
-                    className="flex items-center gap-2 p-3 bg-white rounded-xl hover:shadow-md transition-all text-left"
+                    className={`flex items-center gap-2 p-3 rounded-xl hover:shadow-md transition-all text-left ${
+                      darkMode ? "bg-slate-700 hover:bg-slate-600" : "bg-white"
+                    }`}
                   >
                     <span className="text-2xl">{city.emoji}</span>
-                    <span className="font-medium text-gray-700">
+                    <span
+                      className={`font-medium ${
+                        darkMode ? "text-gray-200" : "text-gray-700"
+                      }`}
+                    >
                       {city.name}
                     </span>
                   </button>

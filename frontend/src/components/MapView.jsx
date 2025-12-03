@@ -9,6 +9,7 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import L from "leaflet";
+import { useTheme } from "../context/ThemeContext";
 
 // Fix for default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -93,6 +94,8 @@ export default function MapView({
   onMapClick = null,
   selectionPoint = null,
 }) {
+  const { getMapTileUrl, getMapAttribution } = useTheme();
+
   // Parse polyline string to coordinates
   const polylineCoords = useMemo(() => {
     if (!routePolyline) return [];
@@ -135,10 +138,7 @@ export default function MapView({
         scrollWheelZoom={true}
         className="h-full w-full"
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <TileLayer attribution={getMapAttribution()} url={getMapTileUrl()} />
 
         {/* Map click handler for selection mode */}
         <MapClickHandler

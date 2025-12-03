@@ -66,39 +66,47 @@ export default function RouteOptimizer() {
   };
 
   const addWaypoint = () => {
-    if (waypoints.length >= 15) {
-      toast.error("Maximum 15 points autorisés");
-      return;
-    }
-    const newId = Math.max(...waypoints.map((w) => w.id), 0) + 1;
-    setWaypoints([
-      ...waypoints,
-      {
-        id: newId,
-        name: "",
-        latitude: 33.0,
-        longitude: -7.0,
-      },
-    ]);
+    setWaypoints((prevWaypoints) => {
+      if (prevWaypoints.length >= 15) {
+        toast.error("Maximum 15 points autorisés");
+        return prevWaypoints;
+      }
+      const newId = Math.max(...prevWaypoints.map((w) => w.id), 0) + 1;
+      return [
+        ...prevWaypoints,
+        {
+          id: newId,
+          name: "",
+          latitude: 33.0,
+          longitude: -7.0,
+        },
+      ];
+    });
   };
 
   const removeWaypoint = (id) => {
-    if (waypoints.length <= 2) {
-      toast.error("Minimum 2 points requis");
-      return;
-    }
-    setWaypoints(waypoints.filter((w) => w.id !== id));
+    setWaypoints((prevWaypoints) => {
+      if (prevWaypoints.length <= 2) {
+        toast.error("Minimum 2 points requis");
+        return prevWaypoints;
+      }
+      return prevWaypoints.filter((w) => w.id !== id);
+    });
   };
 
   const updateWaypoint = (id, field, value) => {
-    setWaypoints(
-      waypoints.map((w) => (w.id === id ? { ...w, [field]: value } : w))
+    setWaypoints((prevWaypoints) =>
+      prevWaypoints.map((w) => (w.id === id ? { ...w, [field]: value } : w))
     );
   };
 
   const selectCity = (id, city) => {
-    setWaypoints(
-      waypoints.map((w) =>
+    if (!city || !city.name) {
+      console.warn("Invalid city selection:", city);
+      return;
+    }
+    setWaypoints((prevWaypoints) =>
+      prevWaypoints.map((w) =>
         w.id === id
           ? {
               ...w,
@@ -237,21 +245,32 @@ export default function RouteOptimizer() {
                 <button
                   key={city.name}
                   onClick={() => {
-                    if (waypoints.length < 15) {
+                    setWaypoints((prevWaypoints) => {
+                      if (prevWaypoints.length >= 15) {
+                        toast.error("Maximum 15 points");
+                        return prevWaypoints;
+                      }
+                      // Check if city already exists
+                      const exists = prevWaypoints.some(
+                        (w) => w.name === city.name
+                      );
+                      if (exists) {
+                        toast.error(`${city.name} est déjà dans la liste`);
+                        return prevWaypoints;
+                      }
                       const newId =
-                        Math.max(...waypoints.map((w) => w.id), 0) + 1;
-                      setWaypoints([
-                        ...waypoints,
+                        Math.max(...prevWaypoints.map((w) => w.id), 0) + 1;
+                      toast.success(`${city.name} ajouté`);
+                      return [
+                        ...prevWaypoints,
                         {
                           id: newId,
                           name: city.name,
                           latitude: city.lat,
                           longitude: city.lng,
                         },
-                      ]);
-                    } else {
-                      toast.error("Maximum 15 points");
-                    }
+                      ];
+                    });
                   }}
                   className="px-2 py-1 text-xs rounded-md bg-white text-gray-600 hover:bg-purple-100 hover:text-purple-700 transition-colors border border-gray-200"
                 >

@@ -14,8 +14,10 @@ import {
   X,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useTheme } from "../context/ThemeContext";
 
 export default function NotificationsPage() {
+  const { darkMode } = useTheme();
   const [filter, setFilter] = useState("all");
   const [notifications, setNotifications] = useState([
     {
@@ -155,7 +157,11 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+          <h1
+            className={`text-2xl md:text-3xl font-bold flex items-center gap-3 ${
+              darkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg relative">
               <Bell className="w-6 h-6 text-white" />
               {unreadCount > 0 && (
@@ -166,7 +172,7 @@ export default function NotificationsPage() {
             </div>
             Notifications
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
             {unreadCount > 0
               ? `${unreadCount} notification(s) non lue(s)`
               : "Toutes les notifications sont lues"}
@@ -177,14 +183,22 @@ export default function NotificationsPage() {
           <button
             onClick={markAllAsRead}
             disabled={unreadCount === 0}
-            className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className={`px-4 py-2 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
+              darkMode
+                ? "bg-blue-900/50 text-blue-300 hover:bg-blue-900"
+                : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+            }`}
           >
             <CheckCheck className="w-4 h-4" /> Tout marquer lu
           </button>
           <button
             onClick={clearAll}
             disabled={notifications.length === 0}
-            className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className={`px-4 py-2 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
+              darkMode
+                ? "bg-red-900/50 text-red-300 hover:bg-red-900"
+                : "bg-red-100 text-red-700 hover:bg-red-200"
+            }`}
           >
             <Trash2 className="w-4 h-4" /> Tout effacer
           </button>
@@ -206,6 +220,8 @@ export default function NotificationsPage() {
             className={`px-4 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
               filter === f.key
                 ? "bg-primary-600 text-white shadow-lg"
+                : darkMode
+                ? "bg-slate-800 text-gray-300 hover:bg-slate-700 border border-slate-600"
                 : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
             }`}
           >
@@ -221,23 +237,47 @@ export default function NotificationsPage() {
       </div>
 
       {/* Notifications List */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+      <div
+        className={`rounded-2xl shadow-xl overflow-hidden ${
+          darkMode
+            ? "bg-slate-800 border border-slate-700"
+            : "bg-white border border-gray-100"
+        }`}
+      >
         {filteredNotifications.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-              <Bell className="w-8 h-8 text-gray-400" />
+            <div
+              className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+                darkMode ? "bg-slate-700" : "bg-gray-100"
+              }`}
+            >
+              <Bell
+                className={`w-8 h-8 ${
+                  darkMode ? "text-gray-500" : "text-gray-400"
+                }`}
+              />
             </div>
-            <h3 className="text-lg font-semibold text-gray-700">
+            <h3
+              className={`text-lg font-semibold ${
+                darkMode ? "text-gray-200" : "text-gray-700"
+              }`}
+            >
               Aucune notification
             </h3>
-            <p className="text-gray-500 mt-1">
+            <p
+              className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}
+            >
               {filter === "all"
                 ? "Vous n'avez aucune notification"
                 : "Aucune notification dans cette catégorie"}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div
+            className={`divide-y ${
+              darkMode ? "divide-slate-700" : "divide-gray-100"
+            }`}
+          >
             {filteredNotifications.map((notification) => {
               const colors = typeColors[notification.type];
               const Icon = notification.icon;
@@ -245,9 +285,13 @@ export default function NotificationsPage() {
               return (
                 <div
                   key={notification.id}
-                  className={`p-4 hover:bg-gray-50 transition-colors ${
-                    !notification.read ? "bg-blue-50/50" : ""
-                  }`}
+                  className={`p-4 transition-colors ${
+                    !notification.read
+                      ? darkMode
+                        ? "bg-blue-900/20"
+                        : "bg-blue-50/50"
+                      : ""
+                  } ${darkMode ? "hover:bg-slate-700" : "hover:bg-gray-50"}`}
                 >
                   <div className="flex items-start gap-4">
                     {/* Icon */}
@@ -264,7 +308,11 @@ export default function NotificationsPage() {
                           <h4
                             className={`font-semibold ${
                               !notification.read
-                                ? "text-gray-900"
+                                ? darkMode
+                                  ? "text-white"
+                                  : "text-gray-900"
+                                : darkMode
+                                ? "text-gray-200"
                                 : "text-gray-700"
                             }`}
                           >
@@ -275,10 +323,18 @@ export default function NotificationsPage() {
                               />
                             )}
                           </h4>
-                          <p className="text-gray-600 text-sm mt-0.5">
+                          <p
+                            className={`text-sm mt-0.5 ${
+                              darkMode ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
                             {notification.message}
                           </p>
-                          <p className="text-gray-400 text-xs mt-1 flex items-center gap-1">
+                          <p
+                            className={`text-xs mt-1 flex items-center gap-1 ${
+                              darkMode ? "text-gray-500" : "text-gray-400"
+                            }`}
+                          >
                             <Clock className="w-3 h-3" />
                             {notification.time}
                           </p>
@@ -289,18 +345,36 @@ export default function NotificationsPage() {
                           {!notification.read && (
                             <button
                               onClick={() => markAsRead(notification.id)}
-                              className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+                              className={`p-2 rounded-lg transition-colors ${
+                                darkMode
+                                  ? "hover:bg-slate-600"
+                                  : "hover:bg-gray-200"
+                              }`}
                               title="Marquer comme lu"
                             >
-                              <Check className="w-4 h-4 text-gray-500" />
+                              <Check
+                                className={`w-4 h-4 ${
+                                  darkMode ? "text-gray-400" : "text-gray-500"
+                                }`}
+                              />
                             </button>
                           )}
                           <button
                             onClick={() => deleteNotification(notification.id)}
-                            className="p-2 rounded-lg hover:bg-red-100 transition-colors"
-                            title="Supprimer"
+                            className={`p-2 rounded-lg transition-colors group ${
+                              darkMode
+                                ? "hover:bg-red-900/50"
+                                : "hover:bg-red-100"
+                            }`}
+                            title="Supprimer / Fermer"
                           >
-                            <X className="w-4 h-4 text-gray-500 hover:text-red-500" />
+                            <X
+                              className={`w-5 h-5 ${
+                                darkMode
+                                  ? "text-gray-400 group-hover:text-red-400"
+                                  : "text-gray-500 group-hover:text-red-500"
+                              }`}
+                            />
                           </button>
                         </div>
                       </div>
@@ -343,7 +417,11 @@ export default function NotificationsPage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="bg-white rounded-xl p-4 shadow border border-gray-100"
+            className={`rounded-xl p-4 shadow ${
+              darkMode
+                ? "bg-slate-800 border border-slate-700"
+                : "bg-white border border-gray-100"
+            }`}
           >
             <div className="flex items-center gap-3">
               <div
@@ -352,8 +430,20 @@ export default function NotificationsPage() {
                 <stat.icon className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-                <p className="text-sm text-gray-500">{stat.label}</p>
+                <p
+                  className={`text-2xl font-bold ${
+                    darkMode ? "text-white" : "text-gray-800"
+                  }`}
+                >
+                  {stat.value}
+                </p>
+                <p
+                  className={`text-sm ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  {stat.label}
+                </p>
               </div>
             </div>
           </div>
