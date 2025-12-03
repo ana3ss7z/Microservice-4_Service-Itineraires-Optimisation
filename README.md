@@ -23,17 +23,29 @@ Base URL : `/routes`
 
 ## Endpoints
 
+### Routes
+
 | Méthode | Endpoint               | Description                                | Authentification    |
 | ------- | ---------------------- | ------------------------------------------ | ------------------- |
 | POST    | `/routes/coordinates`  | Calcul d'itinéraire depuis coordonnées GPS | Non                 |
 | POST    | `/routes/address`      | Calcul depuis adresses textuelles          | Non                 |
 | POST    | `/routes/optimize`     | **Optimisation de tournée multi-points**   | Non                 |
-| POST    | `/routes/demande-info` | Calcul d'itinéraire avec infos de demande  | Non (userId param)  |
+| POST    | `/routes/demande-info` | Calcul d'itinéraire avec infos de demande  | Non                 |
 | GET     | `/routes/history`      | Historique des trajets d'un utilisateur    | Non (userId requis) |
 | GET     | `/routes/user-info`    | Infos complètes utilisateur avec volume    | Non (userId requis) |
 | GET     | `/routes/{id}`         | Détail d'un trajet par ID                  | Non                 |
 | GET     | `/routes/ville`        | Liste de toutes les villes connues         | Non                 |
 | GET     | `/routes/health`       | Vérification que le service est vivant     | Non                 |
+
+### Localisation
+
+| Méthode | Endpoint                   | Description                                      | Authentification |
+| ------- | -------------------------- | ------------------------------------------------ | ---------------- |
+| GET     | `/location/current`        | Localisation actuelle (auto-détection IP client) | Non              |
+| GET     | `/location/ip/{ipAddress}` | Localisation pour une IP spécifique              | Non              |
+| GET     | `/location/lookup?ip=`     | Recherche localisation par query param           | Non              |
+| POST    | `/location/refresh`        | Forcer mise à jour de la localisation            | Non              |
+| GET     | `/location/server-info`    | Informations du serveur                          | Non              |
 
 ---
 
@@ -142,6 +154,36 @@ Contient les mêmes champs que l'entité sauvegardée (sans géométrie PostGIS)
 }
 ```
 
+### `LocationInfoDTO` (réponse localisation)
+
+```json
+{
+  "ipAddress": "41.140.0.1",
+  "clientIp": "192.168.1.100",
+  "forwardedFor": null,
+  "country": "Morocco",
+  "countryCode": "MA",
+  "region": "Casablanca-Settat",
+  "regionName": "Casablanca-Settat",
+  "city": "Casablanca",
+  "zip": "20000",
+  "latitude": 33.5731,
+  "longitude": -7.5898,
+  "timezone": "Africa/Casablanca",
+  "isp": "Maroc Telecom",
+  "org": "IAM",
+  "serverHostname": "server-prod",
+  "serverIp": "172.30.80.11",
+  "serverPort": 8082,
+  "osName": "Linux",
+  "osVersion": "5.15.0",
+  "javaVersion": "21.0.1",
+  "timestamp": "2025-12-03 16:30:00",
+  "status": "SUCCESS",
+  "message": "Localisation récupérée avec succès"
+}
+```
+
 ---
 
 ## Exemples de requêtes
@@ -234,6 +276,46 @@ GET /routes/user-info?userId=user123&page=0&size=10
 ```
 
 Retourne une liste de `UserRouteInfoDTO` avec toutes les informations de routes incluant `totalDistanceKm`, `totalDurationMin`, les détails de volume/marchandise et les informations utilisateur.
+
+### 9. Localisation actuelle (auto-détection IP)
+
+```http
+GET /location/current
+```
+
+Détecte automatiquement l'IP du client et retourne les informations de géolocalisation.
+
+### 10. Localisation par adresse IP spécifique
+
+```http
+GET /location/ip/41.140.0.1
+```
+
+Retourne les informations de localisation pour l'IP marocaine spécifiée.
+
+### 11. Recherche de localisation (query param)
+
+```http
+GET /location/lookup?ip=8.8.8.8
+```
+
+Recherche la localisation pour l'IP Google DNS (USA).
+
+### 12. Rafraîchir / Mise à jour localisation
+
+```http
+POST /location/refresh
+```
+
+Force une mise à jour des informations de localisation.
+
+### 13. Informations serveur
+
+```http
+GET /location/server-info
+```
+
+Retourne les informations du serveur (hostname, IP, OS, version Java).
 
 ---
 

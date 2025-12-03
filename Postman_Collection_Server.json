@@ -681,6 +681,103 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "📍 Localisation",
+      "description": "Endpoints pour la mise à jour et récupération de la localisation via IP",
+      "item": [
+        {
+          "name": "Localisation Actuelle (Auto-détection IP)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/location/current",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["location", "current"]
+            },
+            "description": "Récupère automatiquement les informations de localisation basées sur l'IP du client"
+          },
+          "response": []
+        },
+        {
+          "name": "Localisation par IP - Google DNS",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/location/ip/8.8.8.8",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["location", "ip", "8.8.8.8"]
+            },
+            "description": "Récupère la localisation pour l'IP 8.8.8.8 (Google DNS - USA)"
+          },
+          "response": []
+        },
+        {
+          "name": "Localisation par IP - Maroc Telecom",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/location/ip/41.140.0.1",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["location", "ip", "41.140.0.1"]
+            },
+            "description": "Récupère la localisation pour une IP marocaine"
+          },
+          "response": []
+        },
+        {
+          "name": "Recherche Localisation (Query Param)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/location/lookup?ip=105.158.0.1",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["location", "lookup"],
+              "query": [
+                {
+                  "key": "ip",
+                  "value": "105.158.0.1",
+                  "description": "Adresse IP à localiser"
+                }
+              ]
+            },
+            "description": "Recherche la localisation pour une IP donnée en paramètre"
+          },
+          "response": []
+        },
+        {
+          "name": "Rafraîchir Localisation",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/location/refresh",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["location", "refresh"]
+            },
+            "description": "Force une mise à jour des informations de localisation"
+          },
+          "response": []
+        },
+        {
+          "name": "Informations Serveur",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/location/server-info",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["location", "server-info"]
+            },
+            "description": "Récupère les informations du serveur (hostname, IP, OS, Java version)"
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }
