@@ -545,6 +545,163 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "📦 Demande & Volume",
+      "description": "Endpoints pour gérer les demandes avec informations de volume et marchandise",
+      "item": [
+        {
+          "name": "Calcul Itinéraire avec Demande - Casablanca → Rabat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"volume\": 15.5,\n  \"natureMarchandise\": \"Meubles de salon\",\n  \"dateDepart\": \"2025-12-15T10:00:00\",\n  \"adresseDepart\": \"123 Rue Mohammed V, Casablanca\",\n  \"adresseDestination\": \"456 Avenue Hassan II, Rabat\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/demande-info?userId=user123",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "demande-info"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user123",
+                  "description": "Identifiant de l'utilisateur"
+                }
+              ]
+            },
+            "description": "Calcule un itinéraire avec les informations de demande (volume, nature de marchandise). Retourne totalDistanceKm, totalDurationMin et les détails de volume."
+          },
+          "response": []
+        },
+        {
+          "name": "Calcul Itinéraire avec Demande - Fes → Marrakech",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"volume\": 25.0,\n  \"natureMarchandise\": \"Électroménager\",\n  \"dateDepart\": \"2025-12-20T08:30:00\",\n  \"adresseDepart\": \"Fes, Morocco\",\n  \"adresseDestination\": \"Marrakech, Morocco\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/demande-info?userId=user456",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "demande-info"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user456",
+                  "description": "Identifiant de l'utilisateur"
+                }
+              ]
+            },
+            "description": "Calcule un itinéraire pour une demande d'électroménager entre Fès et Marrakech"
+          },
+          "response": []
+        },
+        {
+          "name": "Calcul Itinéraire avec Demande - Produits Alimentaires",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"volume\": 50.0,\n  \"natureMarchandise\": \"Produits alimentaires réfrigérés\",\n  \"dateDepart\": \"2025-12-18T06:00:00\",\n  \"adresseDepart\": \"Agadir, Morocco\",\n  \"adresseDestination\": \"Casablanca, Morocco\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/demande-info?userId=user789",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "demande-info"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user789",
+                  "description": "Identifiant de l'utilisateur"
+                }
+              ]
+            },
+            "description": "Calcule un itinéraire pour une livraison de produits alimentaires"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtenir Informations Utilisateur Complètes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/user-info?userId=user123&page=0&size=10",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "user-info"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user123",
+                  "description": "Identifiant de l'utilisateur"
+                },
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": "Numéro de page (0-indexed)"
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "description": "Nombre d'éléments par page"
+                }
+              ]
+            },
+            "description": "Récupère toutes les informations de l'utilisateur incluant totalDistanceKm, totalDurationMin et volume"
+          },
+          "response": []
+        },
+        {
+          "name": "Informations Utilisateur - user456",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/user-info?userId=user456&page=0&size=20",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "user-info"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user456",
+                  "description": "Identifiant de l'utilisateur"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": "Plus d'éléments par page"
+                }
+              ]
+            },
+            "description": "Récupère les informations complètes d'un autre utilisateur"
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

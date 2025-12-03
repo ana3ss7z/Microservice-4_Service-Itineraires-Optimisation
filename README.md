@@ -23,15 +23,17 @@ Base URL : `/routes`
 
 ## Endpoints
 
-| Méthode | Endpoint              | Description                                | Authentification    |
-| ------- | --------------------- | ------------------------------------------ | ------------------- |
-| POST    | `/routes/coordinates` | Calcul d’itinéraire depuis coordonnées GPS | Non                 |
-| POST    | `/routes/address`     | Calcul depuis adresses textuelles          | Non                 |
-| POST    | `/routes/optimize`    | **Optimisation de tournée multi-points**   | Non                 |
-| GET     | `/routes/history`     | Historique des trajets d’un utilisateur    | Non (userId requis) |
-| GET     | `/routes/{id}`        | Détail d’un trajet par ID                  | Non                 |
-| GET     | `/routes/ville`       | Liste de toutes les villes connues         | Non                 |
-| GET     | `/routes/health`      | Vérification que le service est vivant     | Non                 |
+| Méthode | Endpoint               | Description                                | Authentification    |
+| ------- | ---------------------- | ------------------------------------------ | ------------------- |
+| POST    | `/routes/coordinates`  | Calcul d'itinéraire depuis coordonnées GPS | Non                 |
+| POST    | `/routes/address`      | Calcul depuis adresses textuelles          | Non                 |
+| POST    | `/routes/optimize`     | **Optimisation de tournée multi-points**   | Non                 |
+| POST    | `/routes/demande-info` | Calcul d'itinéraire avec infos de demande  | Non (userId param)  |
+| GET     | `/routes/history`      | Historique des trajets d'un utilisateur    | Non (userId requis) |
+| GET     | `/routes/user-info`    | Infos complètes utilisateur avec volume    | Non (userId requis) |
+| GET     | `/routes/{id}`         | Détail d'un trajet par ID                  | Non                 |
+| GET     | `/routes/ville`        | Liste de toutes les villes connues         | Non                 |
+| GET     | `/routes/health`       | Vérification que le service est vivant     | Non                 |
 
 ---
 
@@ -85,7 +87,51 @@ Base URL : `/routes`
 
 ### `RouteDTO` (historique et détail)
 
-Contient les mêmes champs que l’entité sauvegardée (sans géométrie PostGIS).
+Contient les mêmes champs que l'entité sauvegardée (sans géométrie PostGIS).
+
+### `DemandeRequestDTO` (création de demande avec volume)
+
+```json
+{
+  "volume": 15.5,
+  "natureMarchandise": "Meubles de salon",
+  "dateDepart": "2025-12-15T10:00:00",
+  "adresseDepart": "123 Rue Mohammed V, Casablanca",
+  "adresseDestination": "456 Avenue Hassan II, Rabat"
+}
+```
+
+### `UserRouteInfoDTO` (réponse complète avec volume)
+
+```json
+{
+  "routeId": "550e8400-e29b-41d4-a716-446655440000",
+  "userId": "user123",
+  "adresseDepart": "123 Rue Mohammed V, Casablanca",
+  "adresseDestination": "456 Avenue Hassan II, Rabat",
+  "originLatitude": 33.5731,
+  "originLongitude": -7.5898,
+  "originCity": "Casablanca",
+  "destinationLatitude": 34.0209,
+  "destinationLongitude": -6.8416,
+  "destinationCity": "Rabat",
+  "totalDistanceKm": 133.7,
+  "totalDurationMin": 102,
+  "distanceKm": 66.85,
+  "durationMin": 51,
+  "returnDistanceKm": 66.85,
+  "returnDurationMin": 51,
+  "volume": 15.5,
+  "natureMarchandise": "Meubles de salon",
+  "dateDepart": "2025-12-15T10:00:00",
+  "includeReturn": true,
+  "isOptimized": false,
+  "optimizationType": null,
+  "createdAt": "2025-12-03 14:30:00",
+  "status": "SUCCESS",
+  "calculatedBy": "COORDINATES"
+}
+```
 
 ---
 
@@ -149,6 +195,31 @@ Retourne toutes les villes sauvegardées (normalisées : Casablanca, Rabat, Marr
 GET /routes/health
 → "Service opérationnel"
 ```
+
+### 7. Calcul d'itinéraire avec demande et volume
+
+```http
+POST /routes/demande-info?userId=user123
+Content-Type: application/json
+
+{
+  "volume": 15.5,
+  "natureMarchandise": "Meubles de salon",
+  "dateDepart": "2025-12-15T10:00:00",
+  "adresseDepart": "123 Rue Mohammed V, Casablanca",
+  "adresseDestination": "456 Avenue Hassan II, Rabat"
+}
+```
+
+**Réponse** : `UserRouteInfoDTO` contenant `totalDistanceKm`, `totalDurationMin` et les informations de volume.
+
+### 8. Récupérer les informations complètes d'un utilisateur
+
+```http
+GET /routes/user-info?userId=user123&page=0&size=10
+```
+
+Retourne une liste de `UserRouteInfoDTO` avec toutes les informations de routes incluant `totalDistanceKm`, `totalDurationMin` et les détails de volume/marchandise.
 
 ---
 
