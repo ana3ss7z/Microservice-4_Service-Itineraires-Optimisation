@@ -116,18 +116,51 @@ export default function RouteHistory() {
   };
 
   const formatDuration = (minutes) => {
-    if (!minutes) return "-";
+    if (minutes === null || minutes === undefined) return "Non calculé";
+    if (minutes === 0) return "Non calculé";
     const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
+    const mins = Math.round(minutes % 60);
     if (hours === 0) return `${mins} min`;
     return `${hours}h ${mins}min`;
   };
 
+  const formatDistance = (km) => {
+    if (km === null || km === undefined || km === 0) return "Non calculé";
+    return `${km.toFixed(1)} km`;
+  };
+
+  // Clean city name - keep only first part (remove Arabic/Tifinagh scripts)
+  const cleanCityName = (name) => {
+    if (!name) return "N/A";
+    // Split by space and take first part, or remove non-Latin characters
+    const cleaned = name.split(" ")[0];
+    // If the first part is still non-Latin, try to extract Latin text
+    if (/^[\u0600-\u06FF\u2D30-\u2D7F]/.test(cleaned)) {
+      // Arabic or Tifinagh first - try to find Latin text
+      const latinMatch = name.match(/[A-Za-zÀ-ÿ]+/);
+      return latinMatch ? latinMatch[0] : name.split(" ")[0];
+    }
+    return cleaned;
+  };
+
   const formatDate = (dateStr) => {
-    if (!dateStr) return "-";
+    if (!dateStr) return "Non disponible";
     try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return "-";
+      // Handle various date formats from Java backend
+      let date;
+      if (Array.isArray(dateStr)) {
+        // Handle LocalDateTime array format [year, month, day, hour, minute, second, nano]
+        const [year, month, day, hour = 0, minute = 0, second = 0] = dateStr;
+        date = new Date(year, month - 1, day, hour, minute, second);
+      } else if (typeof dateStr === "string") {
+        // Handle ISO string or other string formats
+        date = new Date(dateStr);
+      } else {
+        return "Non disponible";
+      }
+
+      if (isNaN(date.getTime())) return "Non disponible";
+
       return date.toLocaleDateString("fr-FR", {
         day: "2-digit",
         month: "short",
@@ -136,7 +169,7 @@ export default function RouteHistory() {
         minute: "2-digit",
       });
     } catch {
-      return "-";
+      return "Non disponible";
     }
   };
 
@@ -572,10 +605,13 @@ export default function RouteHistory() {
                             darkMode ? "text-white" : "text-gray-800"
                           }`}
                         >
-                          {route.originCity || route.adresseDepart || "N/A"} →{" "}
-                          {route.destinationCity ||
-                            route.adresseDestination ||
-                            "N/A"}
+                          {cleanCityName(
+                            route.originCity || route.adresseDepart
+                          )}{" "}
+                          →{" "}
+                          {cleanCityName(
+                            route.destinationCity || route.adresseDestination
+                          )}
                         </p>
                         <p
                           className={`text-xs ${
@@ -590,10 +626,9 @@ export default function RouteHistory() {
                           darkMode ? "text-gray-300" : "text-gray-600"
                         }`}
                       >
-                        {route.totalDistanceKm?.toFixed(1) ||
-                          route.distanceKm?.toFixed(1) ||
-                          "-"}{" "}
-                        km
+                        {formatDistance(
+                          route.totalDistanceKm || route.distanceKm
+                        )}
                       </span>
                     </div>
                   ))}
@@ -673,7 +708,9 @@ export default function RouteHistory() {
                         >
                           <MapPin className="w-4 h-4 text-emerald-500" />
                           <span className="truncate max-w-xs">
-                            {route.originCity || route.adresseDepart || "N/A"}
+                            {cleanCityName(
+                              route.originCity || route.adresseDepart
+                            )}
                           </span>
                           <ArrowRight
                             className={`w-4 h-4 ${
@@ -681,9 +718,9 @@ export default function RouteHistory() {
                             }`}
                           />
                           <span className="truncate max-w-xs">
-                            {route.destinationCity ||
-                              route.adresseDestination ||
-                              "N/A"}
+                            {cleanCityName(
+                              route.destinationCity || route.adresseDestination
+                            )}
                           </span>
                         </div>
 
@@ -694,10 +731,9 @@ export default function RouteHistory() {
                         >
                           <span className="flex items-center gap-1">
                             <MapPin className="w-4 h-4" />
-                            {route.totalDistanceKm?.toFixed(1) ||
-                              route.distanceKm?.toFixed(1) ||
-                              "-"}{" "}
-                            km
+                            {formatDistance(
+                              route.totalDistanceKm || route.distanceKm
+                            )}
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="w-4 h-4" />

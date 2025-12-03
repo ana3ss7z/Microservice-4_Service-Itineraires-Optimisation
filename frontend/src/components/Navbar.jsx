@@ -1,5 +1,4 @@
 import {
-  Menu,
   Bell,
   User,
   Settings,
@@ -64,7 +63,7 @@ const quickLinks = [
   { name: "Voir les villes", path: "/cities", icon: MapPin },
 ];
 
-export default function Navbar({ onMenuClick }) {
+export default function Navbar({ onMenuClick, isCollapsed }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -132,17 +131,41 @@ export default function Navbar({ onMenuClick }) {
       <div className="h-full px-4 flex items-center justify-between">
         {/* Left Section */}
         <div className="flex items-center gap-4">
+          {/* Animated Hamburger Menu */}
           <button
             onClick={onMenuClick}
-            className={`p-2 rounded-xl ${
+            className={`relative w-10 h-10 rounded-xl ${
               darkMode ? "hover:bg-slate-700" : "hover:bg-gray-100"
-            } transition-colors`}
+            } transition-all duration-300 flex items-center justify-center group`}
+            aria-label={isCollapsed ? "Ouvrir le menu" : "Fermer le menu"}
           >
-            <Menu
-              className={`w-6 h-6 ${
-                darkMode ? "text-gray-300" : "text-gray-600"
-              }`}
-            />
+            <div className="flex flex-col justify-center items-center w-6 h-6">
+              <span
+                className={`block h-0.5 w-5 rounded-full transition-all duration-300 ${
+                  darkMode ? "bg-gray-300" : "bg-gray-600"
+                } ${
+                  isCollapsed
+                    ? "translate-y-0 rotate-0"
+                    : "translate-y-[7px] rotate-45"
+                }`}
+              />
+              <span
+                className={`block h-0.5 w-5 rounded-full my-1 transition-all duration-300 ${
+                  darkMode ? "bg-gray-300" : "bg-gray-600"
+                } ${
+                  isCollapsed ? "opacity-100 scale-100" : "opacity-0 scale-0"
+                }`}
+              />
+              <span
+                className={`block h-0.5 w-5 rounded-full transition-all duration-300 ${
+                  darkMode ? "bg-gray-300" : "bg-gray-600"
+                } ${
+                  isCollapsed
+                    ? "translate-y-0 rotate-0"
+                    : "-translate-y-[7px] -rotate-45"
+                }`}
+              />
+            </div>
           </button>
 
           <div className="flex items-center gap-3">

@@ -74,13 +74,14 @@ export default function RouteOptimizer() {
         return prevWaypoints;
       }
       const newId = Math.max(...prevWaypoints.map((w) => w.id), 0) + 1;
+      // Use center of Morocco as default coordinates
       return [
         ...prevWaypoints,
         {
           id: newId,
           name: "",
-          latitude: 33.0,
-          longitude: -7.0,
+          latitude: 31.7917,
+          longitude: -7.0926,
         },
       ];
     });

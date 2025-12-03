@@ -55,24 +55,59 @@ export default function RouteDetailPage() {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleString("fr-FR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    if (!dateString || dateString === "null" || dateString === "undefined")
+      return "Non disponible";
+    try {
+      let date;
+      if (Array.isArray(dateString)) {
+        // Handle LocalDateTime array format [year, month, day, hour, minute, second, nano]
+        const [year, month, day, hour = 0, minute = 0, second = 0] = dateString;
+        date = new Date(year, month - 1, day, hour, minute, second);
+      } else if (typeof dateString === "string") {
+        date = new Date(dateString);
+      } else {
+        return "Non disponible";
+      }
+
+      if (isNaN(date.getTime())) return "Non disponible";
+
+      return date.toLocaleString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return "Non disponible";
+    }
   };
 
   const formatDuration = (minutes) => {
-    if (!minutes) return "N/A";
+    if (!minutes && minutes !== 0) return "N/A";
+    if (minutes === 0) return "0 min";
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
     if (hours > 0) {
       return `${hours}h ${mins}min`;
     }
     return `${mins} min`;
+  };
+
+  // Clean city name to remove Arabic/Tifinagh scripts
+  const cleanCityName = (cityName) => {
+    if (!cityName) return "N/A";
+    // Extract only Latin characters, numbers, spaces, and common punctuation
+    const latinOnly = cityName.match(/[A-Za-zÀ-ÿ0-9\s\-']+/g);
+    return latinOnly ? latinOnly[0].trim() : cityName.split(" ")[0];
+  };
+
+  // Format distance with proper handling of null/0 values
+  const formatDistance = (distance) => {
+    if (distance === null || distance === undefined || isNaN(distance))
+      return "N/A";
+    if (distance === 0) return "0 km";
+    return `${distance.toFixed(1)} km`;
   };
 
   const exportRouteData = () => {
@@ -91,10 +126,10 @@ export default function RouteDetailPage() {
     const url = window.location.href;
     if (navigator.share) {
       navigator.share({
-        title: `Trajet ${route?.originCity || ""} → ${
-          route?.destinationCity || ""
+        title: `Trajet ${cleanCityName(route?.originCity) || ""} → ${
+          cleanCityName(route?.destinationCity) || ""
         }`,
-        text: `Distance: ${route?.totalDistanceKm?.toFixed(1) || "N/A"} km`,
+        text: `Distance: ${formatDistance(route?.totalDistanceKm)}`,
         url: url,
       });
     } else {
@@ -156,23 +191,57 @@ export default function RouteDetailPage() {
 
   if (!route) return null;
 
-  const mapPoints = [];
-  if (route.originLatitude && route.originLongitude) {
-    mapPoints.push({
-      lat: route.originLatitude,
-      lng: route.originLongitude,
-      label: route.originCity || "Départ",
-      type: "origin",
+  // Build waypoints array for the map - handle optimized routes with multiple stops
+  const mapWaypoints = [];
+
+  // Check if we have steps/waypoints data (for optimized routes)
+  if (route.steps && Array.isArray(route.steps) && route.steps.length > 0) {
+    // Use the steps from the route (optimized order)
+    route.steps.forEach((step, index) => {
+      if (step.latitude && step.longitude) {
+        mapWaypoints.push({
+          latitude: step.latitude,
+          longitude: step.longitude,
+          name: cleanCityName(step.name || step.city) || `Point ${index + 1}`,
+          city: cleanCityName(step.city),
+          order: step.order || index + 1,
+        });
+      }
     });
+  } else {
+    // Fallback to origin/destination only (simple routes)
+    if (route.originLatitude && route.originLongitude) {
+      mapWaypoints.push({
+        latitude: route.originLatitude,
+        longitude: route.originLongitude,
+        name: cleanCityName(route.originCity) || "Départ",
+        city: cleanCityName(route.originCity),
+        order: 1,
+      });
+    }
+    if (route.destinationLatitude && route.destinationLongitude) {
+      mapWaypoints.push({
+        latitude: route.destinationLatitude,
+        longitude: route.destinationLongitude,
+        name: cleanCityName(route.destinationCity) || "Arrivée",
+        city: cleanCityName(route.destinationCity),
+        order: 2,
+      });
+    }
   }
-  if (route.destinationLatitude && route.destinationLongitude) {
-    mapPoints.push({
-      lat: route.destinationLatitude,
-      lng: route.destinationLongitude,
-      label: route.destinationCity || "Arrivée",
-      type: "destination",
-    });
-  }
+
+  // Legacy mapPoints for backwards compatibility
+  const mapPoints = mapWaypoints.map((wp, index) => ({
+    lat: wp.latitude,
+    lng: wp.longitude,
+    label: wp.name,
+    type:
+      index === 0
+        ? "origin"
+        : index === mapWaypoints.length - 1
+        ? "destination"
+        : "waypoint",
+  }));
 
   return (
     <div className="space-y-6">
@@ -280,8 +349,8 @@ export default function RouteDetailPage() {
                   darkMode ? "text-white" : "text-gray-800"
                 }`}
               >
-                {route.originCity || "Départ"} →{" "}
-                {route.destinationCity || "Arrivée"}
+                {cleanCityName(route.originCity) || "Départ"} →{" "}
+                {cleanCityName(route.destinationCity) || "Arrivée"}
               </h2>
               <p className={darkMode ? "text-gray-400" : "text-gray-500"}>
                 Calculé le {formatDate(route.createdAt || route.calculatedAt)}
@@ -338,9 +407,9 @@ export default function RouteDetailPage() {
             <div className="bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl p-4 text-white">
               <Navigation className="w-6 h-6 mb-2 opacity-80" />
               <p className="text-2xl font-bold">
-                {route.totalDistanceKm?.toFixed(1) ||
-                  route.distanceKm?.toFixed(1) ||
-                  "N/A"}
+                {formatDistance(
+                  route.totalDistanceKm || route.distanceKm
+                ).replace(" km", "")}
               </p>
               <p className="text-sm opacity-80">km total</p>
             </div>
@@ -663,7 +732,7 @@ export default function RouteDetailPage() {
         {/* Right Column - Map & Addresses */}
         <div className="lg:col-span-2 space-y-6">
           {/* Map */}
-          {mapPoints.length > 0 && (
+          {mapWaypoints.length > 0 && (
             <div
               className={`rounded-2xl shadow-lg p-5 ${
                 darkMode ? "bg-slate-800" : "bg-white"
@@ -676,9 +745,83 @@ export default function RouteDetailPage() {
               >
                 <Map className="w-5 h-5 text-orange-500" />
                 Carte du Trajet
+                {mapWaypoints.length > 2 && (
+                  <span
+                    className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
+                      darkMode
+                        ? "bg-purple-900/50 text-purple-300"
+                        : "bg-purple-100 text-purple-700"
+                    }`}
+                  >
+                    {mapWaypoints.length} étapes
+                  </span>
+                )}
               </h3>
+
+              {/* Cities list for optimized routes */}
+              {mapWaypoints.length > 2 && (
+                <div
+                  className={`mb-4 p-3 rounded-xl ${
+                    darkMode ? "bg-slate-700/50" : "bg-gray-50"
+                  }`}
+                >
+                  <p
+                    className={`text-xs font-medium mb-2 ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    Itinéraire optimisé:
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {mapWaypoints.map((wp, index) => (
+                      <div key={index} className="flex items-center">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                            index === 0
+                              ? darkMode
+                                ? "bg-emerald-900/50 text-emerald-300"
+                                : "bg-emerald-100 text-emerald-700"
+                              : index === mapWaypoints.length - 1
+                              ? darkMode
+                                ? "bg-rose-900/50 text-rose-300"
+                                : "bg-rose-100 text-rose-700"
+                              : darkMode
+                              ? "bg-blue-900/50 text-blue-300"
+                              : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          <span
+                            className={`w-4 h-4 flex items-center justify-center rounded-full text-[10px] font-bold ${
+                              index === 0
+                                ? "bg-emerald-500 text-white"
+                                : index === mapWaypoints.length - 1
+                                ? "bg-rose-500 text-white"
+                                : "bg-blue-500 text-white"
+                            }`}
+                          >
+                            {index + 1}
+                          </span>
+                          {wp.name}
+                        </span>
+                        {index < mapWaypoints.length - 1 && (
+                          <ArrowRight
+                            className={`w-3 h-3 mx-1 ${
+                              darkMode ? "text-gray-500" : "text-gray-400"
+                            }`}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="h-[400px] rounded-xl overflow-hidden">
-                <MapView points={mapPoints} showRoute={true} zoom={7} />
+                <MapView
+                  waypoints={mapWaypoints}
+                  routePolyline={route.routePolyline}
+                  zoom={7}
+                />
               </div>
             </div>
           )}
@@ -720,7 +863,8 @@ export default function RouteDetailPage() {
                       darkMode ? "text-white" : "text-gray-800"
                     }`}
                   >
-                    {route.originCity || route.adresseDepart || "Non spécifié"}
+                    {cleanCityName(route.originCity || route.adresseDepart) ||
+                      "Non spécifié"}
                   </p>
                   {route.adresseDepart && route.originCity && (
                     <p
@@ -728,7 +872,7 @@ export default function RouteDetailPage() {
                         darkMode ? "text-gray-400" : "text-gray-600"
                       }`}
                     >
-                      {route.adresseDepart}
+                      {cleanCityName(route.adresseDepart)}
                     </p>
                   )}
                   {route.originLatitude && route.originLongitude && (
@@ -781,9 +925,9 @@ export default function RouteDetailPage() {
                       darkMode ? "text-white" : "text-gray-800"
                     }`}
                   >
-                    {route.destinationCity ||
-                      route.adresseDestination ||
-                      "Non spécifié"}
+                    {cleanCityName(
+                      route.destinationCity || route.adresseDestination
+                    ) || "Non spécifié"}
                   </p>
                   {route.adresseDestination && route.destinationCity && (
                     <p
@@ -791,7 +935,7 @@ export default function RouteDetailPage() {
                         darkMode ? "text-gray-400" : "text-gray-600"
                       }`}
                     >
-                      {route.adresseDestination}
+                      {cleanCityName(route.adresseDestination)}
                     </p>
                   )}
                   {route.destinationLatitude && route.destinationLongitude && (

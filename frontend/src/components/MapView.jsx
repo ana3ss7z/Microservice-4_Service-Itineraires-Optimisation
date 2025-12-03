@@ -96,6 +96,25 @@ export default function MapView({
 }) {
   const { getMapTileUrl, getMapAttribution } = useTheme();
 
+  // Filter valid waypoints (within reasonable Morocco bounds)
+  const validWaypoints = useMemo(() => {
+    return waypoints.filter((wp) => {
+      const lat = wp.latitude;
+      const lng = wp.longitude;
+      // Morocco approximate bounds: lat 21-36, lng -17 to -1
+      return (
+        lat &&
+        lng &&
+        !isNaN(lat) &&
+        !isNaN(lng) &&
+        lat >= 21 &&
+        lat <= 36 &&
+        lng >= -17 &&
+        lng <= -1
+      );
+    });
+  }, [waypoints]);
+
   // Parse polyline string to coordinates
   const polylineCoords = useMemo(() => {
     if (!routePolyline) return [];
@@ -111,11 +130,11 @@ export default function MapView({
     }
   }, [routePolyline]);
 
-  // Calculate bounds from waypoints
+  // Calculate bounds from valid waypoints
   const bounds = useMemo(() => {
-    if (waypoints.length === 0) return null;
-    return waypoints.map((wp) => [wp.latitude, wp.longitude]);
-  }, [waypoints]);
+    if (validWaypoints.length === 0) return null;
+    return validWaypoints.map((wp) => [wp.latitude, wp.longitude]);
+  }, [validWaypoints]);
 
   return (
     <div
@@ -164,11 +183,11 @@ export default function MapView({
           </Marker>
         )}
 
-        {/* Markers */}
-        {waypoints.map((wp, index) => {
+        {/* Markers - use validWaypoints to only show points within Morocco */}
+        {validWaypoints.map((wp, index) => {
           let icon = waypointIcon;
           if (index === 0) icon = originIcon;
-          else if (index === waypoints.length - 1) icon = destinationIcon;
+          else if (index === validWaypoints.length - 1) icon = destinationIcon;
 
           return (
             <Marker

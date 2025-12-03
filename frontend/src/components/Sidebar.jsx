@@ -48,7 +48,7 @@ const menuItems = [
   },
   {
     path: "/users",
-    name: "Infos Utilisateurs",
+    name: "Profil Utilisateur",
     icon: Users,
     color: "from-indigo-500 to-indigo-600",
   },
@@ -78,7 +78,7 @@ const menuItems = [
   },
 ];
 
-export default function Sidebar({ isOpen, onClose }) {
+export default function Sidebar({ isOpen, onClose, isCollapsed }) {
   const location = useLocation();
   const { darkMode } = useTheme();
 
@@ -87,19 +87,21 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Overlay for mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden animate-fadeIn"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-72 ${
+        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] ${
+          isCollapsed ? "lg:w-20" : "lg:w-72"
+        } w-72 ${
           darkMode ? "bg-slate-800/90" : "bg-white/90"
         } backdrop-blur-xl border-r ${
           darkMode ? "border-slate-700" : "border-gray-200/50"
-        } shadow-xl z-40 transition-transform duration-300 overflow-y-auto ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+        } shadow-xl z-40 transition-all duration-300 ease-in-out overflow-y-auto overflow-x-hidden ${
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Close button for mobile */}
@@ -107,7 +109,7 @@ export default function Sidebar({ isOpen, onClose }) {
           onClick={onClose}
           className={`absolute top-4 right-4 lg:hidden p-2 rounded-lg ${
             darkMode ? "hover:bg-slate-700" : "hover:bg-gray-100"
-          } transition-colors`}
+          } transition-all duration-200 hover:rotate-90`}
         >
           <X
             className={`w-5 h-5 ${
@@ -117,8 +119,12 @@ export default function Sidebar({ isOpen, onClose }) {
         </button>
 
         {/* Navigation */}
-        <nav className="px-4 py-5 space-y-1.5">
-          {menuItems.map((item) => {
+        <nav
+          className={`${
+            isCollapsed ? "lg:px-2 px-4" : "px-4"
+          } py-5 space-y-1.5 stagger-animate`}
+        >
+          {menuItems.map((item, index) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
 
@@ -126,7 +132,13 @@ export default function Sidebar({ isOpen, onClose }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`group flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 ${
+                title={isCollapsed ? item.name : ""}
+                style={{ animationDelay: `${index * 30}ms` }}
+                className={`group flex items-center ${
+                  isCollapsed ? "lg:justify-center justify-start" : "gap-4"
+                } ${
+                  isCollapsed ? "lg:px-2 px-4" : "px-4"
+                } py-3.5 rounded-xl transition-all duration-200 animate-slideIn hover:scale-[1.02] ${
                   isActive
                     ? `bg-gradient-to-r ${
                         item.color
@@ -141,14 +153,24 @@ export default function Sidebar({ isOpen, onClose }) {
                 }`}
               >
                 <div
-                  className={`p-2.5 rounded-xl ${
+                  className={`p-2.5 rounded-xl transition-transform duration-200 group-hover:scale-110 ${
                     isActive ? "bg-white/20" : `bg-gradient-to-br ${item.color}`
                   }`}
                 >
-                  <Icon className={`w-5 h-5 text-white`} />
+                  <Icon className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-medium flex-1 text-sm">{item.name}</span>
-                {isActive && <ChevronRight className="w-4 h-4" />}
+                <span
+                  className={`font-medium flex-1 text-sm whitespace-nowrap transition-all duration-300 ${
+                    isCollapsed
+                      ? "lg:hidden lg:opacity-0 lg:w-0"
+                      : "opacity-100"
+                  }`}
+                >
+                  {item.name}
+                </span>
+                {isActive && !isCollapsed && (
+                  <ChevronRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+                )}
               </Link>
             );
           })}
@@ -156,7 +178,9 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* Footer */}
         <div
-          className={`absolute bottom-0 left-0 right-0 p-5 border-t ${
+          className={`absolute bottom-0 left-0 right-0 p-5 border-t transition-all duration-300 ${
+            isCollapsed ? "lg:hidden" : ""
+          } ${
             darkMode
               ? "border-slate-700 bg-gradient-to-t from-slate-800 via-slate-800 to-transparent"
               : "border-gray-100 bg-gradient-to-t from-white via-white to-transparent"

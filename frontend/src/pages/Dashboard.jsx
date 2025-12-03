@@ -245,14 +245,14 @@ export default function Dashboard() {
         >
           Actions Rapides
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-animate">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             return (
               <Link
                 key={action.path}
                 to={action.path}
-                className={`group rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 card-hover ${
+                className={`group rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 animate-card hover-lift ${
                   darkMode
                     ? "bg-slate-800 border border-slate-700"
                     : "bg-white border border-gray-100"
@@ -260,7 +260,7 @@ export default function Dashboard() {
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div
-                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
+                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}
                 >
                   <Icon className="w-7 h-7 text-white" />
                 </div>
@@ -280,7 +280,7 @@ export default function Dashboard() {
                 </p>
                 <div className="flex items-center text-primary-600 font-medium text-sm group-hover:gap-2 transition-all">
                   <span>Commencer</span>
-                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-2 transition-transform duration-300" />
                 </div>
               </Link>
             );

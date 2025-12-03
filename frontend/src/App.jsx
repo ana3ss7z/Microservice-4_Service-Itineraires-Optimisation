@@ -20,6 +20,17 @@ import { useState } from "react";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleMenuClick = () => {
+    if (window.innerWidth >= 1024) {
+      // Desktop: toggle collapse
+      setIsCollapsed(!isCollapsed);
+    } else {
+      // Mobile: toggle sidebar open/close
+      setSidebarOpen(!sidebarOpen);
+    }
+  };
 
   return (
     <Router>
@@ -81,14 +92,18 @@ function App() {
           )}
         </Toaster>
 
-        <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <Navbar onMenuClick={handleMenuClick} isCollapsed={isCollapsed} />
 
         <div className="flex">
-          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <Sidebar
+            isOpen={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            isCollapsed={isCollapsed}
+          />
 
           <main
             className={`flex-1 transition-all duration-300 ${
-              sidebarOpen ? "ml-72" : "ml-0"
+              sidebarOpen ? (isCollapsed ? "lg:ml-20" : "lg:ml-72") : "ml-0"
             } pt-16`}
           >
             <div className="p-6 lg:p-8">

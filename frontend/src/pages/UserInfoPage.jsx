@@ -18,6 +18,7 @@ import {
   Box,
   Activity,
   X,
+  Info,
 } from "lucide-react";
 import { getUserInfo, getRouteById } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -33,6 +34,7 @@ export default function UserInfoPage() {
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [selectedRoute, setSelectedRoute] = useState(null);
+  const [usingMockData, setUsingMockData] = useState(false);
   const [stats, setStats] = useState({
     totalDistance: 0,
     totalDuration: 0,
@@ -50,6 +52,165 @@ export default function UserInfoPage() {
     { id: "user_002", name: "Test User 2", icon: "🧪" },
   ];
 
+  // Mock data for demonstration purposes
+  const getMockDataForUser = (uid) => {
+    const mockRoutes = {
+      user123: [
+        {
+          id: "route-001",
+          fullName: "Ahmed Benali",
+          username: "ahmed.benali",
+          email: "ahmed@example.com",
+          phone: "+212 6 12 34 56 78",
+          adresseDepart: "Casablanca",
+          adresseDestination: "Rabat",
+          totalDistanceKm: 87.5,
+          totalDurationMin: 65,
+          volume: 12.5,
+          natureMarchandise: "Électronique",
+          dateDepart: "2024-12-01T10:00:00",
+        },
+        {
+          id: "route-002",
+          fullName: "Ahmed Benali",
+          username: "ahmed.benali",
+          email: "ahmed@example.com",
+          phone: "+212 6 12 34 56 78",
+          adresseDepart: "Marrakech",
+          adresseDestination: "Agadir",
+          totalDistanceKm: 252.3,
+          totalDurationMin: 180,
+          volume: 25.0,
+          natureMarchandise: "Textile",
+          dateDepart: "2024-11-28T08:30:00",
+        },
+      ],
+      user456: [
+        {
+          id: "route-003",
+          fullName: "Fatima Alaoui",
+          username: "fatima.alaoui",
+          email: "fatima@example.com",
+          phone: "+212 6 98 76 54 32",
+          adresseDepart: "Fès",
+          adresseDestination: "Meknès",
+          totalDistanceKm: 64.2,
+          totalDurationMin: 50,
+          volume: 8.0,
+          natureMarchandise: "Artisanat",
+          dateDepart: "2024-12-02T14:00:00",
+        },
+      ],
+      user789: [
+        {
+          id: "route-004",
+          fullName: "Omar Tazi",
+          username: "omar.tazi",
+          email: "omar@example.com",
+          phone: "+212 6 55 44 33 22",
+          adresseDepart: "Tanger",
+          adresseDestination: "Tétouan",
+          totalDistanceKm: 57.8,
+          totalDurationMin: 45,
+          volume: 15.0,
+          natureMarchandise: "Pièces Auto",
+          dateDepart: "2024-11-30T09:00:00",
+        },
+        {
+          id: "route-005",
+          fullName: "Omar Tazi",
+          username: "omar.tazi",
+          email: "omar@example.com",
+          phone: "+212 6 55 44 33 22",
+          adresseDepart: "Oujda",
+          adresseDestination: "Nador",
+          totalDistanceKm: 152.0,
+          totalDurationMin: 110,
+          volume: 20.0,
+          natureMarchandise: "Alimentaire",
+          dateDepart: "2024-11-25T07:00:00",
+        },
+      ],
+      user999: [
+        {
+          id: "route-006",
+          fullName: "Khadija Mansouri",
+          username: "khadija.m",
+          email: "khadija@example.com",
+          phone: "+212 6 11 22 33 44",
+          adresseDepart: "Essaouira",
+          adresseDestination: "Marrakech",
+          totalDistanceKm: 176.5,
+          totalDurationMin: 140,
+          volume: 5.5,
+          natureMarchandise: "Produits de mer",
+          dateDepart: "2024-12-03T06:00:00",
+        },
+      ],
+      user_001: [
+        {
+          id: "route-007",
+          fullName: "Test User 1",
+          username: "test1",
+          email: "test1@example.com",
+          phone: "+212 6 00 00 00 01",
+          adresseDepart: "Casablanca",
+          adresseDestination: "Marrakech",
+          totalDistanceKm: 238.0,
+          totalDurationMin: 170,
+          volume: 30.0,
+          natureMarchandise: "Divers",
+          dateDepart: "2024-12-01T12:00:00",
+        },
+        {
+          id: "route-008",
+          fullName: "Test User 1",
+          username: "test1",
+          email: "test1@example.com",
+          phone: "+212 6 00 00 00 01",
+          adresseDepart: "Rabat",
+          adresseDestination: "Fès",
+          totalDistanceKm: 200.0,
+          totalDurationMin: 150,
+          volume: 18.0,
+          natureMarchandise: "Matériaux",
+          dateDepart: "2024-11-29T11:00:00",
+        },
+        {
+          id: "route-009",
+          fullName: "Test User 1",
+          username: "test1",
+          email: "test1@example.com",
+          phone: "+212 6 00 00 00 01",
+          adresseDepart: "Agadir",
+          adresseDestination: "Ouarzazate",
+          totalDistanceKm: 365.0,
+          totalDurationMin: 280,
+          volume: 22.0,
+          natureMarchandise: "Équipements",
+          dateDepart: "2024-11-27T08:00:00",
+        },
+      ],
+      user_002: [
+        {
+          id: "route-010",
+          fullName: "Test User 2",
+          username: "test2",
+          email: "test2@example.com",
+          phone: "+212 6 00 00 00 02",
+          adresseDepart: "Kénitra",
+          adresseDestination: "Casablanca",
+          totalDistanceKm: 132.0,
+          totalDurationMin: 95,
+          volume: 10.0,
+          natureMarchandise: "Documents",
+          dateDepart: "2024-12-02T16:00:00",
+        },
+      ],
+    };
+    return mockRoutes[uid] || [];
+  };
+
   const fetchUserInfo = async (uid = userId) => {
     if (!uid.trim()) {
       toast.error("Veuillez sélectionner ou entrer un ID utilisateur");
@@ -57,18 +218,20 @@ export default function UserInfoPage() {
     }
 
     setLoading(true);
+    setUsingMockData(false);
     try {
       const response = await getUserInfo(uid, page, pageSize);
 
       // Handle both array and paginated response
       const data = response.content || response || [];
-      setUserInfo(data);
-      setTotalPages(
-        response.totalPages || Math.ceil(data.length / pageSize) || 1
-      );
 
-      // Calculate stats
-      if (Array.isArray(data) && data.length > 0) {
+      if (data.length > 0) {
+        setUserInfo(data);
+        setTotalPages(
+          response.totalPages || Math.ceil(data.length / pageSize) || 1
+        );
+
+        // Calculate stats
         const totalDistance = data.reduce(
           (sum, r) => sum + (r.totalDistanceKm || 0),
           0
@@ -84,11 +247,43 @@ export default function UserInfoPage() {
           totalVolume: totalVolume.toFixed(1),
           totalRoutes: data.length,
         });
+        toast.success(`Informations récupérées pour ${uid}`);
+      } else {
+        // Use mock data if API returns empty
+        useMockData(uid);
       }
-
-      toast.success(`Informations récupérées pour ${uid}`);
     } catch (error) {
-      toast.error(error.message || "Erreur lors de la récupération");
+      // Use mock data on error
+      useMockData(uid);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const useMockData = (uid) => {
+    const mockData = getMockDataForUser(uid);
+    if (mockData.length > 0) {
+      setUserInfo(mockData);
+      setTotalPages(1);
+      setUsingMockData(true);
+
+      const totalDistance = mockData.reduce(
+        (sum, r) => sum + (r.totalDistanceKm || 0),
+        0
+      );
+      const totalDuration = mockData.reduce(
+        (sum, r) => sum + (r.totalDurationMin || 0),
+        0
+      );
+      const totalVolume = mockData.reduce((sum, r) => sum + (r.volume || 0), 0);
+      setStats({
+        totalDistance: totalDistance.toFixed(1),
+        totalDuration: Math.round(totalDuration),
+        totalVolume: totalVolume.toFixed(1),
+        totalRoutes: mockData.length,
+      });
+      toast.success(`Données de démonstration chargées pour ${uid}`);
+    } else {
       setUserInfo([]);
       setStats({
         totalDistance: 0,
@@ -96,8 +291,7 @@ export default function UserInfoPage() {
         totalVolume: 0,
         totalRoutes: 0,
       });
-    } finally {
-      setLoading(false);
+      toast.error("Aucune donnée trouvée pour cet utilisateur");
     }
   };
 
@@ -161,6 +355,23 @@ export default function UserInfoPage() {
         </div>
       </div>
 
+      {/* Demo Data Notice */}
+      <div
+        className={`flex items-center gap-3 p-4 rounded-xl border ${
+          darkMode
+            ? "bg-amber-900/30 border-amber-700/50 text-amber-300"
+            : "bg-amber-50 border-amber-200 text-amber-700"
+        }`}
+      >
+        <Info className="w-5 h-5 flex-shrink-0" />
+        <p className="text-sm">
+          <span className="font-semibold">Note :</span> Les utilisateurs
+          ci-dessous sont des données de démonstration pour tester
+          l'application. Les informations affichées sont fictives et servent
+          uniquement à illustrer le fonctionnement du système.
+        </p>
+      </div>
+
       {/* Predefined Users Grid */}
       <div
         className={`backdrop-blur-sm rounded-2xl shadow-lg border p-6 ${
@@ -176,6 +387,15 @@ export default function UserInfoPage() {
         >
           <User className="w-5 h-5 text-indigo-500" />
           Utilisateurs Disponibles
+          <span
+            className={`ml-2 text-xs px-2 py-1 rounded-full font-normal ${
+              darkMode
+                ? "bg-amber-900/50 text-amber-300"
+                : "bg-amber-100 text-amber-700"
+            }`}
+          >
+            Démo
+          </span>
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {predefinedUsers.map((user) => (
