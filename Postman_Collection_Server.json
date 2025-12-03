@@ -83,7 +83,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"origin\": {\n    \"latitude\": 33.8959,\n    \"longitude\": -5.5544\n  },\n  \"destination\": {\n    \"latitude\": 34.0181,\n    \"longitude\": -5.0078\n  },\n  \"userId\": \"user123\",\n  \"requestId\": \"req001\"\n}"
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 33.8959,\n    \"longitude\": -5.5544\n  },\n  \"destination\": {\n    \"latitude\": 34.0181,\n    \"longitude\": -5.0078\n  },\n  \"includeReturn\": true,\n  \"userId\": \"user123\",\n  \"requestId\": \"req001\"\n}"
             },
             "url": {
               "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
@@ -152,7 +152,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"origin\": {\n    \"latitude\": 35.7595,\n    \"longitude\": -5.8340\n  },\n  \"destination\": {\n    \"latitude\": 31.6295,\n    \"longitude\": -7.9811\n  },\n  \"userId\": \"user789\",\n  \"requestId\": \"req006\"\n}"
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 35.7595,\n    \"longitude\": -5.8340\n  },\n  \"destination\": {\n    \"latitude\": 31.6295,\n    \"longitude\": -7.9811\n  },\n  \"includeReturn\": true,\n  \"userId\": \"user789\",\n  \"requestId\": \"req006\"\n}"
             },
             "url": {
               "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
@@ -175,7 +175,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"origin\": {\n    \"latitude\": 30.4278,\n    \"longitude\": -9.5981\n  },\n  \"destination\": {\n    \"latitude\": 31.5085,\n    \"longitude\": -9.7595\n  },\n  \"includeReturn\": false,\n  \"userId\": \"user123\",\n  \"requestId\": \"req007\"\n}"
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 30.4278,\n    \"longitude\": -9.5981\n  },\n  \"destination\": {\n    \"latitude\": 31.5085,\n    \"longitude\": -9.7595\n  },\n  \"includeReturn\": true,\n  \"userId\": \"user123\",\n  \"requestId\": \"req007\"\n}"
             },
             "url": {
               "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
@@ -198,7 +198,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"origin\": {\n    \"latitude\": 34.6814,\n    \"longitude\": -1.9086\n  },\n  \"destination\": {\n    \"latitude\": 35.5889,\n    \"longitude\": -5.3626\n  },\n  \"userId\": \"user789\",\n  \"requestId\": \"req009\"\n}"
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 34.6814,\n    \"longitude\": -1.9086\n  },\n  \"destination\": {\n    \"latitude\": 35.5889,\n    \"longitude\": -5.3626\n  },\n  \"includeReturn\": true,\n  \"userId\": \"user789\",\n  \"requestId\": \"req009\"\n}"
             },
             "url": {
               "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
@@ -244,7 +244,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"origin\": {\n    \"latitude\": 33.8935,\n    \"longitude\": -5.5473\n  },\n  \"destination\": {\n    \"latitude\": 27.1536,\n    \"longitude\": -13.1994\n  },\n  \"userId\": \"user123\",\n  \"requestId\": \"req014\"\n}"
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 33.8935,\n    \"longitude\": -5.5473\n  },\n  \"destination\": {\n    \"latitude\": 27.1536,\n    \"longitude\": -13.1994\n  },\n  \"includeReturn\": true,\n  \"userId\": \"user123\",\n  \"requestId\": \"req014\"\n}"
             },
             "url": {
               "raw": "{{base_url}}{{api_prefix}}/routes/coordinates",
@@ -273,7 +273,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"originAddress\": \"Fes, Morocco\",\n  \"destinationAddress\": \"Meknes, Morocco\",\n  \"includeReturn\": false,\n  \"userId\": \"user123\",\n  \"requestId\": \"req003\"\n}"
+              "raw": "{\n  \"originAddress\": \"Fes, Morocco\",\n  \"destinationAddress\": \"Meknes, Morocco\",\n  \"includeReturn\": true,\n  \"userId\": \"user123\",\n  \"requestId\": \"req003\"\n}"
             },
             "url": {
               "raw": "{{base_url}}{{api_prefix}}/routes/address",
@@ -319,7 +319,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"originAddress\": \"Marrakech, Morocco\",\n  \"destinationAddress\": \"Ouarzazate, Morocco\",\n  \"includeReturn\": false,\n  \"userId\": \"user999\",\n  \"requestId\": \"req013\"\n}"
+              "raw": "{\n  \"originAddress\": \"Marrakech, Morocco\",\n  \"destinationAddress\": \"Ouarzazate, Morocco\",\n  \"includeReturn\": true,\n  \"userId\": \"user999\",\n  \"requestId\": \"req013\"\n}"
             },
             "url": {
               "raw": "{{base_url}}{{api_prefix}}/routes/address",
@@ -394,7 +394,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"origin\": {\n    \"latitude\": 35.7595,\n    \"longitude\": -5.8340,\n    \"name\": \"Tangier\"\n  },\n  \"destination\": {\n    \"latitude\": 30.4278,\n    \"longitude\": -9.5981,\n    \"name\": \"Agadir\"\n  },\n  \"waypoints\": [\n    {\n      \"latitude\": 34.0209,\n      \"longitude\": -6.8416,\n      \"name\": \"Rabat\"\n    },\n    {\n      \"latitude\": 33.5731,\n      \"longitude\": -7.5898,\n      \"name\": \"Casablanca\"\n    },\n    {\n      \"latitude\": 33.2316,\n      \"longitude\": -8.5007,\n      \"name\": \"El Jadida\"\n    },\n    {\n      \"latitude\": 31.5085,\n      \"longitude\": -9.7595,\n      \"name\": \"Essaouira\"\n    }\n  ],\n  \"includeReturn\": false,\n  \"userId\": \"user789\",\n  \"requestId\": \"req012\"\n}"
+              "raw": "{\n  \"origin\": {\n    \"latitude\": 35.7595,\n    \"longitude\": -5.8340,\n    \"name\": \"Tangier\"\n  },\n  \"destination\": {\n    \"latitude\": 30.4278,\n    \"longitude\": -9.5981,\n    \"name\": \"Agadir\"\n  },\n  \"waypoints\": [\n    {\n      \"latitude\": 34.0209,\n      \"longitude\": -6.8416,\n      \"name\": \"Rabat\"\n    },\n    {\n      \"latitude\": 33.5731,\n      \"longitude\": -7.5898,\n      \"name\": \"Casablanca\"\n    },\n    {\n      \"latitude\": 33.2316,\n      \"longitude\": -8.5007,\n      \"name\": \"El Jadida\"\n    },\n    {\n      \"latitude\": 31.5085,\n      \"longitude\": -9.7595,\n      \"name\": \"Essaouira\"\n    }\n  ],\n  \"includeReturn\": true,\n  \"userId\": \"user789\",\n  \"requestId\": \"req012\"\n}"
             },
             "url": {
               "raw": "{{base_url}}{{api_prefix}}/routes/optimize",
