@@ -1,0 +1,422 @@
+import { useState } from "react";
+import {
+  MapPin,
+  Navigation,
+  Calculator,
+  ToggleLeft,
+  ToggleRight,
+  ArrowRight,
+  RefreshCw,
+  MousePointer,
+  Crosshair,
+} from "lucide-react";
+import {
+  calculateRouteFromCoordinates,
+  calculateRouteFromAddress,
+} from "../services/api";
+import MapView from "../components/MapView";
+import RouteResultCard from "../components/RouteResultCard";
+import LoadingSpinner from "../components/LoadingSpinner";
+import toast from "react-hot-toast";
+
+// Villes marocaines prédéfinies pour faciliter la saisie
+const moroccanCities = [
+  { name: "Casablanca", lat: 33.5731, lng: -7.5898 },
+  { name: "Rabat", lat: 34.0209, lng: -6.8416 },
+  { name: "Marrakech", lat: 31.6295, lng: -7.9811 },
+  { name: "Fès", lat: 33.8959, lng: -5.5544 },
+  { name: "Meknès", lat: 34.0181, lng: -5.0078 },
+  { name: "Tanger", lat: 35.7595, lng: -5.834 },
+  { name: "Agadir", lat: 30.4278, lng: -9.5981 },
+  { name: "Oujda", lat: 34.6814, lng: -1.9086 },
+  { name: "Tétouan", lat: 35.5889, lng: -5.3626 },
+  { name: "El Jadida", lat: 33.2316, lng: -8.5007 },
+  { name: "Essaouira", lat: 31.5085, lng: -9.7595 },
+  { name: "Safi", lat: 32.2917, lng: -9.2372 },
+  { name: "Ouarzazate", lat: 30.9335, lng: -6.893 },
+  { name: "Beni Mellal", lat: 32.3394, lng: -6.3498 },
+];
+
+export default function RouteCalculator() {
+  const [mode, setMode] = useState("coordinates"); // 'coordinates' or 'address'
+  const [includeReturn, setIncludeReturn] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  // Form state for coordinates mode
+  const [originLat, setOriginLat] = useState("33.5731");
+  const [originLng, setOriginLng] = useState("-7.5898");
+  const [destLat, setDestLat] = useState("34.0209");
+  const [destLng, setDestLng] = useState("-6.8416");
+
+  // Form state for address mode
+  const [originAddress, setOriginAddress] = useState("Casablanca, Morocco");
+  const [destAddress, setDestAddress] = useState("Rabat, Morocco");
+
+  const [userId, setUserId] = useState("user_001");
+
+  // Map selection state
+  const [mapSelectionMode, setMapSelectionMode] = useState(null); // null, 'origin', 'destination'
+
+  const handleMapClick = (lat, lng) => {
+    if (mapSelectionMode === "origin") {
+      setOriginLat(lat.toFixed(6));
+      setOriginLng(lng.toFixed(6));
+      toast.success(`Départ: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      setMapSelectionMode("destination");
+      toast("Cliquez maintenant pour la destination", { icon: "📍" });
+    } else if (mapSelectionMode === "destination") {
+      setDestLat(lat.toFixed(6));
+      setDestLng(lng.toFixed(6));
+      toast.success(`Arrivée: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      setMapSelectionMode(null);
+    }
+  };
+
+  const startMapSelection = () => {
+    setMode("coordinates");
+    setMapSelectionMode("origin");
+    toast("Cliquez sur la carte pour le point de départ", { icon: "🟢" });
+  };
+
+  const handleCalculate = async () => {
+    setLoading(true);
+    setResult(null);
+
+    try {
+      let response;
+
+      if (mode === "coordinates") {
+        const request = {
+          userId,
+          origin: {
+            latitude: parseFloat(originLat),
+            longitude: parseFloat(originLng),
+          },
+          destination: {
+            latitude: parseFloat(destLat),
+            longitude: parseFloat(destLng),
+          },
+          includeReturn,
+        };
+        response = await calculateRouteFromCoordinates(request);
+      } else {
+        const request = {
+          userId,
+          originAddress,
+          destinationAddress: destAddress,
+          includeReturn,
+        };
+        response = await calculateRouteFromAddress(request);
+      }
+
+      setResult(response);
+      toast.success("Itinéraire calculé avec succès!");
+    } catch (error) {
+      toast.error(error.message || "Erreur lors du calcul");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectCity = (type, city) => {
+    if (type === "origin") {
+      setOriginLat(city.lat.toString());
+      setOriginLng(city.lng.toString());
+      setOriginAddress(`${city.name}, Morocco`);
+    } else {
+      setDestLat(city.lat.toString());
+      setDestLng(city.lng.toString());
+      setDestAddress(`${city.name}, Morocco`);
+    }
+  };
+
+  const waypoints = result?.steps || [
+    {
+      latitude: parseFloat(originLat),
+      longitude: parseFloat(originLng),
+      name: "Départ",
+    },
+    {
+      latitude: parseFloat(destLat),
+      longitude: parseFloat(destLng),
+      name: "Arrivée",
+    },
+  ];
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
+              <Calculator className="w-6 h-6 text-white" />
+            </div>
+            Calculer un Itinéraire
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Calcul de route entre deux points au Maroc
+          </p>
+        </div>
+
+        {/* Mode Toggle */}
+        <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-xl">
+          <button
+            onClick={() => setMode("coordinates")}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              mode === "coordinates"
+                ? "bg-white text-primary-600 shadow-md"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <MapPin className="w-4 h-4 inline mr-2" />
+            Coordonnées
+          </button>
+          <button
+            onClick={() => setMode("address")}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              mode === "address"
+                ? "bg-white text-primary-600 shadow-md"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <Navigation className="w-4 h-4 inline mr-2" />
+            Adresses
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4">
+            <h2 className="text-white font-bold text-lg">
+              Paramètres du trajet
+            </h2>
+            <p className="text-emerald-100 text-sm">
+              Renseignez les points de départ et d'arrivée
+            </p>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* Quick City Select */}
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-700">
+                Sélection rapide
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {moroccanCities.slice(0, 8).map((city) => (
+                  <div key={city.name} className="flex gap-1">
+                    <button
+                      onClick={() => selectCity("origin", city)}
+                      className="px-3 py-1.5 text-xs rounded-l-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors"
+                      title={`Départ: ${city.name}`}
+                    >
+                      ↗ {city.name}
+                    </button>
+                    <button
+                      onClick={() => selectCity("dest", city)}
+                      className="px-3 py-1.5 text-xs rounded-r-lg bg-rose-100 text-rose-700 hover:bg-rose-200 transition-colors"
+                      title={`Arrivée: ${city.name}`}
+                    >
+                      ↘
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {mode === "coordinates" ? (
+              <>
+                {/* Origin Coordinates */}
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    Point de Départ
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="number"
+                      step="any"
+                      value={originLat}
+                      onChange={(e) => setOriginLat(e.target.value)}
+                      placeholder="Latitude"
+                      className="input-field"
+                    />
+                    <input
+                      type="number"
+                      step="any"
+                      value={originLng}
+                      onChange={(e) => setOriginLng(e.target.value)}
+                      placeholder="Longitude"
+                      className="input-field"
+                    />
+                  </div>
+                </div>
+
+                {/* Destination Coordinates */}
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <div className="w-3 h-3 rounded-full bg-rose-500"></div>
+                    Point d'Arrivée
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="number"
+                      step="any"
+                      value={destLat}
+                      onChange={(e) => setDestLat(e.target.value)}
+                      placeholder="Latitude"
+                      className="input-field"
+                    />
+                    <input
+                      type="number"
+                      step="any"
+                      value={destLng}
+                      onChange={(e) => setDestLng(e.target.value)}
+                      placeholder="Longitude"
+                      className="input-field"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Origin Address */}
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    Adresse de Départ
+                  </label>
+                  <input
+                    type="text"
+                    value={originAddress}
+                    onChange={(e) => setOriginAddress(e.target.value)}
+                    placeholder="Ex: Casablanca, Morocco"
+                    className="input-field"
+                  />
+                </div>
+
+                {/* Destination Address */}
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <div className="w-3 h-3 rounded-full bg-rose-500"></div>
+                    Adresse d'Arrivée
+                  </label>
+                  <input
+                    type="text"
+                    value={destAddress}
+                    onChange={(e) => setDestAddress(e.target.value)}
+                    placeholder="Ex: Rabat, Morocco"
+                    className="input-field"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* User ID */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-gray-700">
+                Identifiant Utilisateur
+              </label>
+              <input
+                type="text"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                placeholder="user_001"
+                className="input-field"
+              />
+            </div>
+
+            {/* Include Return Toggle */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+              <div>
+                <p className="font-medium text-gray-700">Inclure le retour</p>
+                <p className="text-sm text-gray-500">
+                  Calcule aussi le trajet retour
+                </p>
+              </div>
+              <button
+                onClick={() => setIncludeReturn(!includeReturn)}
+                className={`w-14 h-8 rounded-full transition-colors flex items-center px-1 ${
+                  includeReturn ? "bg-emerald-500" : "bg-gray-300"
+                }`}
+              >
+                <div
+                  className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform ${
+                    includeReturn ? "translate-x-6" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              onClick={handleCalculate}
+              disabled={loading}
+              className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  Calcul en cours...
+                </>
+              ) : (
+                <>
+                  <Calculator className="w-5 h-5" />
+                  Calculer l'itinéraire
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Map & Results */}
+        <div className="space-y-6">
+          {/* Map */}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-bold text-gray-800">Carte</h3>
+              <button
+                onClick={startMapSelection}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                  mapSelectionMode
+                    ? "bg-amber-500 text-white shadow-lg"
+                    : "bg-gray-100 text-gray-700 hover:bg-emerald-100 hover:text-emerald-700"
+                }`}
+              >
+                <Crosshair className="w-4 h-4" />
+                {mapSelectionMode === "origin"
+                  ? "Sélectionnez départ..."
+                  : mapSelectionMode === "destination"
+                  ? "Sélectionnez arrivée..."
+                  : "Sélectionner depuis carte"}
+              </button>
+            </div>
+            <div className="p-4">
+              <MapView
+                waypoints={waypoints}
+                routePolyline={result?.routePolyline}
+                height="350px"
+                selectionMode={!!mapSelectionMode}
+                onMapClick={handleMapClick}
+              />
+            </div>
+          </div>
+
+          {/* Loading State */}
+          {loading && (
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 flex items-center justify-center">
+              <LoadingSpinner text="Calcul de l'itinéraire..." />
+            </div>
+          )}
+
+          {/* Result */}
+          {result && !loading && <RouteResultCard result={result} />}
+        </div>
+      </div>
+    </div>
+  );
+}

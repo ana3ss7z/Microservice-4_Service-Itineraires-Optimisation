@@ -1,0 +1,480 @@
+import { useState } from "react";
+import {
+  Users,
+  Search,
+  User,
+  Mail,
+  Phone,
+  Package,
+  MapPin,
+  Calendar,
+  Clock,
+  ArrowRight,
+  RefreshCw,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  Truck,
+  Box,
+  Activity,
+  X,
+} from "lucide-react";
+import { getUserInfo, getRouteById } from "../services/api";
+import LoadingSpinner from "../components/LoadingSpinner";
+import toast from "react-hot-toast";
+
+export default function UserInfoPage() {
+  const [userId, setUserId] = useState("");
+  const [userInfo, setUserInfo] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [stats, setStats] = useState({
+    totalDistance: 0,
+    totalDuration: 0,
+    totalVolume: 0,
+    totalRoutes: 0,
+  });
+
+  // Liste des utilisateurs prédéfinis pour faciliter la recherche
+  const predefinedUsers = [
+    { id: "user123", name: "Ahmed Benali", icon: "👨‍💼" },
+    { id: "user456", name: "Fatima Alaoui", icon: "👩‍💼" },
+    { id: "user789", name: "Omar Tazi", icon: "👨‍🔧" },
+    { id: "user999", name: "Khadija Mansouri", icon: "👩‍🏫" },
+    { id: "user_001", name: "Test User 1", icon: "🧪" },
+    { id: "user_002", name: "Test User 2", icon: "🧪" },
+  ];
+
+  const fetchUserInfo = async (uid = userId) => {
+    if (!uid.trim()) {
+      toast.error("Veuillez sélectionner ou entrer un ID utilisateur");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await getUserInfo(uid, page, pageSize);
+
+      // Handle both array and paginated response
+      const data = response.content || response || [];
+      setUserInfo(data);
+      setTotalPages(
+        response.totalPages || Math.ceil(data.length / pageSize) || 1
+      );
+
+      // Calculate stats
+      if (Array.isArray(data) && data.length > 0) {
+        const totalDistance = data.reduce(
+          (sum, r) => sum + (r.totalDistanceKm || 0),
+          0
+        );
+        const totalDuration = data.reduce(
+          (sum, r) => sum + (r.totalDurationMin || 0),
+          0
+        );
+        const totalVolume = data.reduce((sum, r) => sum + (r.volume || 0), 0);
+        setStats({
+          totalDistance: totalDistance.toFixed(1),
+          totalDuration: Math.round(totalDuration),
+          totalVolume: totalVolume.toFixed(1),
+          totalRoutes: data.length,
+        });
+      }
+
+      toast.success(`Informations récupérées pour ${uid}`);
+    } catch (error) {
+      toast.error(error.message || "Erreur lors de la récupération");
+      setUserInfo([]);
+      setStats({
+        totalDistance: 0,
+        totalDuration: 0,
+        totalVolume: 0,
+        totalRoutes: 0,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const viewRouteDetails = async (routeId) => {
+    try {
+      const route = await getRouteById(routeId);
+      setSelectedRoute(route);
+    } catch (error) {
+      toast.error("Erreur lors de la récupération des détails");
+    }
+  };
+
+  const formatDuration = (minutes) => {
+    if (!minutes) return "-";
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    if (hours === 0) return `${mins} min`;
+    return `${hours}h ${mins}min`;
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    try {
+      return new Date(dateStr).toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const handleUserSelect = (uid) => {
+    setUserId(uid);
+    setPage(0);
+    fetchUserInfo(uid);
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg">
+              <Users className="w-6 h-6 text-white" />
+            </div>
+            Informations Utilisateurs
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Consultez les informations détaillées des utilisateurs et leurs
+            demandes
+          </p>
+        </div>
+      </div>
+
+      {/* Predefined Users Grid */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <User className="w-5 h-5 text-indigo-500" />
+          Utilisateurs Disponibles
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {predefinedUsers.map((user) => (
+            <button
+              key={user.id}
+              onClick={() => handleUserSelect(user.id)}
+              className={`p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
+                userId === user.id
+                  ? "border-indigo-500 bg-indigo-50 shadow-lg"
+                  : "border-gray-200 hover:border-indigo-300 bg-white"
+              }`}
+            >
+              <div className="text-3xl mb-2">{user.icon}</div>
+              <p className="font-medium text-gray-800 text-sm truncate">
+                {user.name}
+              </p>
+              <p className="text-xs text-gray-500">{user.id}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Custom Search */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              placeholder="Entrez un ID utilisateur personnalisé..."
+              className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+          </div>
+          <button
+            onClick={() => fetchUserInfo()}
+            disabled={loading || !userId.trim()}
+            className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 disabled:opacity-50 flex items-center gap-2 font-medium"
+          >
+            {loading ? (
+              <RefreshCw className="w-5 h-5 animate-spin" />
+            ) : (
+              <Search className="w-5 h-5" />
+            )}
+            Rechercher
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      {userInfo.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-5 text-white shadow-lg">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                <Truck className="w-5 h-5" />
+              </div>
+              <span className="text-blue-100 text-sm">Total Routes</span>
+            </div>
+            <p className="text-3xl font-bold">{stats.totalRoutes}</p>
+          </div>
+          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-5 text-white shadow-lg">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <span className="text-emerald-100 text-sm">Distance Totale</span>
+            </div>
+            <p className="text-3xl font-bold">
+              {stats.totalDistance} <span className="text-lg">km</span>
+            </p>
+          </div>
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-5 text-white shadow-lg">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                <Clock className="w-5 h-5" />
+              </div>
+              <span className="text-purple-100 text-sm">Durée Totale</span>
+            </div>
+            <p className="text-3xl font-bold">
+              {formatDuration(stats.totalDuration)}
+            </p>
+          </div>
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-5 text-white shadow-lg">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                <Box className="w-5 h-5" />
+              </div>
+              <span className="text-orange-100 text-sm">Volume Total</span>
+            </div>
+            <p className="text-3xl font-bold">
+              {stats.totalVolume} <span className="text-lg">m³</span>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="flex justify-center py-12">
+          <LoadingSpinner />
+        </div>
+      )}
+
+      {/* User Routes List */}
+      {!loading && userInfo.length > 0 && (
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <Activity className="w-5 h-5 text-indigo-500" />
+              Demandes de l&apos;utilisateur ({userInfo.length})
+            </h2>
+          </div>
+
+          <div className="divide-y divide-gray-100">
+            {userInfo.map((route, index) => (
+              <div
+                key={route.id || index}
+                className="p-5 hover:bg-gray-50/50 transition-colors"
+              >
+                <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                  {/* User Info */}
+                  <div className="flex-1">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center">
+                        <User className="w-6 h-6 text-indigo-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-gray-800">
+                            {route.fullName || route.username || "Utilisateur"}
+                          </h3>
+                          {route.username && (
+                            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-xs">
+                              @{route.username}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Contact Info */}
+                        <div className="flex flex-wrap gap-3 mt-2 text-sm text-gray-500">
+                          {route.email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="w-4 h-4" />
+                              {route.email}
+                            </span>
+                          )}
+                          {route.phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-4 h-4" />
+                              {route.phone}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Route Info */}
+                        <div className="flex items-center gap-2 mt-3 text-sm">
+                          <span className="text-emerald-600 font-medium truncate max-w-[200px]">
+                            {route.adresseDepart ||
+                              route.originAddress ||
+                              "Départ"}
+                          </span>
+                          <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <span className="text-morocco-red font-medium truncate max-w-[200px]">
+                            {route.adresseDestination ||
+                              route.destinationAddress ||
+                              "Destination"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Marchandise & Volume */}
+                  {(route.natureMarchandise || route.volume) && (
+                    <div className="lg:w-48 p-3 bg-orange-50 rounded-xl">
+                      <div className="flex items-center gap-2 text-orange-700">
+                        <Package className="w-4 h-4" />
+                        <span className="text-sm font-medium">Marchandise</span>
+                      </div>
+                      {route.natureMarchandise && (
+                        <p className="text-sm text-gray-700 mt-1 truncate">
+                          {route.natureMarchandise}
+                        </p>
+                      )}
+                      {route.volume && (
+                        <p className="text-lg font-bold text-orange-600 mt-1">
+                          {route.volume} m³
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Stats */}
+                  <div className="flex gap-4 lg:gap-6">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-emerald-600">
+                        {route.totalDistanceKm?.toFixed(1) || "-"}
+                      </p>
+                      <p className="text-xs text-gray-500">km</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-blue-600">
+                        {formatDuration(route.totalDurationMin)}
+                      </p>
+                      <p className="text-xs text-gray-500">durée</p>
+                    </div>
+                  </div>
+
+                  {/* Date & Actions */}
+                  <div className="flex items-center gap-3">
+                    {route.dateDepart && (
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-gray-500 text-sm">
+                          <Calendar className="w-4 h-4" />
+                          <span>{formatDate(route.dateDepart)}</span>
+                        </div>
+                      </div>
+                    )}
+                    {route.id && (
+                      <button
+                        onClick={() => viewRouteDetails(route.id)}
+                        className="p-2 hover:bg-indigo-100 rounded-lg transition-colors"
+                        title="Voir les détails"
+                      >
+                        <Eye className="w-5 h-5 text-indigo-600" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="p-4 border-t border-gray-100 flex items-center justify-between">
+              <button
+                onClick={() => setPage(Math.max(0, page - 1))}
+                disabled={page === 0}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                Précédent
+              </button>
+              <span className="text-gray-600">
+                Page {page + 1} / {totalPages}
+              </span>
+              <button
+                onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+                disabled={page >= totalPages - 1}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Suivant
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && userInfo.length === 0 && userId && (
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-12 text-center">
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <Users className="w-10 h-10 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Aucune information trouvée
+          </h3>
+          <p className="text-gray-500">
+            Aucune demande trouvée pour l&apos;utilisateur &quot;{userId}&quot;
+          </p>
+        </div>
+      )}
+
+      {/* Initial State */}
+      {!loading && userInfo.length === 0 && !userId && (
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-12 text-center">
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-indigo-100 flex items-center justify-center">
+            <Users className="w-10 h-10 text-indigo-500" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Sélectionnez un utilisateur
+          </h3>
+          <p className="text-gray-500">
+            Cliquez sur un utilisateur ci-dessus ou entrez un ID personnalisé
+          </p>
+        </div>
+      )}
+
+      {/* Route Details Modal */}
+      {selectedRoute && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-auto">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white">
+              <h3 className="text-xl font-bold text-gray-800">
+                Détails de la Route
+              </h3>
+              <button
+                onClick={() => setSelectedRoute(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <pre className="bg-gray-50 rounded-xl p-4 overflow-auto text-sm">
+                {JSON.stringify(selectedRoute, null, 2)}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
