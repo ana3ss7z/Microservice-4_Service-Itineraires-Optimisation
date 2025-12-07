@@ -367,8 +367,8 @@ export default function UserInfoPage() {
         <p className="text-sm">
           <span className="font-semibold">Note :</span> Les utilisateurs
           ci-dessous sont des données de démonstration pour tester
-          l'application. Les informations affichées sont fictives et servent
-          uniquement à illustrer le fonctionnement du système.
+          l&apos;application. Les informations affichées sont fictives et
+          servent uniquement à illustrer le fonctionnement du système.
         </p>
       </div>
 

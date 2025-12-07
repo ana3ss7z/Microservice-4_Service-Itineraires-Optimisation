@@ -13,14 +13,12 @@ import {
   Thermometer,
   Clock,
   Phone,
-  Mail,
   ExternalLink,
 } from "lucide-react";
 import { getAllCities } from "../services/api";
 import { useTheme } from "../context/ThemeContext";
 import MapView from "../components/MapView";
 import LoadingSpinner from "../components/LoadingSpinner";
-import toast from "react-hot-toast";
 
 // Extended city info (local data since API doesn't provide this)
 const cityInfoMap = {
@@ -185,6 +183,57 @@ const getCityInfo = (cityName) => {
     }
   }
   return null;
+};
+
+// City avatar generator - creates colorful avatar icons with city initials
+const getCityImage = (cityName) => {
+  if (!cityName) return null;
+
+  // Generate a consistent color based on city name
+  const getColorFromName = (name) => {
+    const colors = [
+      "F59E0B",
+      "EF4444",
+      "10B981",
+      "3B82F6",
+      "8B5CF6",
+      "EC4899",
+      "06B6D4",
+      "F97316",
+      "84CC16",
+      "6366F1",
+      "14B8A6",
+      "F43F5E",
+      "A855F7",
+      "22C55E",
+      "0EA5E9",
+      "D946EF",
+      "FB7185",
+      "4ADE80",
+      "38BDF8",
+      "C084FC",
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  // Get initials from city name
+  const getInitials = (name) => {
+    const words = name.split(/[\s-]+/);
+    if (words.length > 1) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const initials = getInitials(cityName);
+  const color = getColorFromName(cityName);
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    initials
+  )}&background=${color}&color=fff&size=100&bold=true&format=svg`;
 };
 
 export default function CitiesPage() {
@@ -370,16 +419,16 @@ export default function CitiesPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Cities List */}
         <div
-          className={`rounded-2xl shadow-xl overflow-hidden ${
+          className={`rounded-2xl shadow-xl lg:h-[600px] flex flex-col ${
             darkMode
               ? "bg-slate-800 border border-slate-700"
               : "bg-white border border-gray-100"
           }`}
         >
-          <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-amber-500 to-orange-500">
+          <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-amber-500 to-orange-500 rounded-t-2xl">
             <h3 className="text-white font-bold text-lg flex items-center gap-2">
               <MapPin className="w-5 h-5" />
               Liste des Villes
@@ -411,7 +460,7 @@ export default function CitiesPage() {
               </p>
             </div>
           ) : (
-            <div className="max-h-[500px] overflow-y-auto">
+            <div className="flex-1 overflow-y-auto">
               <div
                 className={`divide-y ${
                   darkMode ? "divide-slate-700" : "divide-gray-100"
@@ -434,13 +483,22 @@ export default function CitiesPage() {
                   >
                     <div className="flex items-center gap-4">
                       <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        className={`w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 ${
                           darkMode
                             ? "bg-amber-900/50"
                             : "bg-gradient-to-br from-amber-100 to-orange-100"
                         }`}
                       >
-                        <span className="text-lg">🏙️</span>
+                        <img
+                          src={getCityImage(city.name || city.nom)}
+                          alt={city.name || city.nom}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                            e.target.parentElement.innerHTML =
+                              '<span class="text-2xl flex items-center justify-center w-full h-full">🏙️</span>';
+                          }}
+                        />
                       </div>
                       <div className="flex-1">
                         <h4
@@ -471,10 +529,10 @@ export default function CitiesPage() {
         </div>
 
         {/* Map & Selected City Info */}
-        <div className="space-y-6">
+        <div className="lg:h-[600px] flex flex-col gap-6">
           {/* Map */}
           <div
-            className={`rounded-2xl shadow-xl overflow-hidden ${
+            className={`rounded-2xl shadow-xl overflow-hidden flex-shrink-0 ${
               darkMode
                 ? "bg-slate-800 border border-slate-700"
                 : "bg-white border border-gray-100"
@@ -506,7 +564,7 @@ export default function CitiesPage() {
             <div className="p-4">
               <MapView
                 waypoints={mapWaypoints}
-                height="300px"
+                height="250px"
                 center={
                   selectedCity
                     ? [
@@ -523,7 +581,7 @@ export default function CitiesPage() {
           {/* Selected City Details */}
           {selectedCity && (
             <div
-              className={`rounded-2xl shadow-xl overflow-hidden animate-fadeIn ${
+              className={`rounded-2xl shadow-xl overflow-hidden flex-1 overflow-y-auto animate-fadeIn ${
                 darkMode
                   ? "bg-slate-800 border border-slate-700"
                   : "bg-white border border-gray-100"
@@ -707,7 +765,7 @@ export default function CitiesPage() {
                             darkMode ? "text-gray-400" : "text-gray-500"
                           }`}
                         >
-                          Sites d'intérêt
+                          Sites d&apos;intérêt
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {selectedCityInfo.attractions.map(

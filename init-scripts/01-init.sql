@@ -31,12 +31,13 @@ CREATE TABLE IF NOT EXISTS routes (
     version BIGINT DEFAULT 0
 );
 
--- Create villes table
+-- Create villes table with auto-increment id
 CREATE TABLE IF NOT EXISTS villes (
-    id VARCHAR(255) PRIMARY KEY,
-    name VARCHAR(255),
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) UNIQUE,
     latitude DOUBLE PRECISION,
-    longitude DOUBLE PRECISION
+    longitude DOUBLE PRECISION,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Grant permissions on tables

@@ -3,6 +3,7 @@ import toast, { Toaster, ToastBar } from "react-hot-toast";
 import { X } from "lucide-react";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
+import MobileBottomNav from "./components/MobileBottomNav";
 import Dashboard from "./pages/Dashboard";
 import RouteCalculator from "./pages/RouteCalculator";
 import RouteOptimizer from "./pages/RouteOptimizer";
@@ -16,6 +17,8 @@ import ServerInfoPage from "./pages/ServerInfoPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ApiDocsPage from "./pages/ApiDocsPage";
+import StatisticsPage from "./pages/StatisticsPage";
+import FavoritesPage from "./pages/FavoritesPage";
 import { useState } from "react";
 
 function App() {
@@ -106,7 +109,7 @@ function App() {
               sidebarOpen ? (isCollapsed ? "lg:ml-20" : "lg:ml-72") : "ml-0"
             } pt-16`}
           >
-            <div className="p-6 lg:p-8">
+            <div className="p-6 lg:p-8 pb-24 lg:pb-8">
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/calculator" element={<RouteCalculator />} />
@@ -121,10 +124,15 @@ function App() {
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/api-docs" element={<ApiDocsPage />} />
+                <Route path="/statistics" element={<StatisticsPage />} />
+                <Route path="/favorites" element={<FavoritesPage />} />
               </Routes>
             </div>
           </main>
         </div>
+
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav onMenuClick={() => setSidebarOpen(true)} />
       </div>
     </Router>
   );

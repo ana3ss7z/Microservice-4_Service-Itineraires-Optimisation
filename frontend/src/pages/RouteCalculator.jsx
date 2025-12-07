@@ -3,17 +3,28 @@ import {
   MapPin,
   Navigation,
   Calculator,
-  ToggleLeft,
-  ToggleRight,
   ArrowRight,
   RefreshCw,
-  MousePointer,
   Crosshair,
+  Locate,
+  Star,
+  Printer,
 } from "lucide-react";
 import {
   calculateRouteFromCoordinates,
   calculateRouteFromAddress,
 } from "../services/api";
+import {
+  getCurrentPosition,
+  findNearestCity,
+  isInMorocco,
+} from "../utils/geolocationUtils";
+import {
+  addToFavorites,
+  addToRecentRoutes,
+  updateStats,
+} from "../utils/favoritesUtils";
+import { printRoute } from "../utils/pdfUtils";
 import MapView from "../components/MapView";
 import RouteResultCard from "../components/RouteResultCard";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -36,6 +47,8 @@ const moroccanCities = [
   { name: "Safi", lat: 32.2917, lng: -9.2372 },
   { name: "Ouarzazate", lat: 30.9335, lng: -6.893 },
   { name: "Beni Mellal", lat: 32.3394, lng: -6.3498 },
+  { name: "Kénitra", lat: 34.261, lng: -6.58 },
+  { name: "Laayoune", lat: 27.1216, lng: -13.1625 },
 ];
 
 export default function RouteCalculator() {
@@ -56,6 +69,7 @@ export default function RouteCalculator() {
   const [destAddress, setDestAddress] = useState("Rabat, Morocco");
 
   const [userId, setUserId] = useState("user_001");
+  const [geoLoading, setGeoLoading] = useState(false);
 
   // Map selection state
   const [mapSelectionMode, setMapSelectionMode] = useState(null); // null, 'origin', 'destination'
@@ -79,6 +93,56 @@ export default function RouteCalculator() {
     setMode("coordinates");
     setMapSelectionMode("origin");
     toast("Cliquez sur la carte pour le point de départ", { icon: "🟢" });
+  };
+
+  // Geolocation: detect current position
+  const detectCurrentPosition = async (forOrigin = true) => {
+    setGeoLoading(true);
+    try {
+      const position = await getCurrentPosition();
+
+      if (!isInMorocco(position.latitude, position.longitude)) {
+        toast.error(
+          "Votre position est hors du Maroc. Utilisation de Casablanca par défaut."
+        );
+        if (forOrigin) {
+          setOriginLat("33.5731");
+          setOriginLng("-7.5898");
+          setOriginAddress("Casablanca, Morocco");
+        }
+        return;
+      }
+
+      // Find nearest city
+      const nearestCity = findNearestCity(
+        position.latitude,
+        position.longitude,
+        moroccanCities
+      );
+
+      if (forOrigin) {
+        setOriginLat(position.latitude.toFixed(6));
+        setOriginLng(position.longitude.toFixed(6));
+        if (nearestCity) {
+          setOriginAddress(`${nearestCity.name}, Morocco`);
+          toast.success(`Position détectée près de ${nearestCity.name}`);
+        } else {
+          toast.success("Position détectée!");
+        }
+      } else {
+        setDestLat(position.latitude.toFixed(6));
+        setDestLng(position.longitude.toFixed(6));
+        if (nearestCity) {
+          setDestAddress(`${nearestCity.name}, Morocco`);
+        }
+        toast.success("Position détectée!");
+      }
+      setMode("coordinates");
+    } catch (error) {
+      toast.error(error.message || "Impossible de détecter votre position");
+    } finally {
+      setGeoLoading(false);
+    }
   };
 
   const handleCalculate = async () => {
@@ -113,12 +177,48 @@ export default function RouteCalculator() {
       }
 
       setResult(response);
+
+      // Save to recent routes and update stats
+      addToRecentRoutes({
+        ...response,
+        originCity: originAddress.split(",")[0],
+        destinationCity: destAddress.split(",")[0],
+      });
+      updateStats(response);
+
       toast.success("Itinéraire calculé avec succès!");
     } catch (error) {
       toast.error(error.message || "Erreur lors du calcul");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveToFavorites = () => {
+    if (!result) return;
+    const success = addToFavorites({
+      ...result,
+      originCity: originAddress.split(",")[0],
+      destinationCity: destAddress.split(",")[0],
+      adresseDepart: originAddress,
+      adresseDestination: destAddress,
+    });
+    if (success) {
+      toast.success("Ajouté aux favoris!");
+    } else {
+      toast.error("Erreur lors de la sauvegarde");
+    }
+  };
+
+  const handlePrintRoute = () => {
+    if (!result) return;
+    printRoute({
+      ...result,
+      originCity: originAddress.split(",")[0],
+      destinationCity: destAddress.split(",")[0],
+      adresseDepart: originAddress,
+      adresseDestination: destAddress,
+    });
   };
 
   const selectCity = (type, city) => {
@@ -219,7 +319,7 @@ export default function RouteCalculator() {
               Paramètres du trajet
             </h2>
             <p className="text-emerald-100 text-sm">
-              Renseignez les points de départ et d'arrivée
+              Renseignez les points de départ et d&apos;arrivée
             </p>
           </div>
 
@@ -267,14 +367,35 @@ export default function RouteCalculator() {
               <>
                 {/* Origin Coordinates */}
                 <div className="space-y-3">
-                  <label
-                    className={`flex items-center gap-2 text-sm font-medium ${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                    Point de Départ
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label
+                      className={`flex items-center gap-2 text-sm font-medium ${
+                        darkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                      Point de Départ
+                    </label>
+                    <button
+                      onClick={() => detectCurrentPosition(true)}
+                      disabled={geoLoading}
+                      className={`flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg transition-all ${
+                        geoLoading
+                          ? "opacity-50 cursor-not-allowed"
+                          : darkMode
+                          ? "bg-blue-900/50 text-blue-400 hover:bg-blue-800/50"
+                          : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                      }`}
+                      title="Utiliser ma position actuelle"
+                    >
+                      <Locate
+                        className={`w-3 h-3 ${
+                          geoLoading ? "animate-spin" : ""
+                        }`}
+                      />
+                      {geoLoading ? "Détection..." : "📍 Ma Position"}
+                    </button>
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
                     <input
                       type="number"
@@ -311,7 +432,7 @@ export default function RouteCalculator() {
                     }`}
                   >
                     <div className="w-3 h-3 rounded-full bg-rose-500"></div>
-                    Point d'Arrivée
+                    Point d&apos;Arrivée
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <input
@@ -345,14 +466,35 @@ export default function RouteCalculator() {
               <>
                 {/* Origin Address */}
                 <div className="space-y-3">
-                  <label
-                    className={`flex items-center gap-2 text-sm font-medium ${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                    Adresse de Départ
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label
+                      className={`flex items-center gap-2 text-sm font-medium ${
+                        darkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                      Adresse de Départ
+                    </label>
+                    <button
+                      onClick={() => detectCurrentPosition(true)}
+                      disabled={geoLoading}
+                      className={`flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg transition-all ${
+                        geoLoading
+                          ? "opacity-50 cursor-not-allowed"
+                          : darkMode
+                          ? "bg-blue-900/50 text-blue-400 hover:bg-blue-800/50"
+                          : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                      }`}
+                      title="Utiliser ma position actuelle"
+                    >
+                      <Locate
+                        className={`w-3 h-3 ${
+                          geoLoading ? "animate-spin" : ""
+                        }`}
+                      />
+                      {geoLoading ? "Détection..." : "📍 Ma Position"}
+                    </button>
+                  </div>
                   <input
                     type="text"
                     value={originAddress}
@@ -374,7 +516,7 @@ export default function RouteCalculator() {
                     }`}
                   >
                     <div className="w-3 h-3 rounded-full bg-rose-500"></div>
-                    Adresse d'Arrivée
+                    Adresse d&apos;Arrivée
                   </label>
                   <input
                     type="text"
@@ -467,7 +609,7 @@ export default function RouteCalculator() {
               ) : (
                 <>
                   <Calculator className="w-5 h-5" />
-                  Calculer l'itinéraire
+                  Calculer l&apos;itinéraire
                   <ArrowRight className="w-5 h-5" />
                 </>
               )}
@@ -540,7 +682,43 @@ export default function RouteCalculator() {
           )}
 
           {/* Result */}
-          {result && !loading && <RouteResultCard result={result} />}
+          {result && !loading && (
+            <div className="space-y-4">
+              <RouteResultCard result={result} />
+
+              {/* Action Buttons */}
+              <div
+                className={`${
+                  darkMode
+                    ? "bg-slate-800 border-slate-700"
+                    : "bg-white border-gray-100"
+                } rounded-xl shadow-lg border p-4 flex flex-wrap gap-3 justify-center`}
+              >
+                <button
+                  onClick={handleSaveToFavorites}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    darkMode
+                      ? "bg-amber-900/50 text-amber-400 hover:bg-amber-800/50"
+                      : "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                  }`}
+                >
+                  <Star className="w-4 h-4" />
+                  Ajouter aux favoris
+                </button>
+                <button
+                  onClick={handlePrintRoute}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    darkMode
+                      ? "bg-slate-700 text-gray-300 hover:bg-slate-600"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  <Printer className="w-4 h-4" />
+                  Imprimer / PDF
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
