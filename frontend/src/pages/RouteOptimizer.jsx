@@ -16,24 +16,47 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
 import { useTheme } from "../context/ThemeContext";
 
-// Villes marocaines prédéfinies
+// Villes marocaines prédéfinies (toutes les régions)
 const moroccanCities = [
-  { name: "Casablanca", lat: 33.5731, lng: -7.5898 },
+  // Région Nord
+  { name: "Tanger", lat: 35.7595, lng: -5.834 },
+  { name: "Tétouan", lat: 35.5889, lng: -5.3626 },
+  { name: "Chefchaouen", lat: 35.1688, lng: -5.2636 },
+  { name: "Al Hoceima", lat: 35.2517, lng: -3.9372 },
+  { name: "Nador", lat: 35.1681, lng: -2.9287 },
+  { name: "Oujda", lat: 34.6814, lng: -1.9086 },
+  // Région Centre
   { name: "Rabat", lat: 34.0209, lng: -6.8416 },
-  { name: "Marrakech", lat: 31.6295, lng: -7.9811 },
+  { name: "Casablanca", lat: 33.5731, lng: -7.5898 },
   { name: "Fès", lat: 33.8959, lng: -5.5544 },
   { name: "Meknès", lat: 34.0181, lng: -5.0078 },
-  { name: "Tanger", lat: 35.7595, lng: -5.834 },
-  { name: "Agadir", lat: 30.4278, lng: -9.5981 },
-  { name: "Oujda", lat: 34.6814, lng: -1.9086 },
-  { name: "Tétouan", lat: 35.5889, lng: -5.3626 },
-  { name: "El Jadida", lat: 33.2316, lng: -8.5007 },
-  { name: "Essaouira", lat: 31.5085, lng: -9.7595 },
-  { name: "Safi", lat: 32.2917, lng: -9.2372 },
-  { name: "Ouarzazate", lat: 30.9335, lng: -6.893 },
-  { name: "Beni Mellal", lat: 32.3394, lng: -6.3498 },
+  { name: "Kénitra", lat: 34.261, lng: -6.5802 },
+  { name: "Salé", lat: 34.0531, lng: -6.7985 },
+  { name: "Mohammedia", lat: 33.6866, lng: -7.3827 },
   { name: "Settat", lat: 33.001, lng: -7.6194 },
   { name: "Khouribga", lat: 32.885, lng: -6.9063 },
+  { name: "Beni Mellal", lat: 32.3394, lng: -6.3498 },
+  // Côte Atlantique
+  { name: "El Jadida", lat: 33.2316, lng: -8.5007 },
+  { name: "Safi", lat: 32.2917, lng: -9.2372 },
+  { name: "Essaouira", lat: 31.5085, lng: -9.7595 },
+  { name: "Agadir", lat: 30.4278, lng: -9.5981 },
+  // Région Sud
+  { name: "Marrakech", lat: 31.6295, lng: -7.9811 },
+  { name: "Ouarzazate", lat: 30.9335, lng: -6.893 },
+  { name: "Tinghir", lat: 31.5147, lng: -5.533 },
+  { name: "Errachidia", lat: 31.9314, lng: -4.4288 },
+  { name: "Merzouga", lat: 31.0801, lng: -4.0134 },
+  { name: "Zagora", lat: 30.3286, lng: -5.8383 },
+  // Région Sahara - Sud
+  { name: "Tiznit", lat: 29.6974, lng: -9.7316 },
+  { name: "Sidi Ifni", lat: 29.3797, lng: -10.1728 },
+  { name: "Tan-Tan", lat: 28.438, lng: -11.1033 },
+  { name: "Guelmim", lat: 28.9833, lng: -10.0667 },
+  { name: "Laâyoune", lat: 27.1253, lng: -13.1625 },
+  { name: "Boujdour", lat: 26.1267, lng: -14.4833 },
+  { name: "Dakhla", lat: 23.7147, lng: -15.9328 },
+  { name: "Lagouira", lat: 20.9988, lng: -17.1046 },
 ];
 
 export default function RouteOptimizer() {
@@ -46,7 +69,7 @@ export default function RouteOptimizer() {
   const [includeReturn, setIncludeReturn] = useState(true);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [userId, setUserId] = useState("driver_001");
+  const [userId, setUserId] = useState("user_001");
   const [mapSelectionMode, setMapSelectionMode] = useState(false);
 
   const handleMapClick = (lat, lng) => {
@@ -186,6 +209,36 @@ export default function RouteOptimizer() {
         { id: 3, name: "Fès", latitude: 33.8959, longitude: -5.5544 },
         { id: 4, name: "Marrakech", latitude: 31.6295, longitude: -7.9811 },
       ],
+      "south-coast": [
+        { id: 1, name: "Agadir", latitude: 30.4278, longitude: -9.5981 },
+        { id: 2, name: "Tiznit", latitude: 29.6974, longitude: -9.7316 },
+        { id: 3, name: "Sidi Ifni", latitude: 29.3797, longitude: -10.1728 },
+        { id: 4, name: "Tan-Tan", latitude: 28.438, longitude: -11.1033 },
+        { id: 5, name: "Laâyoune", latitude: 27.1253, longitude: -13.1625 },
+      ],
+      desert: [
+        { id: 1, name: "Marrakech", latitude: 31.6295, longitude: -7.9811 },
+        { id: 2, name: "Ouarzazate", latitude: 30.9335, longitude: -6.893 },
+        { id: 3, name: "Tinghir", latitude: 31.5147, longitude: -5.533 },
+        { id: 4, name: "Errachidia", latitude: 31.9314, longitude: -4.4288 },
+        { id: 5, name: "Merzouga", latitude: 31.0801, longitude: -4.0134 },
+      ],
+      north: [
+        { id: 1, name: "Tanger", latitude: 35.7595, longitude: -5.834 },
+        { id: 2, name: "Tétouan", latitude: 35.5889, longitude: -5.3626 },
+        { id: 3, name: "Chefchaouen", latitude: 35.1688, longitude: -5.2636 },
+        { id: 4, name: "Al Hoceima", latitude: 35.2517, longitude: -3.9372 },
+        { id: 5, name: "Nador", latitude: 35.1681, longitude: -2.9287 },
+        { id: 6, name: "Oujda", latitude: 34.6814, longitude: -1.9086 },
+      ],
+      sahara: [
+        { id: 1, name: "Agadir", latitude: 30.4278, longitude: -9.5981 },
+        { id: 2, name: "Guelmim", latitude: 28.9833, longitude: -10.0667 },
+        { id: 3, name: "Tan-Tan", latitude: 28.438, longitude: -11.1033 },
+        { id: 4, name: "Laâyoune", latitude: 27.1253, longitude: -13.1625 },
+        { id: 5, name: "Boujdour", latitude: 26.1267, longitude: -14.4833 },
+        { id: 6, name: "Dakhla", latitude: 23.7147, longitude: -15.9328 },
+      ],
     };
     setWaypoints(examples[type]);
     setResult(null);
@@ -243,6 +296,46 @@ export default function RouteOptimizer() {
             } rounded-lg transition-colors text-sm font-medium`}
           >
             👑 Villes Impériales
+          </button>
+          <button
+            onClick={() => loadExample("south-coast")}
+            className={`px-4 py-2 ${
+              darkMode
+                ? "bg-teal-900/50 text-teal-400 hover:bg-teal-800/50"
+                : "bg-teal-100 text-teal-700 hover:bg-teal-200"
+            } rounded-lg transition-colors text-sm font-medium`}
+          >
+            🏖️ Côte Sud
+          </button>
+          <button
+            onClick={() => loadExample("desert")}
+            className={`px-4 py-2 ${
+              darkMode
+                ? "bg-orange-900/50 text-orange-400 hover:bg-orange-800/50"
+                : "bg-orange-100 text-orange-700 hover:bg-orange-200"
+            } rounded-lg transition-colors text-sm font-medium`}
+          >
+            🏜️ Route du Désert
+          </button>
+          <button
+            onClick={() => loadExample("north")}
+            className={`px-4 py-2 ${
+              darkMode
+                ? "bg-green-900/50 text-green-400 hover:bg-green-800/50"
+                : "bg-green-100 text-green-700 hover:bg-green-200"
+            } rounded-lg transition-colors text-sm font-medium`}
+          >
+            🌲 Route du Nord
+          </button>
+          <button
+            onClick={() => loadExample("sahara")}
+            className={`px-4 py-2 ${
+              darkMode
+                ? "bg-yellow-900/50 text-yellow-400 hover:bg-yellow-800/50"
+                : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+            } rounded-lg transition-colors text-sm font-medium`}
+          >
+            🐪 Route Sahara
           </button>
         </div>
       </div>

@@ -190,10 +190,66 @@ export default function UserInfoPage() {
           natureMarchandise: "Équipements",
           dateDepart: "2024-11-27T08:00:00",
         },
+        {
+          id: "route-010",
+          fullName: "Test User 1",
+          username: "test1",
+          email: "test1@example.com",
+          phone: "+212 6 00 00 00 01",
+          adresseDepart: "Tanger",
+          adresseDestination: "Essaouira",
+          totalDistanceKm: 550.0,
+          totalDurationMin: 420,
+          volume: 45.0,
+          natureMarchandise: "Côte Atlantique - Produits frais",
+          dateDepart: "2024-12-05T05:00:00",
+        },
+        {
+          id: "route-011",
+          fullName: "Test User 1",
+          username: "test1",
+          email: "test1@example.com",
+          phone: "+212 6 00 00 00 01",
+          adresseDepart: "Casablanca",
+          adresseDestination: "Agadir",
+          totalDistanceKm: 460.0,
+          totalDurationMin: 350,
+          volume: 35.0,
+          natureMarchandise: "Côte Atlantique - Textile",
+          dateDepart: "2024-12-04T07:00:00",
+        },
+        {
+          id: "route-012",
+          fullName: "Test User 1",
+          username: "test1",
+          email: "test1@example.com",
+          phone: "+212 6 00 00 00 01",
+          adresseDepart: "Tanger",
+          adresseDestination: "Marrakech",
+          totalDistanceKm: 580.0,
+          totalDurationMin: 450,
+          volume: 50.0,
+          natureMarchandise: "Grand Tour - Électroménager",
+          dateDepart: "2024-12-06T06:00:00",
+        },
+        {
+          id: "route-013",
+          fullName: "Test User 1",
+          username: "test1",
+          email: "test1@example.com",
+          phone: "+212 6 00 00 00 01",
+          adresseDepart: "Fès",
+          adresseDestination: "Agadir",
+          totalDistanceKm: 650.0,
+          totalDurationMin: 520,
+          volume: 60.0,
+          natureMarchandise: "Grand Tour - Artisanat",
+          dateDepart: "2024-12-03T04:30:00",
+        },
       ],
       user_002: [
         {
-          id: "route-010",
+          id: "route-014",
           fullName: "Test User 2",
           username: "test2",
           email: "test2@example.com",
@@ -205,6 +261,62 @@ export default function UserInfoPage() {
           volume: 10.0,
           natureMarchandise: "Documents",
           dateDepart: "2024-12-02T16:00:00",
+        },
+        {
+          id: "route-015",
+          fullName: "Test User 2",
+          username: "test2",
+          email: "test2@example.com",
+          phone: "+212 6 00 00 00 02",
+          adresseDepart: "El Jadida",
+          adresseDestination: "Safi",
+          totalDistanceKm: 145.0,
+          totalDurationMin: 110,
+          volume: 20.0,
+          natureMarchandise: "Côte Atlantique - Poissons",
+          dateDepart: "2024-12-01T05:30:00",
+        },
+        {
+          id: "route-016",
+          fullName: "Test User 2",
+          username: "test2",
+          email: "test2@example.com",
+          phone: "+212 6 00 00 00 02",
+          adresseDepart: "Rabat",
+          adresseDestination: "Essaouira",
+          totalDistanceKm: 380.0,
+          totalDurationMin: 290,
+          volume: 28.0,
+          natureMarchandise: "Côte Atlantique - Artisanat",
+          dateDepart: "2024-11-30T08:00:00",
+        },
+        {
+          id: "route-017",
+          fullName: "Test User 2",
+          username: "test2",
+          email: "test2@example.com",
+          phone: "+212 6 00 00 00 02",
+          adresseDepart: "Casablanca",
+          adresseDestination: "Oujda",
+          totalDistanceKm: 620.0,
+          totalDurationMin: 480,
+          volume: 55.0,
+          natureMarchandise: "Grand Tour - Machines industrielles",
+          dateDepart: "2024-11-28T03:00:00",
+        },
+        {
+          id: "route-018",
+          fullName: "Test User 2",
+          username: "test2",
+          email: "test2@example.com",
+          phone: "+212 6 00 00 00 02",
+          adresseDepart: "Marrakech",
+          adresseDestination: "Fès",
+          totalDistanceKm: 530.0,
+          totalDurationMin: 400,
+          volume: 40.0,
+          natureMarchandise: "Grand Tour - Mobilier",
+          dateDepart: "2024-11-25T06:00:00",
         },
       ],
     };
@@ -296,11 +408,30 @@ export default function UserInfoPage() {
   };
 
   const viewRouteDetails = async (routeId) => {
+    // Si on utilise les données de démonstration, afficher les détails locaux
+    if (usingMockData) {
+      const mockRoute = userInfo.find((r) => r.id === routeId);
+      if (mockRoute) {
+        setSelectedRoute(mockRoute);
+      } else {
+        toast.error("Route non trouvée dans les données de démonstration");
+      }
+      return;
+    }
+
     try {
       const route = await getRouteById(routeId);
       setSelectedRoute(route);
     } catch (error) {
-      toast.error("Erreur lors de la récupération des détails");
+      // Essayer de trouver la route dans les données locales
+      const localRoute = userInfo.find(
+        (r) => r.id === routeId || r.routeId === routeId
+      );
+      if (localRoute) {
+        setSelectedRoute(localRoute);
+      } else {
+        toast.error("Erreur lors de la récupération des détails");
+      }
     }
   };
 

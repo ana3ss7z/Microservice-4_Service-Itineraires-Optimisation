@@ -357,14 +357,14 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
                     darkMode ? "text-gray-100" : "text-gray-800"
                   }`}
                 >
-                  Admin
+                  Ahmed Ben Ali
                 </p>
                 <p
                   className={`text-xs ${
                     darkMode ? "text-gray-400" : "text-gray-500"
                   }`}
                 >
-                  Transport Maroc
+                  Administrateur
                 </p>
               </div>
             </button>
@@ -378,33 +378,6 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
                     : "bg-white border-gray-100"
                 } rounded-xl shadow-xl border py-2 animate-fadeIn`}
               >
-                <Link
-                  to="/user-info"
-                  onClick={() => setShowUserMenu(false)}
-                  className={`flex items-center gap-3 px-4 py-2 text-sm ${
-                    darkMode
-                      ? "text-gray-200 hover:bg-slate-700"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <User className="w-4 h-4" /> Mon Profil
-                </Link>
-                <Link
-                  to="/settings"
-                  onClick={() => setShowUserMenu(false)}
-                  className={`flex items-center gap-3 px-4 py-2 text-sm ${
-                    darkMode
-                      ? "text-gray-200 hover:bg-slate-700"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <Settings className="w-4 h-4" /> Paramètres
-                </Link>
-                <hr
-                  className={`my-2 ${
-                    darkMode ? "border-slate-700" : "border-gray-100"
-                  }`}
-                />
                 <button
                   className={`w-full flex items-center gap-3 px-4 py-2 text-sm ${
                     darkMode
