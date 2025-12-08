@@ -393,7 +393,7 @@ nohup java -jar -Dspring.profiles.active=prod target/itineraire-optimisation-ser
 
 ```bash
 # Health check
-curl http://localhost:8081/api/routes/health
+curl http://localhost:8082/api/routes/health
 
 # Depuis l'extérieur (remplacer par votre IP)
 curl http://172.30.80.11:31030/api/routes/health
@@ -444,12 +444,12 @@ rm -rf target
 #### Port déjà utilisé
 
 ```bash
-# Trouver quel processus utilise le port 8081
-lsof -i :8081
-netstat -tulpn | grep 8081
+# Trouver quel processus utilise le port 8082
+lsof -i :8082
+netstat -tulpn | grep 8082
 
 # Arrêter le processus
-kill $(lsof -t -i:8081)
+kill $(lsof -t -i:8082)
 ```
 
 #### Mémoire insuffisante
@@ -495,7 +495,7 @@ nohup java -jar target/itineraire-optimisation-service-1.0.0.jar > app.log 2>&1 
 sleep 5
 
 echo "✅ Checking health..."
-curl -s http://localhost:8081/api/routes/health
+curl -s http://localhost:8082/api/routes/health
 
 echo ""
 echo "📋 Application started! View logs with: tail -f app.log"
@@ -636,16 +636,16 @@ curl http://localhost:8082/api/routes/health
 Les collections Postman sont disponibles dans le projet :
 
 - **`Postman_Collection.json`** : Collection pour les tests en local (`http://localhost:8082`)
-- **`Postman_Collection_Server.json`** : Collection pour le serveur de production (`http://172.30.80.11:8082`)
+- **`Postman_Collection_Server.json`** : Collection pour le serveur de production (`http://172.30.80.11:31030`)
 
 ### Variables Postman
 
 Les collections utilisent des variables pour faciliter le changement d'environnement :
 
-| Variable     | Local                   | Server                     |
-| ------------ | ----------------------- | -------------------------- |
-| `base_url`   | `http://localhost:8082` | `http://172.30.80.11:8082` |
-| `api_prefix` | `/api`                  | `/api`                     |
+| Variable     | Local                   | Server                      |
+| ------------ | ----------------------- | --------------------------- |
+| `base_url`   | `http://localhost:8082` | `http://172.30.80.11:31030` |
+| `api_prefix` | `/api`                  | `/api`                      |
 
 Pour changer l'URL, modifiez simplement la variable `base_url` dans Postman.
 
