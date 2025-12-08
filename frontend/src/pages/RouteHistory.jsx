@@ -49,19 +49,31 @@ export default function RouteHistory() {
       result = result.filter((r) => r.status === statusFilter);
     }
 
-    // Search query filter
+    // Search query filter - search in multiple fields
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (r) =>
-          (r.originCity || r.adresseDepart || "")
-            .toLowerCase()
-            .includes(query) ||
-          (r.destinationCity || r.adresseDestination || "")
-            .toLowerCase()
-            .includes(query) ||
-          (r.natureMarchandise || "").toLowerCase().includes(query)
-      );
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter((r) => {
+        // Get all searchable text from the route
+        const searchableFields = [
+          r.originCity,
+          r.destinationCity,
+          r.adresseDepart,
+          r.adresseDestination,
+          r.originAddress,
+          r.destinationAddress,
+          r.natureMarchandise,
+          r.routeId,
+          r.id,
+          r.userId,
+          r.fullName,
+          r.username,
+        ];
+
+        // Check if any field contains the search query
+        return searchableFields.some(
+          (field) => field && String(field).toLowerCase().includes(query)
+        );
+      });
     }
 
     setFilteredRoutes(result);
