@@ -17,6 +17,7 @@ public class RouteEntity {
     private String id;
 
     private String userId;
+    private String chauffeurId;
     private String requestId;
 
     private String originAddress;
@@ -53,6 +54,15 @@ public class RouteEntity {
     @Column(updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    private LocalDateTime dateDepart;
+    private LocalDateTime estimatedArrivalTime;
+    private LocalDateTime notificationTime;
+
+    @Builder.Default
+    private Boolean started = false;
+
+    private LocalDateTime startedAt;
 
     private String calculatedBy;
     private String status;

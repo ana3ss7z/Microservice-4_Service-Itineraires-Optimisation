@@ -21,6 +21,7 @@ public class UserRouteInfoDTO {
     // Route identification
     private String routeId;
     private String userId;
+    private String chauffeurId;
 
     // Informations utilisateur
     private String username;
@@ -60,6 +61,17 @@ public class UserRouteInfoDTO {
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateDepart;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime estimatedArrivalTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime notificationTime;
+
+    private Boolean started;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime startedAt;
 
     // Métadonnées
     private Boolean includeReturn;

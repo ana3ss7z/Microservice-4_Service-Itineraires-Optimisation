@@ -11,8 +11,16 @@ import {
   Send,
   RefreshCw,
   Clock,
+  Play,
+  Square,
+  UserCheck,
+  Bell,
 } from "lucide-react";
-import { calculateRouteWithDemande } from "../services/api";
+import {
+  calculateRouteWithDemande,
+  startRoute,
+  stopRoute,
+} from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
 import { useTheme } from "../context/ThemeContext";
@@ -24,6 +32,7 @@ export default function DemandeRoute() {
 
   const [formData, setFormData] = useState({
     userId: "user_001",
+    chauffeurId: "",
     username: "",
     email: "",
     fullName: "",
@@ -83,6 +92,7 @@ export default function DemandeRoute() {
   const loadExample = () => {
     setFormData({
       userId: "user_001",
+      chauffeurId: "chauffeur_001",
       username: "ahmed_benali",
       email: "ahmed.benali@email.com",
       fullName: "Ahmed Ben Ali",
@@ -95,6 +105,44 @@ export default function DemandeRoute() {
       adresseDestination: "Rabat, Morocco",
     });
     toast.success("Exemple chargé!");
+  };
+
+  // Fonction pour démarrer une route
+  const handleStartRoute = async () => {
+    if (!result?.routeId) {
+      toast.error("Aucune route à démarrer");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const updatedRoute = await startRoute(result.routeId);
+      setResult(updatedRoute);
+      toast.success("Route démarrée avec succès!");
+    } catch (error) {
+      toast.error(error.message || "Erreur lors du démarrage");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour arrêter une route
+  const handleStopRoute = async () => {
+    if (!result?.routeId) {
+      toast.error("Aucune route à arrêter");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const updatedRoute = await stopRoute(result.routeId);
+      setResult(updatedRoute);
+      toast.success("Route arrêtée avec succès!");
+    } catch (error) {
+      toast.error(error.message || "Erreur lors de l'arrêt");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -199,6 +247,40 @@ export default function DemandeRoute() {
                       darkMode ? "text-gray-400" : "text-gray-600"
                     } mb-1 block`}
                   >
+                    ID Chauffeur
+                  </label>
+                  <div
+                    className={`flex items-center gap-3 px-4 py-3 ${
+                      darkMode
+                        ? "bg-slate-700 border-slate-600"
+                        : "bg-white border-gray-200"
+                    } border rounded-xl focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all shadow-sm`}
+                  >
+                    <UserCheck className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                    <input
+                      type="text"
+                      value={formData.chauffeurId}
+                      onChange={(e) =>
+                        updateField("chauffeurId", e.target.value)
+                      }
+                      placeholder="chauffeur_001"
+                      className={`flex-1 bg-transparent border-none outline-none ${
+                        darkMode
+                          ? "text-white placeholder-gray-500"
+                          : "text-gray-700 placeholder-gray-400"
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    className={`text-sm font-medium ${
+                      darkMode ? "text-gray-400" : "text-gray-600"
+                    } mb-1 block`}
+                  >
                     Nom d&apos;utilisateur
                   </label>
                   <div
@@ -224,9 +306,7 @@ export default function DemandeRoute() {
                     />
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label
                     className={`text-sm font-medium ${
@@ -629,20 +709,60 @@ export default function DemandeRoute() {
           {/* Result */}
           {result && !loading && (
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fadeIn">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-4">
-                <h3 className="text-white font-bold text-lg">
-                  Résultat de la demande
-                </h3>
-                <p className="text-orange-100 text-sm">
-                  Route ID: {result.routeId}
-                </p>
+              {/* Header with Start/Stop Button */}
+              <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-4 flex justify-between items-center">
+                <div>
+                  <h3 className="text-white font-bold text-lg">
+                    Résultat de la demande
+                  </h3>
+                  <p className="text-orange-100 text-sm">
+                    Route ID: {result.routeId}
+                  </p>
+                </div>
+                {/* Start/Stop Button */}
+                <div className="flex gap-2">
+                  {!result.started ? (
+                    <button
+                      onClick={handleStartRoute}
+                      disabled={loading}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow-lg transition-all disabled:opacity-50"
+                    >
+                      <Play className="w-5 h-5" />
+                      Démarrer
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleStopRoute}
+                      disabled={loading}
+                      className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl shadow-lg transition-all disabled:opacity-50"
+                    >
+                      <Square className="w-5 h-5" />
+                      Arrêter
+                    </button>
+                  )}
+                </div>
               </div>
+
+              {/* Status Banner */}
+              {result.started && (
+                <div className="bg-green-100 border-b border-green-200 px-6 py-3 flex items-center gap-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-green-700 font-medium">
+                    Route en cours
+                  </span>
+                  {result.startedAt && (
+                    <span className="text-green-600 text-sm">
+                      • Démarré à:{" "}
+                      {new Date(result.startedAt).toLocaleTimeString()}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* User Info */}
               <div className="p-6 border-b border-gray-100">
                 <h4 className="font-semibold text-gray-700 mb-4">
-                  Informations Client
+                  Informations Client & Chauffeur
                 </h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -660,6 +780,16 @@ export default function DemandeRoute() {
                   <div>
                     <span className="text-gray-500">Username:</span>
                     <p className="font-medium">{result.username || "-"}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">User ID:</span>
+                    <p className="font-medium">{result.userId || "-"}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Chauffeur ID:</span>
+                    <p className="font-medium text-blue-600">
+                      {result.chauffeurId || "-"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -740,6 +870,28 @@ export default function DemandeRoute() {
                       <p className="text-sm text-amber-700 mt-1">
                         <strong>Date de départ:</strong> {result.dateDepart}
                       </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Estimated Arrival & Notification Time */}
+              {(result.estimatedArrivalTime || result.notificationTime) && (
+                <div className="px-6 pb-6">
+                  <div className="p-4 bg-blue-50 rounded-xl space-y-2">
+                    {result.estimatedArrivalTime && (
+                      <div className="flex items-center gap-2 text-sm text-blue-700">
+                        <Clock className="w-4 h-4" />
+                        <strong>Arrivée estimée:</strong>{" "}
+                        {new Date(result.estimatedArrivalTime).toLocaleString()}
+                      </div>
+                    )}
+                    {result.notificationTime && (
+                      <div className="flex items-center gap-2 text-sm text-blue-700">
+                        <Bell className="w-4 h-4" />
+                        <strong>Notification (10 min avant):</strong>{" "}
+                        {new Date(result.notificationTime).toLocaleString()}
+                      </div>
                     )}
                   </div>
                 </div>

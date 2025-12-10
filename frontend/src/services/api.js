@@ -59,6 +59,56 @@ export const calculateRouteWithDemande = async (demandeRequest) => {
 };
 
 /**
+ * Démarrer une route (bouton Start)
+ */
+export const startRoute = async (routeId) => {
+  const response = await api.put(`/routes/${routeId}/start`);
+  return response.data;
+};
+
+/**
+ * Arrêter une route
+ */
+export const stopRoute = async (routeId) => {
+  const response = await api.put(`/routes/${routeId}/stop`);
+  return response.data;
+};
+
+/**
+ * Récupérer toutes les routes démarrées
+ */
+export const getStartedRoutes = async () => {
+  const response = await api.get("/routes/started");
+  return response.data;
+};
+
+/**
+ * Récupérer les routes démarrées d'un chauffeur
+ */
+export const getStartedRoutesByChauffeur = async (chauffeurId) => {
+  const response = await api.get(`/routes/chauffeur/${chauffeurId}/started`);
+  return response.data;
+};
+
+/**
+ * Récupérer les routes par userId et chauffeurId
+ */
+export const getRoutesByUserAndChauffeur = async (userId, chauffeurId) => {
+  const response = await api.get("/routes/user-chauffeur", {
+    params: { userId, chauffeurId },
+  });
+  return response.data;
+};
+
+/**
+ * Calculer la distance totale des routes démarrées
+ */
+export const getTotalDistanceOfStartedRoutes = async () => {
+  const response = await api.get("/routes/started/total-distance");
+  return response.data;
+};
+
+/**
  * Récupérer l'historique des routes d'un utilisateur
  */
 export const getRouteHistory = async (userId, page = 0, size = 20) => {

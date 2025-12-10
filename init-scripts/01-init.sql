@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS routes (
     id VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255),
+    chauffeur_id VARCHAR(255),
     request_id VARCHAR(255),
     origin_address TEXT,
     origin_city VARCHAR(255),
@@ -25,11 +26,22 @@ CREATE TABLE IF NOT EXISTS routes (
     is_optimized BOOLEAN,
     optimization_type VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_depart TIMESTAMP,
+    estimated_arrival_time TIMESTAMP,
+    notification_time TIMESTAMP,
+    started BOOLEAN DEFAULT FALSE,
+    started_at TIMESTAMP,
     calculated_by VARCHAR(255),
     status VARCHAR(255),
     error_message VARCHAR(1000),
     version BIGINT DEFAULT 0
 );
+
+-- Create index for faster queries on started routes
+CREATE INDEX IF NOT EXISTS idx_routes_started ON routes(started);
+CREATE INDEX IF NOT EXISTS idx_routes_user_id ON routes(user_id);
+CREATE INDEX IF NOT EXISTS idx_routes_chauffeur_id ON routes(chauffeur_id);
+CREATE INDEX IF NOT EXISTS idx_routes_user_chauffeur ON routes(user_id, chauffeur_id);
 
 -- Create villes table with auto-increment id
 CREATE TABLE IF NOT EXISTS villes (

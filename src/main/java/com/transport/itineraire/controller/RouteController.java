@@ -4,6 +4,7 @@ import com.transport.itineraire.entity.RouteEntity;
 import com.transport.itineraire.entity.VilleEntity;
 import com.transport.itineraire.model.*;
 import com.transport.itineraire.service.*;
+import com.transport.itineraire.repository.RouteRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,7 +14,10 @@ import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @RestController
@@ -25,6 +29,7 @@ public class RouteController {
     private final RouteService routeService;
     private final OptimizationService optimizationService;
     private final VilleService villeService;
+    private final RouteRepository routeRepository;
 
     @PostMapping("/coordinates")
     public ResponseEntity<RouteResponse> calculateFromCoordinates(@RequestBody RouteRequest request) {
@@ -77,10 +82,11 @@ public class RouteController {
     /**
      * Endpoint pour calculer un itinéraire avec les informations de demande (volume, marchandise)
      * Retourne totalDistanceKm, totalDurationMin avec les détails de la demande
+     * Inclut la relation userId - chauffeurId
      */
     @PostMapping("/demande-info")
     @Operation(summary = "Calcul d'itinéraire avec informations de demande",
-               description = "Calcule l'itinéraire et retourne les informations complètes incluant volume et nature de marchandise")
+               description = "Calcule l'itinéraire et retourne les informations complètes incluant volume, nature de marchandise et relation userId-chauffeurId")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Calcul effectué avec succès"),
         @ApiResponse(responseCode = "400", description = "Requête invalide")
@@ -90,6 +96,7 @@ public class RouteController {
 
         // Utiliser userId du body ou valeur par défaut
         String userId = demandeRequest.getUserId() != null ? demandeRequest.getUserId() : "user_default";
+        String chauffeurId = demandeRequest.getChauffeurId();
 
         // Créer la requête de route à partir des adresses de la demande
         RouteRequest routeRequest = RouteRequest.builder()
@@ -102,10 +109,25 @@ public class RouteController {
         // Calculer la route
         RouteResponse routeResponse = routeService.calculateRouteFromAddress(routeRequest);
 
+        // Calculer l'heure d'arrivée estimée et l'heure de notification (10 min avant)
+        LocalDateTime dateDepart = demandeRequest.getDateDepart();
+        final LocalDateTime estimatedArrivalTime;
+        final LocalDateTime notificationTime;
+
+        if (dateDepart != null && routeResponse.getDurationMin() != null) {
+            estimatedArrivalTime = dateDepart.plusMinutes(routeResponse.getDurationMin());
+            // Notification 10 minutes avant l'arrivée
+            notificationTime = estimatedArrivalTime.minusMinutes(10);
+        } else {
+            estimatedArrivalTime = null;
+            notificationTime = null;
+        }
+
         // Construire la réponse complète avec les informations de demande et utilisateur
         UserRouteInfoDTO userRouteInfo = UserRouteInfoDTO.builder()
                 .routeId(routeResponse.getRouteId())
                 .userId(userId)
+                .chauffeurId(chauffeurId)
                 .username(demandeRequest.getUsername())
                 .email(demandeRequest.getEmail())
                 .fullName(demandeRequest.getFullName())
@@ -120,11 +142,27 @@ public class RouteController {
                 .returnDurationMin(routeResponse.getReturnDurationMin())
                 .volume(demandeRequest.getVolume())
                 .natureMarchandise(demandeRequest.getNatureMarchandise())
-                .dateDepart(demandeRequest.getDateDepart())
+                .dateDepart(dateDepart)
+                .estimatedArrivalTime(estimatedArrivalTime)
+                .notificationTime(notificationTime)
+                .started(false)
+                .startedAt(null)
                 .includeReturn(true)
                 .createdAt(routeResponse.getCalculatedAt())
                 .status(routeResponse.getStatus())
                 .build();
+
+        // Mettre à jour l'entité avec les nouvelles informations
+        if (routeResponse.getRouteId() != null) {
+            routeRepository.findById(routeResponse.getRouteId()).ifPresent(entity -> {
+                entity.setChauffeurId(chauffeurId);
+                entity.setDateDepart(dateDepart);
+                entity.setEstimatedArrivalTime(estimatedArrivalTime);
+                entity.setNotificationTime(notificationTime);
+                entity.setStarted(false);
+                routeRepository.save(entity);
+            });
+        }
 
         return ResponseEntity.ok(userRouteInfo);
     }
@@ -187,6 +225,7 @@ public class RouteController {
         return UserRouteInfoDTO.builder()
                 .routeId(entity.getId())
                 .userId(entity.getUserId())
+                .chauffeurId(entity.getChauffeurId())
                 .adresseDepart(entity.getOriginAddress())
                 .adresseDestination(entity.getDestinationAddress())
                 .originLatitude(entity.getOriginLatitude())
@@ -201,6 +240,11 @@ public class RouteController {
                 .durationMin(entity.getDurationMin())
                 .returnDistanceKm(entity.getReturnDistanceKm())
                 .returnDurationMin(entity.getReturnDurationMin())
+                .dateDepart(entity.getDateDepart())
+                .estimatedArrivalTime(entity.getEstimatedArrivalTime())
+                .notificationTime(entity.getNotificationTime())
+                .started(entity.getStarted())
+                .startedAt(entity.getStartedAt())
                 .includeReturn(entity.getIncludeReturn())
                 .isOptimized(entity.getIsOptimized())
                 .optimizationType(entity.getOptimizationType())
@@ -208,5 +252,130 @@ public class RouteController {
                 .status(entity.getStatus())
                 .calculatedBy(entity.getCalculatedBy())
                 .build();
+    }
+
+    /**
+     * Endpoint pour démarrer une route (bouton start)
+     * Met à jour le champ started à true et enregistre l'heure de départ réelle
+     */
+    @PutMapping("/{id}/start")
+    @Operation(summary = "Démarrer une route",
+               description = "Met le statut started à true et enregistre l'heure de départ effective")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Route démarrée avec succès"),
+        @ApiResponse(responseCode = "404", description = "Route non trouvée")
+    })
+    public ResponseEntity<UserRouteInfoDTO> startRoute(@PathVariable String id) {
+        RouteEntity entity = routeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Route non trouvée: " + id));
+
+        entity.setStarted(true);
+        entity.setStartedAt(LocalDateTime.now());
+
+        // Recalculer l'heure d'arrivée estimée basée sur l'heure de départ réelle
+        if (entity.getDurationMin() != null) {
+            LocalDateTime newEstimatedArrival = LocalDateTime.now().plusMinutes(entity.getDurationMin());
+            entity.setEstimatedArrivalTime(newEstimatedArrival);
+            entity.setNotificationTime(newEstimatedArrival.minusMinutes(10));
+        }
+
+        RouteEntity savedEntity = routeRepository.save(entity);
+        return ResponseEntity.ok(convertToUserRouteInfo(savedEntity));
+    }
+
+    /**
+     * Endpoint pour récupérer toutes les routes qui ont démarré
+     * Permet de calculer la distance totale des routes en cours
+     */
+    @GetMapping("/started")
+    @Operation(summary = "Récupérer toutes les routes démarrées",
+               description = "Retourne toutes les routes avec started=true pour calculer les distances")
+    public ResponseEntity<List<UserRouteInfoDTO>> getStartedRoutes() {
+        List<RouteEntity> startedRoutes = routeRepository.findByStartedTrue();
+
+        List<UserRouteInfoDTO> routeInfoList = startedRoutes.stream()
+                .map(this::convertToUserRouteInfo)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(routeInfoList);
+    }
+
+    /**
+     * Endpoint pour récupérer les routes démarrées d'un chauffeur
+     */
+    @GetMapping("/chauffeur/{chauffeurId}/started")
+    @Operation(summary = "Récupérer les routes démarrées d'un chauffeur",
+               description = "Retourne les routes en cours pour un chauffeur spécifique")
+    public ResponseEntity<List<UserRouteInfoDTO>> getStartedRoutesByChauffeur(@PathVariable String chauffeurId) {
+        List<RouteEntity> startedRoutes = routeRepository.findByChauffeurIdAndStartedTrue(chauffeurId);
+
+        List<UserRouteInfoDTO> routeInfoList = startedRoutes.stream()
+                .map(this::convertToUserRouteInfo)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(routeInfoList);
+    }
+
+    /**
+     * Endpoint pour récupérer les routes par relation userId et chauffeurId
+     */
+    @GetMapping("/user-chauffeur")
+    @Operation(summary = "Récupérer les routes par userId et chauffeurId",
+               description = "Retourne les routes associées à un utilisateur et un chauffeur")
+    public ResponseEntity<List<UserRouteInfoDTO>> getRoutesByUserAndChauffeur(
+            @RequestParam String userId,
+            @RequestParam String chauffeurId) {
+
+        List<RouteEntity> routes = routeRepository.findByUserIdAndChauffeurId(userId, chauffeurId);
+
+        List<UserRouteInfoDTO> routeInfoList = routes.stream()
+                .map(this::convertToUserRouteInfo)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(routeInfoList);
+    }
+
+    /**
+     * Endpoint pour calculer la distance totale des routes démarrées
+     */
+    @GetMapping("/started/total-distance")
+    @Operation(summary = "Calculer la distance totale des routes démarrées",
+               description = "Retourne la somme des distances de toutes les routes en cours")
+    public ResponseEntity<Map<String, Object>> getTotalDistanceOfStartedRoutes() {
+        List<RouteEntity> startedRoutes = routeRepository.findByStartedTrue();
+
+        double totalDistance = startedRoutes.stream()
+                .filter(r -> r.getDistanceKm() != null)
+                .mapToDouble(RouteEntity::getDistanceKm)
+                .sum();
+
+        int totalDuration = startedRoutes.stream()
+                .filter(r -> r.getDurationMin() != null)
+                .mapToInt(RouteEntity::getDurationMin)
+                .sum();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalStartedRoutes", startedRoutes.size());
+        result.put("totalDistanceKm", Math.round(totalDistance * 100.0) / 100.0);
+        result.put("totalDurationMin", totalDuration);
+
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Endpoint pour arrêter une route
+     */
+    @PutMapping("/{id}/stop")
+    @Operation(summary = "Arrêter une route",
+               description = "Met le statut started à false")
+    public ResponseEntity<UserRouteInfoDTO> stopRoute(@PathVariable String id) {
+        RouteEntity entity = routeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Route non trouvée: " + id));
+
+        entity.setStarted(false);
+        entity.setStatus("COMPLETED");
+
+        RouteEntity savedEntity = routeRepository.save(entity);
+        return ResponseEntity.ok(convertToUserRouteInfo(savedEntity));
     }
 }

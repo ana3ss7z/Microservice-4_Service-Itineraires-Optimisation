@@ -19,6 +19,7 @@ public class DemandeRequestDTO {
 
     // Informations utilisateur
     private String userId;
+    private String chauffeurId;
     private String username;
     private String email;
     private String fullName;
