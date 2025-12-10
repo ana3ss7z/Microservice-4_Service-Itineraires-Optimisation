@@ -30,6 +30,7 @@ public class RouteController {
     private final OptimizationService optimizationService;
     private final VilleService villeService;
     private final RouteRepository routeRepository;
+    private final DemandeExterneService demandeExterneService;
 
     @PostMapping("/coordinates")
     public ResponseEntity<RouteResponse> calculateFromCoordinates(@RequestBody RouteRequest request) {
@@ -78,6 +79,157 @@ public class RouteController {
     public ResponseEntity<List<VilleEntity>> getAllCities() {
         return ResponseEntity.ok(villeService.getAllCities());
     }
+
+    // ============== ENDPOINTS POUR INTÉGRATION MICROSERVICE DEMANDES ==============
+
+    /**
+     * Récupérer les informations d'une demande depuis le microservice externe
+     * @param demandeId ID de la demande
+     * @return DemandeExterneDTO avec toutes les informations de la demande
+     */
+    @GetMapping("/demande-externe/{demandeId}")
+    @Operation(summary = "Récupérer une demande externe",
+               description = "Appelle le microservice Demandes pour récupérer les informations d'une demande par son ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Demande récupérée avec succès"),
+        @ApiResponse(responseCode = "404", description = "Demande non trouvée"),
+        @ApiResponse(responseCode = "503", description = "Service Demandes indisponible")
+    })
+    public ResponseEntity<DemandeExterneDTO> getDemandeExterne(@PathVariable Long demandeId) {
+        return ResponseEntity.ok(demandeExterneService.getDemandeById(demandeId));
+    }
+
+    /**
+     * Récupérer uniquement le volume d'une demande depuis le microservice externe
+     * @param demandeId ID de la demande
+     * @return Map contenant le volume
+     */
+    @GetMapping("/demande-externe/{demandeId}/volume")
+    @Operation(summary = "Récupérer le volume d'une demande",
+               description = "Appelle le microservice Demandes pour récupérer uniquement le volume d'une demande")
+    public ResponseEntity<Map<String, Object>> getVolumeFromDemande(@PathVariable Long demandeId) {
+        Double volume = demandeExterneService.getVolumeByDemandeId(demandeId);
+        Map<String, Object> response = new HashMap<>();
+        response.put("demandeId", demandeId);
+        response.put("volume", volume);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Calculer un itinéraire à partir d'une demande externe
+     * Récupère automatiquement les informations depuis le microservice Demandes
+     * @param demandeId ID de la demande dans le microservice externe
+     * @param userId ID de l'utilisateur (optionnel)
+     * @param chauffeurId ID du chauffeur (optionnel)
+     * @return UserRouteInfoDTO avec les informations de route calculées
+     */
+    @PostMapping("/calculate-from-demande/{demandeId}")
+    @Operation(summary = "Calculer itinéraire depuis demande externe",
+               description = "Récupère les données d'une demande externe et calcule l'itinéraire automatiquement")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Itinéraire calculé avec succès"),
+        @ApiResponse(responseCode = "404", description = "Demande non trouvée"),
+        @ApiResponse(responseCode = "503", description = "Service Demandes indisponible")
+    })
+    public ResponseEntity<UserRouteInfoDTO> calculateRouteFromDemande(
+            @PathVariable Long demandeId,
+            @RequestParam(required = false) String userId,
+            @RequestParam(required = false) String chauffeurId) {
+
+        // Récupérer la demande depuis le microservice externe
+        DemandeExterneDTO demande = demandeExterneService.getDemandeById(demandeId);
+
+        // Convertir en DemandeRequestDTO pour réutiliser la logique existante
+        DemandeRequestDTO demandeRequest = DemandeRequestDTO.builder()
+                .userId(userId != null ? userId : "client_" + demande.getClientId())
+                .chauffeurId(chauffeurId)
+                .volume(demande.getVolume())
+                .natureMarchandise(demande.getNatureMarchandise())
+                .dateDepart(demande.getDateDepart())
+                .adresseDepart(demande.getAdresseDepart())
+                .adresseDestination(demande.getAdresseDestination())
+                .build();
+
+        // Créer la requête de route
+        RouteRequest routeRequest = RouteRequest.builder()
+                .originAddress(demande.getAdresseDepart())
+                .destinationAddress(demande.getAdresseDestination())
+                .includeReturn(true)
+                .userId(demandeRequest.getUserId())
+                .build();
+
+        // Calculer la route
+        RouteResponse routeResponse = routeService.calculateRouteFromAddress(routeRequest);
+
+        // Calculer l'heure d'arrivée estimée et l'heure de notification (10 min avant)
+        LocalDateTime dateDepart = demande.getDateDepart();
+        final LocalDateTime estimatedArrivalTime;
+        final LocalDateTime notificationTime;
+
+        if (dateDepart != null && routeResponse.getDurationMin() != null) {
+            estimatedArrivalTime = dateDepart.plusMinutes(routeResponse.getDurationMin());
+            notificationTime = estimatedArrivalTime.minusMinutes(10);
+        } else {
+            estimatedArrivalTime = null;
+            notificationTime = null;
+        }
+
+        // Construire la réponse
+        UserRouteInfoDTO userRouteInfo = UserRouteInfoDTO.builder()
+                .routeId(routeResponse.getRouteId())
+                .userId(demandeRequest.getUserId())
+                .chauffeurId(chauffeurId)
+                .adresseDepart(demande.getAdresseDepart())
+                .adresseDestination(demande.getAdresseDestination())
+                .totalDistanceKm(routeResponse.getTotalDistanceKm())
+                .totalDurationMin(routeResponse.getTotalDurationMin())
+                .distanceKm(routeResponse.getDistanceKm())
+                .durationMin(routeResponse.getDurationMin())
+                .returnDistanceKm(routeResponse.getReturnDistanceKm())
+                .returnDurationMin(routeResponse.getReturnDurationMin())
+                .volume(demande.getVolume())
+                .natureMarchandise(demande.getNatureMarchandise())
+                .dateDepart(dateDepart)
+                .estimatedArrivalTime(estimatedArrivalTime)
+                .notificationTime(notificationTime)
+                .started(false)
+                .startedAt(null)
+                .includeReturn(true)
+                .createdAt(routeResponse.getCalculatedAt())
+                .status(routeResponse.getStatus())
+                .build();
+
+        // Sauvegarder l'entité avec les informations
+        if (routeResponse.getRouteId() != null) {
+            routeRepository.findById(routeResponse.getRouteId()).ifPresent(entity -> {
+                entity.setChauffeurId(chauffeurId);
+                entity.setDateDepart(dateDepart);
+                entity.setEstimatedArrivalTime(estimatedArrivalTime);
+                entity.setNotificationTime(notificationTime);
+                entity.setStarted(false);
+                routeRepository.save(entity);
+            });
+        }
+
+        return ResponseEntity.ok(userRouteInfo);
+    }
+
+    /**
+     * Vérifier la disponibilité du service Demandes
+     */
+    @GetMapping("/demande-service/health")
+    @Operation(summary = "Vérifier le service Demandes",
+               description = "Vérifie si le microservice Demandes est disponible")
+    public ResponseEntity<Map<String, Object>> checkDemandeServiceHealth() {
+        boolean available = demandeExterneService.isServiceAvailable();
+        Map<String, Object> response = new HashMap<>();
+        response.put("service", "demandes");
+        response.put("available", available);
+        response.put("url", "http://172.30.80.11:31029/api/v1/demandes");
+        return ResponseEntity.ok(response);
+    }
+
+    // ============== FIN ENDPOINTS MICROSERVICE DEMANDES ==============
 
     /**
      * Endpoint pour calculer un itinéraire avec les informations de demande (volume, marchandise)

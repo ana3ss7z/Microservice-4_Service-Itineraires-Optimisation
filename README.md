@@ -25,17 +25,23 @@ Base URL : `/routes`
 
 ### Routes
 
-| Méthode | Endpoint               | Description                                | Authentification    |
-| ------- | ---------------------- | ------------------------------------------ | ------------------- |
-| POST    | `/routes/coordinates`  | Calcul d'itinéraire depuis coordonnées GPS | Non                 |
-| POST    | `/routes/address`      | Calcul depuis adresses textuelles          | Non                 |
-| POST    | `/routes/optimize`     | **Optimisation de tournée multi-points**   | Non                 |
-| POST    | `/routes/demande-info` | Calcul d'itinéraire avec infos de demande  | Non                 |
-| GET     | `/routes/history`      | Historique des trajets d'un utilisateur    | Non (userId requis) |
-| GET     | `/routes/user-info`    | Infos complètes utilisateur avec volume    | Non (userId requis) |
-| GET     | `/routes/{id}`         | Détail d'un trajet par ID                  | Non                 |
-| GET     | `/routes/ville`        | Liste de toutes les villes connues         | Non                 |
-| GET     | `/routes/health`       | Vérification que le service est vivant     | Non                 |
+| Méthode | Endpoint                                  | Description                                | Authentification    |
+| ------- | ----------------------------------------- | ------------------------------------------ | ------------------- |
+| POST    | `/routes/coordinates`                     | Calcul d'itinéraire depuis coordonnées GPS | Non                 |
+| POST    | `/routes/address`                         | Calcul depuis adresses textuelles          | Non                 |
+| POST    | `/routes/optimize`                        | **Optimisation de tournée multi-points**   | Non                 |
+| POST    | `/routes/demande-info`                    | Calcul d'itinéraire avec infos de demande  | Non                 |
+| GET     | `/routes/history`                         | Historique des trajets d'un utilisateur    | Non (userId requis) |
+| GET     | `/routes/user-info`                       | Infos complètes utilisateur avec volume    | Non (userId requis) |
+| GET     | `/routes/{id}`                            | Détail d'un trajet par ID                  | Non                 |
+| GET     | `/routes/ville`                           | Liste de toutes les villes connues         | Non                 |
+| GET     | `/routes/health`                          | Vérification que le service est vivant     | Non                 |
+| PUT     | `/routes/{id}/start`                      | **🆕 Démarrer une route (bouton Start)**   | Non                 |
+| PUT     | `/routes/{id}/stop`                       | **🆕 Arrêter une route**                   | Non                 |
+| GET     | `/routes/started`                         | **🆕 Toutes les routes en cours**          | Non                 |
+| GET     | `/routes/chauffeur/{chauffeurId}/started` | **🆕 Routes en cours par chauffeur**       | Non                 |
+| GET     | `/routes/user-chauffeur`                  | **🆕 Routes par userId et chauffeurId**    | Non                 |
+| GET     | `/routes/started/total-distance`          | **🆕 Distance totale routes en cours**     | Non                 |
 
 ### Localisation
 
@@ -106,6 +112,7 @@ Contient les mêmes champs que l'entité sauvegardée (sans géométrie PostGIS)
 ```json
 {
   "userId": "user123",
+  "chauffeurId": "chauffeur_001",
   "username": "ahmed_benali",
   "email": "ahmed.benali@email.com",
   "fullName": "Ahmed Ben Ali",
@@ -124,6 +131,7 @@ Contient les mêmes champs que l'entité sauvegardée (sans géométrie PostGIS)
 {
   "routeId": "550e8400-e29b-41d4-a716-446655440000",
   "userId": "user123",
+  "chauffeurId": "chauffeur_001",
   "username": "ahmed_benali",
   "email": "ahmed.benali@email.com",
   "fullName": "Ahmed Ben Ali",
@@ -145,6 +153,10 @@ Contient les mêmes champs que l'entité sauvegardée (sans géométrie PostGIS)
   "volume": 15.5,
   "natureMarchandise": "Meubles de salon",
   "dateDepart": "2025-12-15T10:00:00",
+  "estimatedArrivalTime": "2025-12-15T10:51:00",
+  "notificationTime": "2025-12-15T10:41:00",
+  "started": false,
+  "startedAt": null,
   "includeReturn": true,
   "isOptimized": false,
   "optimizationType": null,
@@ -255,6 +267,7 @@ Content-Type: application/json
 
 {
   "userId": "user123",
+  "chauffeurId": "chauffeur_001",
   "username": "ahmed_benali",
   "email": "ahmed.benali@email.com",
   "fullName": "Ahmed Ben Ali",
@@ -267,7 +280,7 @@ Content-Type: application/json
 }
 ```
 
-**Réponse** : `UserRouteInfoDTO` contenant `totalDistanceKm`, `totalDurationMin`, les informations de volume et les détails utilisateur (email, username, fullName, phone).
+**Réponse** : `UserRouteInfoDTO` contenant `totalDistanceKm`, `totalDurationMin`, `estimatedArrivalTime`, `notificationTime` (10 min avant arrivée), les informations de volume et les détails utilisateur.
 
 ### 8. Récupérer les informations complètes d'un utilisateur
 
@@ -277,7 +290,65 @@ GET /routes/user-info?userId=user123&page=0&size=10
 
 Retourne une liste de `UserRouteInfoDTO` avec toutes les informations de routes incluant `totalDistanceKm`, `totalDurationMin`, les détails de volume/marchandise et les informations utilisateur.
 
-### 9. Localisation actuelle (auto-détection IP)
+### 9. 🆕 Démarrer une route (Start)
+
+```http
+PUT /routes/{routeId}/start
+```
+
+Met `started=true` et enregistre `startedAt` avec l'heure actuelle. Recalcule `estimatedArrivalTime` et `notificationTime` basées sur l'heure de départ réelle.
+
+**Réponse** : `UserRouteInfoDTO` avec les champs mis à jour.
+
+### 10. 🆕 Arrêter une route (Stop)
+
+```http
+PUT /routes/{routeId}/stop
+```
+
+Met `started=false` et `status=COMPLETED`.
+
+### 11. 🆕 Récupérer toutes les routes démarrées
+
+```http
+GET /routes/started
+```
+
+Retourne toutes les routes actuellement en cours (`started=true`).
+
+### 12. 🆕 Routes démarrées par chauffeur
+
+```http
+GET /routes/chauffeur/{chauffeurId}/started
+```
+
+Retourne les routes en cours pour un chauffeur spécifique.
+
+### 13. 🆕 Routes par relation userId et chauffeurId
+
+```http
+GET /routes/user-chauffeur?userId=user123&chauffeurId=chauffeur_001
+```
+
+Retourne les routes associées à un utilisateur et un chauffeur spécifiques.
+
+### 14. 🆕 Distance totale des routes en cours
+
+```http
+GET /routes/started/total-distance
+```
+
+**Réponse** :
+
+```json
+{
+  "totalStartedRoutes": 5,
+  "totalDistanceKm": 450.75,
+  "totalDurationMin": 380
+}
+```
+
+### 15. Localisation actuelle (auto-détection IP)
 
 ```http
 GET /location/current
@@ -285,7 +356,7 @@ GET /location/current
 
 Détecte automatiquement l'IP du client et retourne les informations de géolocalisation.
 
-### 10. Localisation par adresse IP spécifique
+### 16. Localisation par adresse IP spécifique
 
 ```http
 GET /location/ip/41.140.0.1
@@ -293,7 +364,7 @@ GET /location/ip/41.140.0.1
 
 Retourne les informations de localisation pour l'IP marocaine spécifiée.
 
-### 11. Recherche de localisation (query param)
+### 17. Recherche de localisation (query param)
 
 ```http
 GET /location/lookup?ip=8.8.8.8
@@ -301,7 +372,7 @@ GET /location/lookup?ip=8.8.8.8
 
 Recherche la localisation pour l'IP Google DNS (USA).
 
-### 12. Rafraîchir / Mise à jour localisation
+### 18. Rafraîchir / Mise à jour localisation
 
 ```http
 POST /location/refresh
@@ -309,7 +380,7 @@ POST /location/refresh
 
 Force une mise à jour des informations de localisation.
 
-### 13. Informations serveur
+### 19. Informations serveur
 
 ```http
 GET /location/server-info

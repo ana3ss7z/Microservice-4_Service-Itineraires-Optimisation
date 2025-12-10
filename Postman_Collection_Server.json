@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "🚗 Itinéraire Optimisation API - Server",
-    "description": "Collection complète pour tester le microservice d'itinéraires et optimisation de tournées sur le **serveur de production**.\n\n## 🌐 Base URL\n`http://172.30.80.11:8082/api`\n\n## 📋 Fonctionnalités\n- Calcul d'itinéraires par coordonnées GPS\n- Calcul d'itinéraires par adresses\n- Optimisation de tournées multi-points (TSP)\n- Historique des trajets par utilisateur\n- Gestion des villes marocaines\n\n## ⚙️ Configuration\nModifiez la variable `base_url` pour changer l'environnement.",
+    "description": "Collection complète pour tester le microservice d'itinéraires et optimisation de tournées sur le **serveur de production**.\n\n## 🌐 Base URL\n`http://172.30.80.11:31030/api`\n\n## 📋 Fonctionnalités\n- Calcul d'itinéraires par coordonnées GPS\n- Calcul d'itinéraires par adresses\n- Optimisation de tournées multi-points (TSP)\n- Historique des trajets par utilisateur\n- Gestion des villes marocaines\n- **🆕 Gestion des chauffeurs (chauffeurId)**\n- **🆕 Démarrage/Arrêt de routes (Start/Stop)**\n- **🆕 Heure d'arrivée estimée et notification (10 min avant)**\n- **🆕 Suivi des routes en cours**\n\n## ⚙️ Configuration\nModifiez la variable `base_url` pour changer l'environnement.\nModifiez `route_id` après création d'une demande pour tester Start/Stop.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -16,6 +16,12 @@
       "value": "/api",
       "type": "string",
       "description": "Préfixe de l'API"
+    },
+    {
+      "key": "route_id",
+      "value": "your-route-id-here",
+      "type": "string",
+      "description": "ID de la route (à remplacer après création d'une demande)"
     }
   ],
   "item": [
@@ -562,14 +568,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"user123\",\n  \"username\": \"ahmed_benali\",\n  \"email\": \"ahmed.benali@email.com\",\n  \"fullName\": \"Ahmed Ben Ali\",\n  \"phone\": \"+212 6 12 34 56 78\",\n  \"volume\": 15.5,\n  \"natureMarchandise\": \"Meubles de salon\",\n  \"dateDepart\": \"2025-12-15T10:00:00\",\n  \"adresseDepart\": \"123 Rue Mohammed V, Casablanca\",\n  \"adresseDestination\": \"456 Avenue Hassan II, Rabat\"\n}"
+              "raw": "{\n  \"userId\": \"user123\",\n  \"chauffeurId\": \"chauffeur_001\",\n  \"username\": \"ahmed_benali\",\n  \"email\": \"ahmed.benali@email.com\",\n  \"fullName\": \"Ahmed Ben Ali\",\n  \"phone\": \"+212 6 12 34 56 78\",\n  \"volume\": 15.5,\n  \"natureMarchandise\": \"Meubles de salon\",\n  \"dateDepart\": \"2025-12-15T10:00:00\",\n  \"adresseDepart\": \"123 Rue Mohammed V, Casablanca\",\n  \"adresseDestination\": \"456 Avenue Hassan II, Rabat\"\n}"
             },
             "url": {
               "raw": "{{base_url}}{{api_prefix}}/routes/demande-info",
               "host": ["{{base_url}}{{api_prefix}}"],
               "path": ["routes", "demande-info"]
             },
-            "description": "Calcule un itinéraire avec les informations de demande (volume, nature de marchandise) et les détails utilisateur (email, username, phone). Retourne totalDistanceKm, totalDurationMin et les détails complets."
+            "description": "Calcule un itinéraire avec les informations de demande (volume, nature de marchandise), chauffeurId et les détails utilisateur. Retourne totalDistanceKm, totalDurationMin, estimatedArrivalTime et notificationTime (10 min avant arrivée)."
           },
           "response": []
         },
@@ -585,14 +591,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"user456\",\n  \"username\": \"fatima_alaoui\",\n  \"email\": \"fatima.alaoui@email.com\",\n  \"fullName\": \"Fatima El Alaoui\",\n  \"phone\": \"+212 6 98 76 54 32\",\n  \"volume\": 25.0,\n  \"natureMarchandise\": \"Électroménager\",\n  \"dateDepart\": \"2025-12-20T08:30:00\",\n  \"adresseDepart\": \"Fes, Morocco\",\n  \"adresseDestination\": \"Marrakech, Morocco\"\n}"
+              "raw": "{\n  \"userId\": \"user456\",\n  \"chauffeurId\": \"chauffeur_002\",\n  \"username\": \"fatima_alaoui\",\n  \"email\": \"fatima.alaoui@email.com\",\n  \"fullName\": \"Fatima El Alaoui\",\n  \"phone\": \"+212 6 98 76 54 32\",\n  \"volume\": 25.0,\n  \"natureMarchandise\": \"Électroménager\",\n  \"dateDepart\": \"2025-12-20T08:30:00\",\n  \"adresseDepart\": \"Fes, Morocco\",\n  \"adresseDestination\": \"Marrakech, Morocco\"\n}"
             },
             "url": {
               "raw": "{{base_url}}{{api_prefix}}/routes/demande-info",
               "host": ["{{base_url}}{{api_prefix}}"],
               "path": ["routes", "demande-info"]
             },
-            "description": "Calcule un itinéraire pour une demande d'électroménager entre Fès et Marrakech avec informations utilisateur complètes"
+            "description": "Calcule un itinéraire pour une demande d'électroménager entre Fès et Marrakech avec chauffeurId et informations utilisateur complètes"
           },
           "response": []
         },
@@ -608,14 +614,110 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"user789\",\n  \"username\": \"omar_tazi\",\n  \"email\": \"omar.tazi@entreprise.ma\",\n  \"fullName\": \"Omar Tazi\",\n  \"phone\": \"+212 5 22 33 44 55\",\n  \"volume\": 50.0,\n  \"natureMarchandise\": \"Produits alimentaires réfrigérés\",\n  \"dateDepart\": \"2025-12-18T06:00:00\",\n  \"adresseDepart\": \"Agadir, Morocco\",\n  \"adresseDestination\": \"Casablanca, Morocco\"\n}"
+              "raw": "{\n  \"userId\": \"user789\",\n  \"chauffeurId\": \"chauffeur_003\",\n  \"username\": \"omar_tazi\",\n  \"email\": \"omar.tazi@entreprise.ma\",\n  \"fullName\": \"Omar Tazi\",\n  \"phone\": \"+212 5 22 33 44 55\",\n  \"volume\": 50.0,\n  \"natureMarchandise\": \"Produits alimentaires réfrigérés\",\n  \"dateDepart\": \"2025-12-18T06:00:00\",\n  \"adresseDepart\": \"Agadir, Morocco\",\n  \"adresseDestination\": \"Casablanca, Morocco\"\n}"
             },
             "url": {
               "raw": "{{base_url}}{{api_prefix}}/routes/demande-info",
               "host": ["{{base_url}}{{api_prefix}}"],
               "path": ["routes", "demande-info"]
             },
-            "description": "Calcule un itinéraire pour une livraison de produits alimentaires avec informations utilisateur complètes"
+            "description": "Calcule un itinéraire pour une livraison de produits alimentaires avec chauffeurId et informations utilisateur complètes"
+          },
+          "response": []
+        },
+        {
+          "name": "▶️ Démarrer une Route (Start)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/{{route_id}}/start",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "{{route_id}}", "start"]
+            },
+            "description": "Démarre une route (met started=true). Recalcule l'heure d'arrivée estimée basée sur l'heure actuelle."
+          },
+          "response": []
+        },
+        {
+          "name": "⏹️ Arrêter une Route (Stop)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/{{route_id}}/stop",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "{{route_id}}", "stop"]
+            },
+            "description": "Arrête une route (met started=false, status=COMPLETED)"
+          },
+          "response": []
+        },
+        {
+          "name": "🚗 Toutes les Routes Démarrées",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/started",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "started"]
+            },
+            "description": "Récupère toutes les routes actuellement en cours (started=true)"
+          },
+          "response": []
+        },
+        {
+          "name": "🚗 Routes Démarrées par Chauffeur",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/chauffeur/chauffeur_001/started",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "chauffeur", "chauffeur_001", "started"]
+            },
+            "description": "Récupère les routes en cours pour un chauffeur spécifique"
+          },
+          "response": []
+        },
+        {
+          "name": "👥 Routes par User & Chauffeur",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/user-chauffeur?userId=user123&chauffeurId=chauffeur_001",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "user-chauffeur"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user123",
+                  "description": "Identifiant de l'utilisateur"
+                },
+                {
+                  "key": "chauffeurId",
+                  "value": "chauffeur_001",
+                  "description": "Identifiant du chauffeur"
+                }
+              ]
+            },
+            "description": "Récupère les routes associées à un utilisateur et un chauffeur spécifiques"
+          },
+          "response": []
+        },
+        {
+          "name": "📊 Distance Totale des Routes Démarrées",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/routes/started/total-distance",
+              "host": ["{{base_url}}{{api_prefix}}"],
+              "path": ["routes", "started", "total-distance"]
+            },
+            "description": "Calcule la distance totale et la durée totale de toutes les routes en cours"
           },
           "response": []
         },

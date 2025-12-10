@@ -196,4 +196,55 @@ export const getServerInfo = async () => {
   return response.data;
 };
 
+// ==================== DEMANDES EXTERNES API ====================
+
+/**
+ * Récupérer une demande depuis le microservice externe Demandes
+ * @param {number} demandeId - ID de la demande
+ */
+export const getDemandeExterne = async (demandeId) => {
+  const response = await api.get(`/routes/demande-externe/${demandeId}`);
+  return response.data;
+};
+
+/**
+ * Récupérer le volume d'une demande depuis le microservice externe
+ * @param {number} demandeId - ID de la demande
+ */
+export const getVolumeFromDemande = async (demandeId) => {
+  const response = await api.get(`/routes/demande-externe/${demandeId}/volume`);
+  return response.data;
+};
+
+/**
+ * Calculer un itinéraire à partir d'une demande externe
+ * @param {number} demandeId - ID de la demande dans le microservice externe
+ * @param {string} userId - ID de l'utilisateur (optionnel)
+ * @param {string} chauffeurId - ID du chauffeur (optionnel)
+ */
+export const calculateRouteFromDemande = async (
+  demandeId,
+  userId = null,
+  chauffeurId = null
+) => {
+  const params = {};
+  if (userId) params.userId = userId;
+  if (chauffeurId) params.chauffeurId = chauffeurId;
+
+  const response = await api.post(
+    `/routes/calculate-from-demande/${demandeId}`,
+    null,
+    { params }
+  );
+  return response.data;
+};
+
+/**
+ * Vérifier la disponibilité du service Demandes
+ */
+export const checkDemandeServiceHealth = async () => {
+  const response = await api.get("/routes/demande-service/health");
+  return response.data;
+};
+
 export default api;

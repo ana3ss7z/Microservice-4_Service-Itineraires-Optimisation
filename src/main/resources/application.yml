@@ -31,6 +31,8 @@ external:
     osrm:
       base-url: http://router.project-osrm.org
       profile: car
+    demandes:
+      base-url: ${DEMANDES_SERVICE_URL:http://172.30.80.11:31029}
 jwt:
   secret: mySecretKeyForJWTTokenGenerationAndValidation123456789
 optimization:
