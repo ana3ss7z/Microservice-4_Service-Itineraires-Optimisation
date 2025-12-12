@@ -319,11 +319,35 @@ public class RouteService {
         Double distance = route.get("distance").asDouble() / 1000.0;
         Integer duration = (int) (route.get("duration").asDouble() / 60.0);
 
-        // CORRECTION: Extraction des étapes détaillées
+        // CORRECTION: Extraction des étapes détaillées ET de la géométrie complète de l'itinéraire
         List<Waypoint> steps = new ArrayList<>();
         JsonNode legs = route.path("legs");
         int stepOrder = 1;
 
+        // Extraire la géométrie complète de l'itinéraire (chemin réel de la route)
+        List<Waypoint> fullRouteGeometry = new ArrayList<>();
+        JsonNode geometry = route.path("geometry");
+        if (geometry != null && !geometry.isNull()) {
+            JsonNode coordinates = geometry.path("coordinates");
+            if (coordinates.isArray()) {
+                for (JsonNode coord : coordinates) {
+                    if (coord.isArray() && coord.size() >= 2) {
+                        double longitude = coord.get(0).asDouble();
+                        double latitude = coord.get(1).asDouble();
+
+                        Waypoint wp = Waypoint.builder()
+                                .longitude(longitude)
+                                .latitude(latitude)
+                                .name("Route Point")
+                                .order(0) // Geometry points don't have step order
+                                .build();
+                        fullRouteGeometry.add(wp);
+                    }
+                }
+            }
+        }
+
+        // Extraire les étapes (manœuvres) pour les instructions
         if (legs.isArray() && legs.size() > 0) {
             for (JsonNode leg : legs) {
                 JsonNode stepsNode = leg.path("steps");
@@ -350,6 +374,9 @@ public class RouteService {
                 }
             }
         }
+
+        // Utiliser la géométrie complète pour le polyline si disponible, sinon les étapes
+        List<Waypoint> routePoints = fullRouteGeometry.isEmpty() ? steps : fullRouteGeometry;
 
         // CORRECTION: Enrichir les étapes avec reverse geocoding de manière intelligente
         enrichStepsWithLocationData(steps);
@@ -381,10 +408,10 @@ public class RouteService {
             }
         }
 
-        // CORRECTION: Génération de la polyline
-        String polyline = generatePolyline(steps);
+        // CORRECTION: Génération de la polyline à partir de la géométrie complète de la route
+        String polyline = generatePolyline(routePoints);
 
-        // CORRECTION: Génération des instructions
+        // CORRECTION: Génération des instructions à partir des étapes
         List<String> instructions = generateInstructions(steps, request);
 
         // Generate temporary routeId that will be updated after saving
@@ -394,8 +421,8 @@ public class RouteService {
                 .routeId(tempRouteId) // Temporary ID until saved
                 .distanceKm(Math.round(distance * 100.0) / 100.0)
                 .durationMin(duration)
-                .steps(steps)
-                .routePolyline(polyline)
+                .steps(steps) // Still include the maneuver steps for navigation
+                .routePolyline(polyline) // Use the full route geometry for visualization
                 .instructions(instructions)
                 .calculatedAt(LocalDateTime.now())
                 .status("SUCCESS")
@@ -504,5 +531,48 @@ public class RouteService {
     public RouteEntity getRouteById(String id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Route non trouvée"));
+    }
+
+    /**
+     * Calculate route between two points and return the detailed response
+     * This method can be used by other services (like OptimizationService)
+     * to get actual route geometry between waypoints
+     */
+    public RouteResponse calculateRouteBetweenPoints(Waypoint origin, Waypoint destination) {
+        try {
+            String url = String.format("%s/route/v1/car/%f,%f;%f,%f?overview=full&geometries=geojson&steps=true",
+                    osrmUrl, origin.getLongitude(), origin.getLatitude(),
+                    destination.getLongitude(), destination.getLatitude());
+
+            log.debug("Appel OSRM: {}", url);
+            String response = restTemplate.getForObject(url, String.class);
+
+            // Create a temporary request to re-use the existing parsing logic
+            RouteRequest tempRequest = RouteRequest.builder()
+                    .origin(origin)
+                    .destination(destination)
+                    .includeReturn(false)
+                    .build();
+
+            return parseOsrmResponse(response, tempRequest);
+
+        } catch (Exception e) {
+            log.error("Erreur calcul itinéraire entre points: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * Get restTemplate for use by other services
+     */
+    public RestTemplate getRestTemplate() {
+        return restTemplate;
+    }
+
+    /**
+     * Get objectMapper for use by other services
+     */
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 }

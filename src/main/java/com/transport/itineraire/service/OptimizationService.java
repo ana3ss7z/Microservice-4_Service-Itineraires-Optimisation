@@ -1,5 +1,6 @@
 package com.transport.itineraire.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transport.itineraire.entity.RouteEntity;
 import com.transport.itineraire.model.*;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -339,6 +341,12 @@ public class OptimizationService {
     }
 
     private RouteResponse calculateDetails(List<Waypoint> points) {
+        // Note: In a complete implementation, this should calculate the actual route between
+        // each consecutive pair of waypoints to get the real road geometry, not just straight lines.
+        // The current approach shows straight lines between optimized waypoints.
+        // For a production system, each segment between points would need to be calculated
+        // using the OSRM API to get the actual road path geometry.
+
         double totalDist = 0;
         int totalDuration = 0;
         List<String> instructions = new ArrayList<>();
@@ -360,7 +368,8 @@ public class OptimizationService {
             instructions.add("De %s à %s: %.2f km".formatted(fromName, toName, segmentDist));
         }
 
-        // CORRECTION: Génération de la polyline
+        // For the optimized route polyline, we'll use the straight-line path between points
+        // In a real implementation, we would get the actual road geometry between points
         String polyline = generatePolyline(points);
 
         return RouteResponse.builder()
