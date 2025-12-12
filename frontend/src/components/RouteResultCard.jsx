@@ -122,7 +122,7 @@ export default function RouteResultCard({ result }) {
         <div className="p-6 border-t border-gray-100">
           <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <ArrowRight className="w-5 h-5 text-emerald-500" />
-            Ordre du parcours optimisé
+            Ordre du parcours
           </h4>
           <div className="flex flex-wrap items-center gap-2">
             {result.steps.map((step, index) => (
@@ -155,29 +155,6 @@ export default function RouteResultCard({ result }) {
                 </div>
               </>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Steps/Instructions */}
-      {result.instructions && result.instructions.length > 0 && (
-        <div className="p-6">
-          <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-primary-500" />
-            Instructions de route
-          </h4>
-          <div className="space-y-3">
-            {result.instructions.map((instruction, index) => (
-              <div
-                key={index}
-                className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                  {index + 1}
-                </div>
-                <p className="text-gray-700 text-sm">{instruction}</p>
-              </div>
-            ))}
           </div>
         </div>
       )}

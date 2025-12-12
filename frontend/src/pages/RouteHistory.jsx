@@ -1173,6 +1173,56 @@ export default function RouteHistory() {
                 </div>
               </div>
 
+              {/* Waypoints (if available) - Show the route order between origin and destination */}
+              {selectedRoute.steps && selectedRoute.steps.length > 0 && (
+                <div
+                  className={`rounded-xl p-4 ${
+                    darkMode ? "bg-slate-700" : "bg-gray-50"
+                  }`}
+                >
+                  <p
+                    className={`text-sm font-medium mb-3 flex items-center gap-2 ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    <ArrowRight className="w-4 h-4 text-emerald-500" />
+                    Ordre du parcours
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {selectedRoute.steps.map((step, index) => (
+                      <div key={index} className="flex items-center">
+                        <div
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            index === 0
+                              ? "bg-emerald-100 text-emerald-700 border border-emerald-500"
+                              : index === selectedRoute.steps.length - 1
+                              ? "bg-rose-100 text-rose-700 border border-rose-500"
+                              : "bg-purple-100 text-purple-700 border border-purple-500"
+                          }`}
+                        >
+                          <span className="font-bold mr-1">
+                            {step.order || index + 1}.
+                          </span>
+                          {step.name || step.city || `Point ${index + 1}`}
+                        </div>
+                        {index < selectedRoute.steps.length - 1 && (
+                          <ArrowRight className="w-3 h-3 text-gray-400 mx-1" />
+                        )}
+                      </div>
+                    ))}
+                    {selectedRoute.returnDistanceKm > 0 && selectedRoute.steps.length > 0 && (
+                      <>
+                        <ArrowRight className="w-3 h-3 text-orange-400 mx-1" />
+                        <div className="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-700 border border-orange-500">
+                          <span className="font-bold mr-1">Retour.</span>
+                          {selectedRoute.steps[0].name || selectedRoute.steps[0].city || "Retour"}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Additional Info */}
               {(selectedRoute.volume || selectedRoute.natureMarchandise) && (
                 <div

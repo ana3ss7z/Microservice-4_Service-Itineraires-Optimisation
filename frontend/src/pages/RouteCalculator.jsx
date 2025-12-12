@@ -214,6 +214,8 @@ export default function RouteCalculator() {
     if (!result) return;
     printRoute({
       ...result,
+      includeReturn, // Add the includeReturn flag from component state
+      userId, // Add the userId from component state
       originCity: originAddress.split(",")[0],
       destinationCity: destAddress.split(",")[0],
       adresseDepart: originAddress,

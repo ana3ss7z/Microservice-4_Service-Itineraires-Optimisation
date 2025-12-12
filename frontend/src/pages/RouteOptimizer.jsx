@@ -8,11 +8,13 @@ import {
   RefreshCw,
   MapPin,
   MousePointer,
+  Printer,
 } from "lucide-react";
 import { optimizeRoute } from "../services/api";
 import MapView from "../components/MapView";
 import RouteResultCard from "../components/RouteResultCard";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { printRoute } from "../utils/pdfUtils";
 import toast from "react-hot-toast";
 import { useTheme } from "../context/ThemeContext";
 
@@ -88,6 +90,25 @@ export default function RouteOptimizer() {
       },
     ]);
     toast.success(`Point ajouté: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+  };
+
+  const handlePrintRoute = () => {
+    if (!result) return;
+
+    // Get origin and destination from the waypoints when available
+    const originWaypoint = waypoints[0];
+    const destinationWaypoint = waypoints[waypoints.length - 1];
+
+    printRoute({
+      ...result,
+      includeReturn, // Add the includeReturn flag from component state
+      userId, // Add the userId from component state
+      // Add origin and destination info for the PDF
+      adresseDepart: originWaypoint?.name || originWaypoint?.city || `Point: ${originWaypoint?.latitude?.toFixed(4)}, ${originWaypoint?.longitude?.toFixed(4)}`,
+      adresseDestination: destinationWaypoint?.name || destinationWaypoint?.city || `Point: ${destinationWaypoint?.latitude?.toFixed(4)}, ${destinationWaypoint?.longitude?.toFixed(4)}`,
+      originCity: originWaypoint?.name || originWaypoint?.city || "N/A",
+      destinationCity: destinationWaypoint?.name || destinationWaypoint?.city || "N/A",
+    });
   };
 
   const addWaypoint = () => {
@@ -696,7 +717,7 @@ export default function RouteOptimizer() {
             </div>
             <div className="p-4">
               <MapView
-                waypoints={waypoints}
+                waypoints={result?.steps || waypoints}
                 routePolyline={result?.routePolyline}
                 height="400px"
                 selectionMode={mapSelectionMode}
@@ -719,7 +740,31 @@ export default function RouteOptimizer() {
           )}
 
           {/* Result */}
-          {result && !loading && <RouteResultCard result={result} />}
+          {result && !loading && (
+            <div className="space-y-4">
+              <RouteResultCard result={result} />
+              {/* Action Buttons */}
+              <div
+                className={`${
+                  darkMode
+                    ? "bg-slate-800 border-slate-700"
+                    : "bg-white border-gray-100"
+                } rounded-xl shadow-lg border p-4 flex flex-wrap gap-3 justify-center`}
+              >
+                <button
+                  onClick={handlePrintRoute}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    darkMode
+                      ? "bg-slate-700 text-gray-300 hover:bg-slate-600"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  <Printer className="w-4 h-4" />
+                  Imprimer / PDF
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

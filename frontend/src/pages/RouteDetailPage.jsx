@@ -953,6 +953,56 @@ export default function RouteDetailPage() {
             </div>
           </div>
 
+          {/* Waypoints (if available) - Show the route order between origin and destination */}
+          {route.steps && route.steps.length > 0 && (
+            <div
+              className={`rounded-2xl shadow-lg p-5 ${
+                darkMode ? "bg-slate-800" : "bg-white"
+              }`}
+            >
+              <h3
+                className={`font-semibold mb-4 flex items-center gap-2 ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                }`}
+              >
+                <MapPin className="w-5 h-5 text-emerald-500" />
+                Ordre du parcours
+              </h3>
+              <div className="flex flex-wrap items-center gap-2">
+                {route.steps.map((step, index) => (
+                  <div key={index} className="flex items-center">
+                    <div
+                      className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                        index === 0
+                          ? "bg-emerald-100 text-emerald-700 border-2 border-emerald-500"
+                          : index === route.steps.length - 1
+                          ? "bg-rose-100 text-rose-700 border-2 border-rose-500"
+                          : "bg-purple-100 text-purple-700"
+                      }`}
+                    >
+                      <span className="font-bold mr-1">
+                        {step.order || index + 1}.
+                      </span>
+                      {step.name || step.city || `Point ${index + 1}`}
+                    </div>
+                    {index < route.steps.length - 1 && (
+                      <ArrowRight className="w-4 h-4 text-gray-400 mx-1" />
+                    )}
+                  </div>
+                ))}
+                {route.returnDistanceKm > 0 && route.steps.length > 0 && (
+                  <>
+                    <ArrowRight className="w-4 h-4 text-orange-400 mx-1" />
+                    <div className="px-3 py-2 rounded-lg text-sm font-medium bg-orange-100 text-orange-700 border-2 border-orange-500">
+                      <span className="font-bold mr-1">Retour.</span>
+                      {route.steps[0].name || route.steps[0].city || "Retour"}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Instructions (if available) */}
           {route.instructions && route.instructions.length > 0 && (
             <div
