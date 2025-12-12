@@ -30,14 +30,41 @@ export default function ServerInfoPage() {
     try {
       const serverData = await getServerInfo();
       setServerInfo(serverData);
-      // Skip health check to prevent proxy errors when backend is down
-      setHealthStatus({
-        status: "unknown",
-        message: "Health check disabled to prevent errors",
-      });
+      // Determine health status from server data
+      if (serverData) {
+        const s = (
+          serverData.status ||
+          serverData.health ||
+          serverData.state ||
+          ""
+        )
+          .toString()
+          .toUpperCase();
+        const healthyValues = ["UP", "OK", "SUCCESS", "HEALTHY", "RUNNING"];
+        const isUp = healthyValues.includes(s) || s === "";
+        setHealthStatus({
+          status: isUp ? "UP" : s || "UNKNOWN",
+          message:
+            serverData.message ||
+            serverData.status ||
+            (isUp ? "Service joignable" : "Etat inconnu"),
+        });
+      } else {
+        setHealthStatus({
+          status: "DOWN",
+          message: "Aucune information serveur retournée",
+        });
+      }
       setLastRefresh(new Date());
       toast.success("Informations serveur actualisées");
     } catch (error) {
+      // On error we mark service as down and provide the message for display
+      setHealthStatus({
+        status: "DOWN",
+        message: error.message || "Erreur lors de la récupération",
+      });
+      setServerInfo(null);
+      setLastRefresh(new Date());
       toast.error(error.message || "Erreur lors de la récupération");
     } finally {
       setLoading(false);
@@ -51,12 +78,15 @@ export default function ServerInfoPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const isHealthy =
-    healthStatus?.status === "UP" ||
-    healthStatus?.status === "healthy" ||
-    healthStatus?.status === "SUCCESS" ||
-    healthStatus === "OK" ||
-    serverInfo?.status === "SUCCESS";
+  const isHealthy = (() => {
+    const statusStr = (healthStatus?.status || serverInfo?.status || "")
+      .toString()
+      .toUpperCase()
+      .trim();
+    const allowed = ["UP", "OK", "SUCCESS", "HEALTHY", "RUNNING"];
+    if (statusStr === "") return !!serverInfo; // if we have serverInfo but no status, consider it reachable
+    return allowed.includes(statusStr);
+  })();
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -134,7 +164,8 @@ export default function ServerInfoPage() {
                   <p className="text-white/80">
                     {isHealthy
                       ? "Tous les systèmes fonctionnent normalement"
-                      : "Le service rencontre des problèmes"}
+                      : healthStatus?.message ||
+                        "Le service rencontre des problèmes"}
                   </p>
                 </div>
               </div>
@@ -397,7 +428,11 @@ export default function ServerInfoPage() {
               </h2>
             </div>
             <div className="p-6">
-              <ServiceChecker />
+              <ServiceChecker
+                onStatusChange={(s) =>
+                  setHealthStatus({ status: s.status, message: s.message })
+                }
+              />
             </div>
           </div>
 

@@ -7,7 +7,6 @@ import MobileBottomNav from "./components/MobileBottomNav";
 import Dashboard from "./pages/Dashboard";
 import RouteCalculator from "./pages/RouteCalculator";
 import RouteOptimizer from "./pages/RouteOptimizer";
-import DemandeRoute from "./pages/DemandeRoute";
 import RouteHistory from "./pages/RouteHistory";
 import RouteDetailPage from "./pages/RouteDetailPage";
 import UserProfilePage from "./pages/UserProfilePage";
@@ -113,7 +112,6 @@ function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/calculator" element={<RouteCalculator />} />
                 <Route path="/optimizer" element={<RouteOptimizer />} />
-                <Route path="/demande" element={<DemandeRoute />} />
                 <Route path="/history" element={<RouteHistory />} />
                 <Route path="/route/:id" element={<RouteDetailPage />} />
                 <Route path="/profile" element={<UserProfilePage />} />
