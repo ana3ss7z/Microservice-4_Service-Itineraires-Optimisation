@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.List;
+import com.transport.itineraire.model.Waypoint;
 
 /**
  * DTO pour l'historique des routes (évite la sérialisation des Points PostGIS)
@@ -42,4 +44,7 @@ public class RouteDTO {
     private LocalDateTime createdAt;
     private String status;
     private String calculatedBy;
+
+    // Waypoints for optimized routes
+    private List<Waypoint> steps;
 }

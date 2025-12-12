@@ -15,7 +15,6 @@ import {
   ArrowRight,
   Users,
   Server,
-  User,
 } from "lucide-react";
 import {
   healthCheck,
@@ -111,7 +110,7 @@ export default function Dashboard() {
   const [citiesCount, setCitiesCount] = useState(0);
   const [location, setLocation] = useState(null);
   const [serverInfo, setServerInfo] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -201,7 +200,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8">
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
             <div className="flex items-center gap-3">
               <Building2 className="w-8 h-8 text-primary-200" />
@@ -228,15 +227,6 @@ export default function Dashboard() {
               <div>
                 <p className="text-primary-200 text-sm">Algorithme</p>
                 <p className="text-lg font-bold">TSP Optimisé</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <Clock className="w-8 h-8 text-primary-200" />
-              <div>
-                <p className="text-primary-200 text-sm">Vitesse Moy.</p>
-                <p className="text-2xl font-bold">60 km/h</p>
               </div>
             </div>
           </div>

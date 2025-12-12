@@ -7,6 +7,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+// Import Waypoint class
+import com.transport.itineraire.model.Waypoint;
 
 /**
  * DTO complet contenant les informations de route et de demande
@@ -83,4 +87,7 @@ public class UserRouteInfoDTO {
 
     private String status;
     private String calculatedBy;
+
+    // Waypoints for optimized routes
+    private List<Waypoint> steps;
 }

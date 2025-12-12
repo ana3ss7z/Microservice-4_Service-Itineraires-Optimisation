@@ -14,6 +14,9 @@ import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +34,8 @@ public class RouteController {
     private final VilleService villeService;
     private final RouteRepository routeRepository;
     private final DemandeExterneService demandeExterneService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostMapping("/coordinates")
     public ResponseEntity<RouteResponse> calculateFromCoordinates(@RequestBody RouteRequest request) {
@@ -344,6 +349,16 @@ public class RouteController {
      * CORRECTION: Méthode de conversion Entity -> DTO
      */
     private RouteDTO convertToDTO(RouteEntity entity) {
+        List<Waypoint> steps = null;
+        if (entity.getStepsJson() != null && !entity.getStepsJson().isEmpty()) {
+            try {
+                steps = objectMapper.readValue(entity.getStepsJson(), new TypeReference<List<Waypoint>>(){});
+            } catch (Exception e) {
+                // Log the error but continue without steps
+                System.err.println("Error parsing steps JSON: " + e.getMessage());
+            }
+        }
+
         return RouteDTO.builder()
                 .id(entity.getId())
                 .userId(entity.getUserId())
@@ -367,6 +382,7 @@ public class RouteController {
                 .createdAt(entity.getCreatedAt())
                 .status(entity.getStatus())
                 .calculatedBy(entity.getCalculatedBy())
+                .steps(steps)
                 .build();
     }
 
@@ -374,6 +390,16 @@ public class RouteController {
      * Méthode de conversion Entity -> UserRouteInfoDTO
      */
     private UserRouteInfoDTO convertToUserRouteInfo(RouteEntity entity) {
+        List<Waypoint> steps = null;
+        if (entity.getStepsJson() != null && !entity.getStepsJson().isEmpty()) {
+            try {
+                steps = objectMapper.readValue(entity.getStepsJson(), new TypeReference<List<Waypoint>>(){});
+            } catch (Exception e) {
+                // Log the error but continue without steps
+                System.err.println("Error parsing steps JSON: " + e.getMessage());
+            }
+        }
+
         return UserRouteInfoDTO.builder()
                 .routeId(entity.getId())
                 .userId(entity.getUserId())
@@ -403,6 +429,7 @@ public class RouteController {
                 .createdAt(entity.getCreatedAt())
                 .status(entity.getStatus())
                 .calculatedBy(entity.getCalculatedBy())
+                .steps(steps)
                 .build();
     }
 

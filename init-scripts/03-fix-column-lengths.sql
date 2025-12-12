@@ -2,9 +2,10 @@
 -- Increase VARCHAR sizes to accommodate longer text values
 
 -- Update origin city to allow longer names
+BEGIN;
 ALTER TABLE routes ALTER COLUMN origin_city TYPE TEXT;
 
--- Update destination city to allow longer names  
+-- Update destination city to allow longer names
 ALTER TABLE routes ALTER COLUMN destination_city TYPE TEXT;
 
 -- Update preference field to allow longer values

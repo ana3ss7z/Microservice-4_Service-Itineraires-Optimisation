@@ -197,27 +197,67 @@ export default function RouteDetailPage() {
   // Check if we have steps/waypoints data (for optimized routes)
   if (route.steps && Array.isArray(route.steps) && route.steps.length > 0) {
     // Use the steps from the route (optimized order)
+    // Include origin as first point if not already in steps
+    if (route.originLatitude && route.originLongitude) {
+      const originExistsInSteps = route.steps.some(step =>
+        step.latitude === route.originLatitude && step.longitude === route.originLongitude
+      );
+
+      if (!originExistsInSteps) {
+        mapWaypoints.push({
+          latitude: route.originLatitude,
+          longitude: route.originLongitude,
+          name: cleanCityName(route.originCity) || "Départ",
+          city: cleanCityName(route.originCity),
+          order: 1,
+        });
+      }
+    }
+
+    // Add all route steps (intermediate waypoints)
     route.steps.forEach((step, index) => {
       if (step.latitude && step.longitude) {
+        // Calculate order: if origin was added first, steps should be 2, 3, 4..., otherwise 1, 2, 3...
+        const originAdded = route.originLatitude && route.originLongitude &&
+          !route.steps.some(s => s.latitude === route.originLatitude && s.longitude === route.originLongitude);
+        const order = step.order || (index + (originAdded ? 2 : 1));
+
         mapWaypoints.push({
           latitude: step.latitude,
           longitude: step.longitude,
-          name: cleanCityName(step.name || step.city) || `Point ${index + 1}`,
+          name: cleanCityName(step.name || step.city) || `Point ${order}`,
           city: cleanCityName(step.city),
-          order: step.order || index + 1,
+          order: order,
         });
       }
     });
+
+    // Include destination as last point if not already in steps
+    if (route.destinationLatitude && route.destinationLongitude) {
+      const destinationExistsInSteps = route.steps.some(step =>
+        step.latitude === route.destinationLatitude && step.longitude === route.destinationLongitude
+      );
+
+      if (!destinationExistsInSteps) {
+        mapWaypoints.push({
+          latitude: route.destinationLatitude,
+          longitude: route.destinationLongitude,
+          name: cleanCityName(route.destinationCity) || "Arrivée",
+          city: cleanCityName(route.destinationCity),
+          order: mapWaypoints.length + 1,
+        });
+      }
+    }
   } else {
     // If no steps available, try to extract points from routePolyline for visualization
     if (route.routePolyline) {
-      const polylinePoints = route.routePolyline.split('|');
+      const polylinePoints = route.routePolyline.split("|");
       if (polylinePoints.length > 0) {
         // Take sample points from the routePolyline for visualization
         // Take only some points to avoid too many markers (performance)
         const stepSize = Math.ceil(polylinePoints.length / 20); // Max 20 points
         for (let i = 0; i < polylinePoints.length; i += stepSize) {
-          const [latStr, lngStr] = polylinePoints[i].split(',');
+          const [latStr, lngStr] = polylinePoints[i].split(",");
           if (latStr && lngStr) {
             const lat = parseFloat(latStr);
             const lng = parseFloat(lngStr);
@@ -916,20 +956,92 @@ export default function RouteDetailPage() {
                 </div>
               </div>
 
-              {/* Arrow */}
-              <div className="flex justify-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    darkMode ? "bg-slate-700" : "bg-gray-100"
-                  }`}
-                >
-                  <ArrowRight
-                    className={`w-4 h-4 rotate-90 ${
-                      darkMode ? "text-gray-500" : "text-gray-400"
+              {/* Waypoints (if available) - Show between origin and destination */}
+              {route.steps && route.steps.length > 0 && (
+                <>
+                  {route.steps.map((step, index) => (
+                    <div key={`waypoint-${index}-${step.latitude}-${step.longitude}`}
+                      className={`flex items-start gap-4 p-4 rounded-xl ${
+                        darkMode ? "bg-blue-900/30" : "bg-blue-50"
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p
+                          className={`text-sm font-medium mb-1 ${
+                            darkMode ? "text-blue-400" : "text-blue-600"
+                          }`}
+                        >
+                          Point intermédiaire #{step.order || index + 1}
+                        </p>
+                        <p
+                          className={`font-semibold ${
+                            darkMode ? "text-white" : "text-gray-800"
+                          }`}
+                        >
+                          {cleanCityName(step.name || step.city) || `Point ${step.order || index + 1}`}
+                        </p>
+                        {step.address && (
+                          <p
+                            className={`text-sm ${
+                              darkMode ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
+                            {cleanCityName(step.address)}
+                          </p>
+                        )}
+                        {step.latitude && step.longitude && (
+                          <p
+                            className={`text-xs mt-1 font-mono ${
+                              darkMode ? "text-gray-500" : "text-gray-400"
+                            }`}
+                          >
+                            {step.latitude.toFixed(4)},{" "}
+                            {step.longitude.toFixed(4)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                </>
+              )}
+
+              {/* Only show arrow if no waypoints exist */}
+              {(!route.steps || route.steps.length === 0) && (
+                <div className="flex justify-center">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      darkMode ? "bg-slate-700" : "bg-gray-100"
                     }`}
-                  />
+                  >
+                    <ArrowRight
+                      className={`w-4 h-4 rotate-90 ${
+                        darkMode ? "text-gray-500" : "text-gray-400"
+                      }`}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Arrow after waypoints (for routes with waypoints) */}
+              {route.steps && route.steps.length > 0 && (
+                <div className="flex justify-center">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      darkMode ? "bg-slate-700" : "bg-gray-100"
+                    }`}
+                  >
+                    <ArrowRight
+                      className={`w-4 h-4 rotate-90 ${
+                        darkMode ? "text-gray-500" : "text-gray-400"
+                      }`}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Destination */}
               <div
@@ -1121,19 +1233,6 @@ export default function RouteDetailPage() {
             <Clock className="w-4 h-4" />
             Voir l&apos;historique
           </Link>
-          {route.userId && (
-            <Link
-              to={`/users?userId=${route.userId}`}
-              className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                darkMode
-                  ? "bg-indigo-900/50 text-indigo-300 hover:bg-indigo-900/70"
-                  : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
-              }`}
-            >
-              <User className="w-4 h-4" />
-              Voir utilisateur
-            </Link>
-          )}
         </div>
       </div>
     </div>

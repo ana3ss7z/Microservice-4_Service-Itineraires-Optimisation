@@ -4,7 +4,6 @@ import {
   History,
   Search,
   User,
-  Calendar,
   MapPin,
   Clock,
   ArrowRight,
@@ -201,7 +200,7 @@ export default function RouteHistory() {
             Historique des Trajets
           </h1>
           <p className={`${darkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
-            Consultez l'historique de vos calculs de routes
+            Consultez l&apos;historique de vos calculs de routes
           </p>
         </div>
 
@@ -1210,15 +1209,18 @@ export default function RouteHistory() {
                         )}
                       </div>
                     ))}
-                    {selectedRoute.returnDistanceKm > 0 && selectedRoute.steps.length > 0 && (
-                      <>
-                        <ArrowRight className="w-3 h-3 text-orange-400 mx-1" />
-                        <div className="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-700 border border-orange-500">
-                          <span className="font-bold mr-1">Retour.</span>
-                          {selectedRoute.steps[0].name || selectedRoute.steps[0].city || "Retour"}
-                        </div>
-                      </>
-                    )}
+                    {selectedRoute.returnDistanceKm > 0 &&
+                      selectedRoute.steps.length > 0 && (
+                        <>
+                          <ArrowRight className="w-3 h-3 text-orange-400 mx-1" />
+                          <div className="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-700 border border-orange-500">
+                            <span className="font-bold mr-1">Retour.</span>
+                            {selectedRoute.steps[0].name ||
+                              selectedRoute.steps[0].city ||
+                              "Retour"}
+                          </div>
+                        </>
+                      )}
                   </div>
                 </div>
               )}
