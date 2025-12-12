@@ -333,9 +333,7 @@ public class ApiDocsController {
                 "totalDurationMin", "integer - Durée totale en minutes",
                 "steps", "array[Waypoint] - Étapes de l'itinéraire",
                 "instructions", "array[string] - Instructions de navigation",
-                "routePolyline", "string - Chemin encodé pour la visualisation sur carte",
-                "status", "string - Statut du calcul",
-                "calculatedAt", "datetime - Date du calcul"
+                "routePolyline", "string - Chemin encodé pour la visualisation sur carte"
             )
         ));
 
@@ -351,10 +349,10 @@ public class ApiDocsController {
                 "volume", "number - Volume de la marchandise (m³)",
                 "natureMarchandise", "string - Description de la nature de la marchandise",
                 "dateDepart", "datetime - Date et heure de départ prévue",
-                "adresseDepart", "string - Adresse de départ",
-                "adresseDestination", "string - Adresse de destination"
+                "adresseDepart", "string - Adresse de départ"
             )
         ));
+
 
         Map<String, Object> userRouteInfoProperties = new LinkedHashMap<>();
         userRouteInfoProperties.put("routeId", "string - ID de l'itinéraire");

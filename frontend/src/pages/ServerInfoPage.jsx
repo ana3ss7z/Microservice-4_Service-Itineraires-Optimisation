@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { getServerInfo } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
+import ServiceChecker from "../components/ServiceChecker";
 import toast from "react-hot-toast";
 import { useTheme } from "../context/ThemeContext";
 
@@ -30,7 +31,10 @@ export default function ServerInfoPage() {
       const serverData = await getServerInfo();
       setServerInfo(serverData);
       // Skip health check to prevent proxy errors when backend is down
-      setHealthStatus({ status: "unknown", message: "Health check disabled to prevent errors" });
+      setHealthStatus({
+        status: "unknown",
+        message: "Health check disabled to prevent errors",
+      });
       setLastRefresh(new Date());
       toast.success("Informations serveur actualisées");
     } catch (error) {
@@ -381,6 +385,19 @@ export default function ServerInfoPage() {
               <pre className="bg-gray-900 text-gray-100 rounded-xl p-6 overflow-auto text-sm font-mono">
                 {JSON.stringify(healthStatus, null, 2)}
               </pre>
+            </div>
+          </div>
+
+          {/* Service Checker */}
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
+            <div className="p-6 border-b border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-emerald-500" />
+                Vérification des Endpoints API
+              </h2>
+            </div>
+            <div className="p-6">
+              <ServiceChecker />
             </div>
           </div>
 

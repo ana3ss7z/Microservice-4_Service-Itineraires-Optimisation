@@ -8,9 +8,21 @@ let backendStatus = {
   isAvailable: true,
   lastCheck: null,
   consecutiveFailures: 0,
-  failureThreshold: 3,  // After 3 failures, assume backend is down
-  retryAfter: 30000     // Wait 30 seconds before retrying
+  failureThreshold: 3, // After 3 failures, assume backend is down
+  retryAfter: 30000, // Wait 30 seconds before retrying
 };
+
+// In-memory simple cache for frequently used, read-only endpoints
+const CACHE_TTL_MS = 60 * 1000; // 1 minute
+const simpleCache = {
+  cities: { data: null, ts: 0 },
+  serverInfo: { data: null, ts: 0 },
+};
+const inFlightRequests = new Map();
+
+// Throttle repeated error logs for same endpoint+message
+const recentErrorTimestamps = new Map();
+const ERROR_LOG_THROTTLE_MS = 5 * 1000; // 5 seconds
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -26,9 +38,12 @@ api.interceptors.request.use((config) => {
   const now = new Date().getTime();
   if (!backendStatus.isAvailable && backendStatus.lastCheck) {
     const timeSinceLastCheck = now - backendStatus.lastCheck.getTime();
-    if (timeSinceLastCheck < backendStatus.retryAfter && !config.url.includes('/health')) {
+    if (
+      timeSinceLastCheck < backendStatus.retryAfter &&
+      !config.url.includes("/health")
+    ) {
       // Reject the request early to prevent proxy errors
-      return Promise.reject(new Error('Backend is temporarily unavailable'));
+      return Promise.reject(new Error("Backend is temporarily unavailable"));
     } else if (timeSinceLastCheck >= backendStatus.retryAfter) {
       // Reset status after retryAfter time has passed
       backendStatus.isAvailable = true;
@@ -38,12 +53,10 @@ api.interceptors.request.use((config) => {
 
   config.metadata = { startTime: new Date() };
   // Only log for non-health check endpoints to reduce console spam
-  if (
-    !config.url.includes("/health") &&
-    process.env.NODE_ENV !== "production"
-  ) {
-    console.log(
-      `🔄 Request starting: ${config.method?.toUpperCase()} ${config.url}`
+  const reqUrl = config.url || "";
+  if (!reqUrl.includes("/health") && import.meta.env.DEV) {
+    console.debug(
+      `🔄 Request starting: ${config.method?.toUpperCase()} ${reqUrl}`
     );
   }
   return config;
@@ -59,12 +72,10 @@ api.interceptors.response.use(
 
     const responseTime = new Date() - response.config.metadata.startTime;
     // Only log for non-health check endpoints to reduce console spam
-    if (
-      !response.config.url.includes("/health") &&
-      process.env.NODE_ENV !== "production"
-    ) {
-      console.log(
-        `✅ Request completed: ${response.config.url} - ${responseTime}ms - Status: ${response.status}`
+    const respUrl = response.config.url || "";
+    if (!respUrl.includes("/health") && import.meta.env.DEV) {
+      console.debug(
+        `✅ Request completed: ${respUrl} - ${responseTime}ms - Status: ${response.status}`
       );
     }
     return response;
@@ -73,9 +84,11 @@ api.interceptors.response.use(
     const requestTime = new Date() - error.config.metadata.startTime;
 
     // Update backend status based on error
-    const isNetworkError = error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK' ||
-                          error.message.includes('ECONNREFUSED') ||
-                          error.message.includes('Network Error');
+    const isNetworkError =
+      error.code === "ECONNREFUSED" ||
+      error.code === "ERR_NETWORK" ||
+      error.message.includes("ECONNREFUSED") ||
+      error.message.includes("Network Error");
 
     if (isNetworkError || error.response?.status >= 500) {
       // Increment failure counter
@@ -90,18 +103,27 @@ api.interceptors.response.use(
 
     // Only log for non-health check endpoints to reduce console spam,
     // but still log 500 errors to help with debugging
-    const isHealthCheck = error.config?.url?.includes("/health");
-    if (!isHealthCheck || error.response?.status === 500) {
-      console.error(
-        `❌ Request failed: ${error.config?.url} - ${requestTime}ms - Error: ${error.message}`
-      );
+    const isHealthCheck = (error.config?.url || "").includes("/health");
+
+    // Throttle identical error logs within a small window
+    const errKey = `${error.config?.url}::${error.message}`;
+    const now = Date.now();
+    const lastTs = recentErrorTimestamps.get(errKey) || 0;
+    if (now - lastTs > ERROR_LOG_THROTTLE_MS) {
+      if (!isHealthCheck || error.response?.status === 500) {
+        console.error(
+          `❌ Request failed: ${error.config?.url} - ${requestTime}ms - Error: ${error.message}`
+        );
+      }
+      recentErrorTimestamps.set(errKey, now);
     }
 
     const message =
       error.response?.data?.message ||
       error.message ||
       "Une erreur de connexion est survenue";
-    if (!isHealthCheck) {  // Don't double log for health checks
+    if (!isHealthCheck) {
+      // Don't double log for health checks
       console.error("API Error:", message);
     }
     return Promise.reject(new Error(message));
@@ -224,8 +246,26 @@ export const getRouteById = async (id) => {
  * Récupérer la liste de toutes les villes
  */
 export const getAllCities = async () => {
-  const response = await api.get("/routes/ville");
-  return response.data;
+  const now = Date.now();
+  if (simpleCache.cities.data && now - simpleCache.cities.ts < CACHE_TTL_MS) {
+    return simpleCache.cities.data;
+  }
+  try {
+    if (inFlightRequests.has("cities")) {
+      return await inFlightRequests.get("cities");
+    }
+    const requestPromise = api.get("/routes/ville").then((r) => r.data || []);
+    inFlightRequests.set("cities", requestPromise);
+    const data = await requestPromise;
+    simpleCache.cities = { data, ts: now };
+    return data;
+  } catch (err) {
+    // Return cached data if available to avoid emptying the UI
+    if (simpleCache.cities.data) return simpleCache.cities.data;
+    return [];
+  } finally {
+    inFlightRequests.delete("cities");
+  }
 };
 
 // ==================== LOCATION API ====================
@@ -268,8 +308,30 @@ export const refreshLocation = async () => {
  * Récupérer les informations du serveur
  */
 export const getServerInfo = async () => {
-  const response = await api.get("/location/server-info");
-  return response.data;
+  const now = Date.now();
+  if (
+    simpleCache.serverInfo.data &&
+    now - simpleCache.serverInfo.ts < CACHE_TTL_MS
+  ) {
+    return simpleCache.serverInfo.data;
+  }
+  try {
+    if (inFlightRequests.has("serverInfo")) {
+      return await inFlightRequests.get("serverInfo");
+    }
+    const requestPromise = api
+      .get("/location/server-info")
+      .then((r) => r.data || null);
+    inFlightRequests.set("serverInfo", requestPromise);
+    const data = await requestPromise;
+    simpleCache.serverInfo = { data, ts: now };
+    return data;
+  } catch (err) {
+    if (simpleCache.serverInfo.data) return simpleCache.serverInfo.data;
+    return null;
+  } finally {
+    inFlightRequests.delete("serverInfo");
+  }
 };
 
 // ==================== DEMANDES EXTERNES API ====================
@@ -314,7 +376,4 @@ export const calculateRouteFromDemande = async (
   );
   return response.data;
 };
-
-// Health check functions have been removed to prevent proxy errors when backend is down
-
 export default api;
