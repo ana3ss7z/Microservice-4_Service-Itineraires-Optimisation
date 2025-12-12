@@ -92,7 +92,14 @@ public class RouteService {
             request.setOrigin(origin);
             request.setDestination(destination);
 
-            return calculateRouteFromCoordinates(request);
+            RouteResponse response = calculateRouteFromCoordinates(request);
+
+            // Ensure routeId is not null
+            if (response.getRouteId() == null) {
+                response.setRouteId(java.util.UUID.randomUUID().toString());
+            }
+
+            return response;
         } catch (Exception e) {
             log.error("Erreur géocodage: {}", e.getMessage(), e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -380,8 +387,11 @@ public class RouteService {
         // CORRECTION: Génération des instructions
         List<String> instructions = generateInstructions(steps, request);
 
+        // Generate temporary routeId that will be updated after saving
+        String tempRouteId = UUID.randomUUID().toString();
+
         return RouteResponse.builder()
-                .routeId(UUID.randomUUID().toString()) // CORRECTION: Génération temporaire d'ID
+                .routeId(tempRouteId) // Temporary ID until saved
                 .distanceKm(Math.round(distance * 100.0) / 100.0)
                 .durationMin(duration)
                 .steps(steps)
@@ -480,6 +490,10 @@ public class RouteService {
 
         } catch (Exception e) {
             log.error("Erreur sauvegarde: {}", e.getMessage(), e);
+            // Ensure the routeId is not null if saving fails, use the existing one
+            if (response.getRouteId() == null) {
+                response.setRouteId(java.util.UUID.randomUUID().toString());
+            }
         }
     }
 

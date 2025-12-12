@@ -527,6 +527,10 @@ public class OptimizationService {
 
         } catch (Exception e) {
             log.error("Erreur sauvegarde optimisation: {}", e.getMessage(), e);
+            // Generate a temporary ID if saving fails, so service still returns a consistent response
+            if (response.getRouteId() == null) {
+                response.setRouteId(java.util.UUID.randomUUID().toString());
+            }
         }
     }
 }
