@@ -25,12 +25,6 @@ export function ThemeProvider({ children }) {
       darkMode: false,
       mapStyle: "streets",
       distanceUnit: "km",
-      notifications: {
-        email: true,
-        push: true,
-        routeAlerts: true,
-        updates: false,
-      },
     };
   };
 
@@ -55,15 +49,6 @@ export function ThemeProvider({ children }) {
     }));
   };
 
-  const updateNotification = (key, value) => {
-    setSettings((prev) => ({
-      ...prev,
-      notifications: {
-        ...prev.notifications,
-        [key]: value,
-      },
-    }));
-  };
 
   const toggleDarkMode = () => {
     setSettings((prev) => ({
@@ -126,9 +111,7 @@ export function ThemeProvider({ children }) {
         darkMode: settings.darkMode,
         mapStyle: settings.mapStyle,
         distanceUnit: settings.distanceUnit,
-        notifications: settings.notifications,
         updateSettings,
-        updateNotification,
         toggleDarkMode,
         setMapStyle,
         setDistanceUnit,

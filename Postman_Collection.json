@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "🚗 Itinéraire Optimisation API - Local",
-    "description": "Collection complète pour tester le microservice d'itinéraires et optimisation de tournées en **environnement local**.\n\n## 🌐 Base URL\n`http://localhost:8082/api`\n\n## 📋 Fonctionnalités\n- Calcul d'itinéraires par coordonnées GPS\n- Calcul d'itinéraires par adresses\n- Optimisation de tournées multi-points (TSP)\n- Historique des trajets par utilisateur\n- Gestion des villes marocaines\n- **🆕 Gestion des chauffeurs (chauffeurId)**\n- **🆕 Démarrage/Arrêt de routes (Start/Stop)**\n- **🆕 Heure d'arrivée estimée et notification (10 min avant)**\n- **🆕 Suivi des routes en cours**\n\n## ⚙️ Configuration\nModifiez la variable `base_url` pour changer l'environnement.\nModifiez `route_id` après création d'une demande pour tester Start/Stop.",
+    "description": "Collection complète pour tester le microservice d'itinéraires et optimisation de tournées en **environnement local**.\n\n## 🌐 Base URL\n`http://localhost:8082/api`\n\n## 📋 Fonctionnalités\n- Calcul d'itinéraires par coordonnées GPS\n- Calcul d'itinéraires par adresses\n- Optimisation de tournées multi-points (TSP)\n- Historique des trajets par utilisateur\n- Gestion des villes marocaines\n- **🆕 Gestion des chauffeurs (chauffeurId)**\n- **🆕 Démarrage/Arrêt de routes (Start/Stop)**\n- **🆕 Heure d'arrivée estimée**\n- **🆕 Suivi des routes en cours**\n\n## ⚙️ Configuration\nModifiez la variable `base_url` pour changer l'environnement.\nModifiez `route_id` après création d'une demande pour tester Start/Stop.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -575,7 +575,7 @@
               "host": ["{{base_url}}{{api_prefix}}"],
               "path": ["routes", "demande-info"]
             },
-            "description": "Calcule un itinéraire avec les informations de demande (volume, nature de marchandise), chauffeurId et les détails utilisateur. Retourne totalDistanceKm, totalDurationMin, estimatedArrivalTime et notificationTime (10 min avant arrivée)."
+            "description": "Calcule un itinéraire avec les informations de demande (volume, nature de marchandise), chauffeurId et les détails utilisateur. Retourne totalDistanceKm, totalDurationMin, estimatedArrivalTime."
           },
           "response": []
         },
@@ -876,120 +876,6 @@
               "path": ["location", "server-info"]
             },
             "description": "Récupère les informations du serveur (hostname, IP, OS, Java version)"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🔔 Notifications",
-      "description": "Endpoints pour gérer les notifications en temps réel",
-      "item": [
-        {
-          "name": "Récupérer les notifications d'un utilisateur",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}{{api_prefix}}/notifications?userId=user123&page=0&size=20",
-              "host": ["{{base_url}}{{api_prefix}}"],
-              "path": ["notifications"],
-              "query": [
-                {
-                  "key": "userId",
-                  "value": "user123",
-                  "description": "ID de l'utilisateur"
-                },
-                {
-                  "key": "page",
-                  "value": "0",
-                  "description": "Numéro de page (0 par défaut)"
-                },
-                {
-                  "key": "size",
-                  "value": "20",
-                  "description": "Taille de page (20 par défaut)"
-                }
-              ]
-            },
-            "description": "Récupère la liste paginée des notifications pour un utilisateur spécifique"
-          },
-          "response": []
-        },
-        {
-          "name": "Récupérer le nombre de notifications non lues",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}{{api_prefix}}/notifications/unread?userId=user123",
-              "host": ["{{base_url}}{{api_prefix}}"],
-              "path": ["notifications", "unread"],
-              "query": [
-                {
-                  "key": "userId",
-                  "value": "user123",
-                  "description": "ID de l'utilisateur"
-                }
-              ]
-            },
-            "description": "Récupère le nombre de notifications non lues pour un utilisateur"
-          },
-          "response": []
-        },
-        {
-          "name": "Récupérer les notifications non lues",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}{{api_prefix}}/notifications/unread-list?userId=user123",
-              "host": ["{{base_url}}{{api_prefix}}"],
-              "path": ["notifications", "unread-list"],
-              "query": [
-                {
-                  "key": "userId",
-                  "value": "user123",
-                  "description": "ID de l'utilisateur"
-                }
-              ]
-            },
-            "description": "Récupère la liste des notifications non lues pour un utilisateur"
-          },
-          "response": []
-        },
-        {
-          "name": "Marquer une notification comme lue",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}{{api_prefix}}/notifications/1/read",
-              "host": ["{{base_url}}{{api_prefix}}"],
-              "path": ["notifications", "1", "read"]
-            },
-            "description": "Marque une notification spécifique comme lue"
-          },
-          "response": []
-        },
-        {
-          "name": "Marquer toutes les notifications comme lues",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}{{api_prefix}}/notifications/mark-all-read?userId=user123",
-              "host": ["{{base_url}}{{api_prefix}}"],
-              "path": ["notifications", "mark-all-read"],
-              "query": [
-                {
-                  "key": "userId",
-                  "value": "user123",
-                  "description": "ID de l'utilisateur"
-                }
-              ]
-            },
-            "description": "Marque toutes les notifications d'un utilisateur comme lues"
           },
           "response": []
         }

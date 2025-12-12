@@ -289,85 +289,6 @@ public class ApiDocsController {
         userInfoEndpoint.put("testExamples", userInfoTests);
         endpoints.add(userInfoEndpoint);
 
-        // NOTIFICATION ENDPOINTS
-        // GET /notifications
-        Map<String, Object> notificationsEndpoint = new LinkedHashMap<>();
-        notificationsEndpoint.put("method", "GET");
-        notificationsEndpoint.put("path", "/notifications");
-        notificationsEndpoint.put("summary", "Récupérer les notifications d'un utilisateur");
-        notificationsEndpoint.put("description", "Retourne une liste paginée des notifications pour un utilisateur");
-        notificationsEndpoint.put("authentication", "None");
-        notificationsEndpoint.put("parameters", List.of(
-            Map.of("name", "userId", "type", "string", "required", true, "description", "ID de l'utilisateur"),
-            Map.of("name", "page", "type", "integer", "required", false, "default", 0, "description", "Numéro de page"),
-            Map.of("name", "size", "type", "integer", "required", false, "default", 20, "description", "Éléments par page")
-        ));
-        Map<String, String> notificationsTests = new LinkedHashMap<>();
-        notificationsTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/notifications?userId=user123&page=0&size=20' -Method GET");
-        notificationsTests.put("curl", "curl -X GET 'http://172.30.80.11:31030/api/notifications?userId=user123&page=0&size=20'");
-        notificationsTests.put("fetch", "fetch('http://172.30.80.11:31030/api/notifications?userId=user123&page=0&size=20').then(r=>r.json()).then(console.log)");
-        notificationsEndpoint.put("testExamples", notificationsTests);
-        endpoints.add(notificationsEndpoint);
-
-        // GET /notifications/unread
-        Map<String, Object> unreadCountEndpoint = new LinkedHashMap<>();
-        unreadCountEndpoint.put("method", "GET");
-        unreadCountEndpoint.put("path", "/notifications/unread");
-        unreadCountEndpoint.put("summary", "Récupérer le nombre de notifications non lues");
-        unreadCountEndpoint.put("description", "Retourne le nombre de notifications non lues pour un utilisateur");
-        unreadCountEndpoint.put("authentication", "None");
-        unreadCountEndpoint.put("parameters", List.of(Map.of("name", "userId", "type", "string", "required", true, "description", "ID de l'utilisateur")));
-        Map<String, String> unreadCountTests = new LinkedHashMap<>();
-        unreadCountTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/notifications/unread?userId=user123' -Method GET");
-        unreadCountTests.put("curl", "curl -X GET 'http://172.30.80.11:31030/api/notifications/unread?userId=user123'");
-        unreadCountTests.put("fetch", "fetch('http://172.30.80.11:31030/api/notifications/unread?userId=user123').then(r=>r.json()).then(console.log)");
-        unreadCountEndpoint.put("testExamples", unreadCountTests);
-        endpoints.add(unreadCountEndpoint);
-
-        // GET /notifications/unread-list
-        Map<String, Object> unreadListEndpoint = new LinkedHashMap<>();
-        unreadListEndpoint.put("method", "GET");
-        unreadListEndpoint.put("path", "/notifications/unread-list");
-        unreadListEndpoint.put("summary", "Récupérer les notifications non lues");
-        unreadListEndpoint.put("description", "Retourne la liste des notifications non lues pour un utilisateur");
-        unreadListEndpoint.put("authentication", "None");
-        unreadListEndpoint.put("parameters", List.of(Map.of("name", "userId", "type", "string", "required", true, "description", "ID de l'utilisateur")));
-        Map<String, String> unreadListTests = new LinkedHashMap<>();
-        unreadListTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/notifications/unread-list?userId=user123' -Method GET");
-        unreadListTests.put("curl", "curl -X GET 'http://172.30.80.11:31030/api/notifications/unread-list?userId=user123'");
-        unreadListTests.put("fetch", "fetch('http://172.30.80.11:31030/api/notifications/unread-list?userId=user123').then(r=>r.json()).then(console.log)");
-        unreadListEndpoint.put("testExamples", unreadListTests);
-        endpoints.add(unreadListEndpoint);
-
-        // PUT /notifications/{id}/read
-        Map<String, Object> markReadEndpoint = new LinkedHashMap<>();
-        markReadEndpoint.put("method", "PUT");
-        markReadEndpoint.put("path", "/notifications/{id}/read");
-        markReadEndpoint.put("summary", "Marquer une notification comme lue");
-        markReadEndpoint.put("description", "Marque une notification spécifique comme lue");
-        markReadEndpoint.put("authentication", "None");
-        markReadEndpoint.put("parameters", List.of(Map.of("name", "id", "type", "integer", "required", true, "description", "ID de la notification")));
-        Map<String, String> markReadTests = new LinkedHashMap<>();
-        markReadTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/notifications/1/read' -Method PUT");
-        markReadTests.put("curl", "curl -X PUT 'http://172.30.80.11:31030/api/notifications/1/read'");
-        markReadTests.put("fetch", "fetch('http://172.30.80.11:31030/api/notifications/1/read', {method:'PUT'}).then(r=>r.text()).then(console.log)");
-        markReadEndpoint.put("testExamples", markReadTests);
-        endpoints.add(markReadEndpoint);
-
-        // PUT /notifications/mark-all-read
-        Map<String, Object> markAllReadEndpoint = new LinkedHashMap<>();
-        markAllReadEndpoint.put("method", "PUT");
-        markAllReadEndpoint.put("path", "/notifications/mark-all-read");
-        markAllReadEndpoint.put("summary", "Marquer toutes les notifications comme lues");
-        markAllReadEndpoint.put("description", "Marque toutes les notifications d'un utilisateur comme lues");
-        markAllReadEndpoint.put("authentication", "None");
-        markAllReadEndpoint.put("parameters", List.of(Map.of("name", "userId", "type", "string", "required", true, "description", "ID de l'utilisateur")));
-        Map<String, String> markAllReadTests = new LinkedHashMap<>();
-        markAllReadTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/notifications/mark-all-read?userId=user123' -Method PUT");
-        markAllReadTests.put("curl", "curl -X PUT 'http://172.30.80.11:31030/api/notifications/mark-all-read?userId=user123'");
-        markAllReadTests.put("fetch", "fetch('http://172.30.80.11:31030/api/notifications/mark-all-read?userId=user123', {method:'PUT'}).then(r=>r.text()).then(console.log)");
-        markAllReadEndpoint.put("testExamples", markAllReadTests);
-        endpoints.add(markAllReadEndpoint);
 
         apiDocs.put("endpoints", endpoints);
 
@@ -463,7 +384,6 @@ public class ApiDocsController {
                 "natureMarchandise", "string - Nature de la marchandise",
                 "dateDepart", "datetime - Date de départ",
                 "estimatedArrivalTime", "datetime - Heure d'arrivée estimée",
-                "notificationTime", "datetime - Heure de notification (10 min avant arrivée)",
                 "started", "boolean - Statut de démarrage",
                 "startedAt", "datetime - Heure de démarrage réelle",
                 "includeReturn", "boolean - Inclure le retour",
@@ -513,21 +433,6 @@ public class ApiDocsController {
                 "latitude", "number - Latitude GPS",
                 "longitude", "number - Longitude GPS",
                 "createdAt", "datetime - Date de création"
-            )
-        ));
-
-        schemas.put("NotificationDTO", Map.of(
-            "type", "object",
-            "properties", Map.of(
-                "id", "integer - ID de la notification",
-                "userId", "string - ID de l'utilisateur",
-                "title", "string - Titre de la notification",
-                "message", "string - Message de la notification",
-                "type", "string - Type de la notification (ROUTE_STARTED, ESTIMATED_ARRIVAL, etc.)",
-                "read", "boolean - Statut de lecture",
-                "createdAt", "datetime - Date de création",
-                "routeId", "string - ID de la route associée (optionnel)",
-                "chauffeurId", "string - ID du chauffeur associé (optionnel)"
             )
         ));
 

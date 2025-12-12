@@ -15,12 +15,11 @@ import LocationPage from "./pages/LocationPage";
 import CitiesPage from "./pages/CitiesPage";
 import ServerInfoPage from "./pages/ServerInfoPage";
 import SettingsPage from "./pages/SettingsPage";
-import NotificationsPage from "./pages/NotificationsPage";
 import ApiDocsPage from "./pages/ApiDocsPage";
 import StatisticsPage from "./pages/StatisticsPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import { useState } from "react";
-import { NotificationProvider } from "./context/NotificationContext";
+import { ServiceMonitorProvider } from "./context/ServiceMonitorContext";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -37,7 +36,7 @@ function App() {
   };
 
   return (
-    <NotificationProvider>
+    <ServiceMonitorProvider>
       <Router future={{ v7_relativeSplatPath: true }}>
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
           <Toaster
@@ -124,7 +123,6 @@ function App() {
                   <Route path="/cities" element={<CitiesPage />} />
                   <Route path="/server" element={<ServerInfoPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
-                  <Route path="/notifications" element={<NotificationsPage />} />
                   <Route path="/api-docs" element={<ApiDocsPage />} />
                   <Route path="/statistics" element={<StatisticsPage />} />
                   <Route path="/favorites" element={<FavoritesPage />} />
@@ -137,7 +135,7 @@ function App() {
           <MobileBottomNav onMenuClick={() => setSidebarOpen(true)} />
         </div>
       </Router>
-    </NotificationProvider>
+    </ServiceMonitorProvider>
   );
 }
 

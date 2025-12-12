@@ -75,7 +75,6 @@ public class RouteEntity {
 
     private LocalDateTime dateDepart;
     private LocalDateTime estimatedArrivalTime;
-    private LocalDateTime notificationTime;
 
     @Builder.Default
     private Boolean started = false;

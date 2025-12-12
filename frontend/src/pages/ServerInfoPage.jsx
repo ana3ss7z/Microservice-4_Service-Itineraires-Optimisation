@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import {
   Server,
   Cpu,
-  HardDrive,
   Globe,
   Activity,
   RefreshCw,
@@ -49,24 +48,6 @@ export default function ServerInfoPage() {
     const interval = setInterval(fetchServerInfo, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  // Format uptime in human readable format
-  // const formatUptime = (seconds) => {
-  //   if (!seconds) return "-";
-  //   const days = Math.floor(seconds / 86400);
-  //   const hours = Math.floor((seconds % 86400) / 3600);
-  //   const mins = Math.floor((seconds % 3600) / 60);
-  //   if (days > 0) return `${days}j ${hours}h ${mins}m`;
-  //   if (hours > 0) return `${hours}h ${mins}m`;
-  //   return `${mins}m`;
-  // };
-
-  const formatBytes = (bytes) => {
-    if (!bytes) return "-";
-    const sizes = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
-  };
 
   const isHealthy =
     healthStatus?.status === "UP" ||

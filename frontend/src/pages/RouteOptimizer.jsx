@@ -6,7 +6,6 @@ import {
   GripVertical,
   Zap,
   RefreshCw,
-  MapPin,
   MousePointer,
   Printer,
 } from "lucide-react";

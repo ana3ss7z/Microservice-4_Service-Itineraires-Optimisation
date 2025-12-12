@@ -1,18 +1,7 @@
 import axios from "axios";
 
-// Configuration des serveurs avec ordre de priorité
-const SERVERS = [
-  { url: "/api", name: "Vite Proxy (Primary)", priority: 1 }, // This goes through vite proxy
-  { url: "http://localhost:8082/api", name: "Localhost", priority: 2 },
-  { url: "http://172.30.80.11:31030/api", name: "Remote Server", priority: 3 },
-];
-
 // Configuration de base de l'API
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
-
-// Track server response times to optimize selection
-const serverResponseTimes = new Map();
-let currentPrimaryServer = API_BASE_URL; // Default to primary config
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -25,7 +14,9 @@ const api = axios.create({
 // Request interceptor to track start time
 api.interceptors.request.use((config) => {
   config.metadata = { startTime: new Date() };
-  console.log(`🔄 Request starting: ${config.method?.toUpperCase()} ${config.url}`);
+  console.log(
+    `🔄 Request starting: ${config.method?.toUpperCase()} ${config.url}`
+  );
   return config;
 });
 
@@ -33,52 +24,21 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => {
     const responseTime = new Date() - response.config.metadata.startTime;
-    console.log(`✅ Request completed: ${response.config.url} - ${responseTime}ms - Status: ${response.status}`);
+    console.log(
+      `✅ Request completed: ${response.config.url} - ${responseTime}ms - Status: ${response.status}`
+    );
     return response;
   },
   async (error) => {
     const requestTime = new Date() - error.config.metadata.startTime;
-    console.error(`❌ Request failed: ${error.config.url} - ${requestTime}ms - Error: ${error.message}`);
+    console.error(
+      `❌ Request failed: ${error.config.url} - ${requestTime}ms - Error: ${error.message}`
+    );
 
-    // Try to switch to working server if we have multiple options
-    if (SERVERS.length > 1) {
-      console.log("Attempting fallback to other servers...");
-      // Try other servers in sequence
-      for (const server of SERVERS) {
-        if (server.url !== currentPrimaryServer) {
-          try {
-            console.log(`Trying fallback server: ${server.name} (${server.url})`);
-
-            // Create temporary axios instance for this request only
-            const tempApi = axios.create({
-              baseURL: server.url,
-              headers: {
-                "Content-Type": "application/json",
-              },
-              timeout: 15000, // Appropriate timeout for fallback requests
-            });
-
-            // Retry the same request with new base URL
-            const fallbackConfig = {
-              ...error.config,
-              baseURL: server.url,
-            };
-
-            const response = await tempApi(fallbackConfig);
-            currentPrimaryServer = server.url;
-            console.log(`✅ Fallback succeeded, switching to: ${server.name}`);
-            return response;
-          } catch (fallbackError) {
-            console.log(`❌ Fallback failed for server: ${server.name}`);
-            continue; // Try next server
-          }
-        }
-      }
-    }
-
-    const message = error.response?.data?.message ||
-                   error.message ||
-                   "Une erreur de connexion est survenue";
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Une erreur de connexion est survenue";
     console.error("API Error:", message);
     return Promise.reject(new Error(message));
   }
@@ -204,14 +164,6 @@ export const getAllCities = async () => {
   return response.data;
 };
 
-/**
- * Vérifier l'état du service
- */
-export const healthCheck = async () => {
-  const response = await api.get("/routes/health");
-  return response.data;
-};
-
 // ==================== LOCATION API ====================
 
 /**
@@ -300,89 +252,34 @@ export const calculateRouteFromDemande = async (
 };
 
 /**
- * Vérifier la disponibilité du service Demandes
+ * Health check du service principal
+ */
+export const healthCheck = async () => {
+  const response = await api.get("/routes/health");
+  return response.data;
+};
+
+/**
+ * Health check du service de demandes
  */
 export const checkDemandeServiceHealth = async () => {
   const response = await api.get("/routes/demande-service/health");
   return response.data;
 };
 
-// ==================== NOTIFICATION API ====================
-
-/**
- * Récupérer les notifications d'un utilisateur
- */
-export const getUserNotifications = async (userId, page = 0, size = 20) => {
-  const response = await api.get("/notifications", {
-    params: { userId, page, size },
-  });
-  return response.data;
-};
-
-/**
- * Récupérer le nombre de notifications non lues
- */
-export const getUnreadNotificationCount = async (userId) => {
-  const response = await api.get("/notifications/unread", {
-    params: { userId },
-  });
-  return response.data;
-};
-
-/**
- * Récupérer les notifications non lues
- */
-export const getUnreadNotifications = async (userId) => {
-  const response = await api.get("/notifications/unread-list", {
-    params: { userId },
-  });
-  return response.data;
-};
-
-/**
- * Marquer une notification comme lue
- */
-export const markAsRead = async (notificationId) => {
-  const response = await api.put(`/notifications/${notificationId}/read`);
-  return response.data;
-};
-
-/**
- * Marquer toutes les notifications comme lues
- */
-export const markAllAsRead = async (userId) => {
-  const response = await api.put("/notifications/mark-all-read", null, {
-    params: { userId },
-  });
-  return response.data;
-};
-
 // Function to check server health quickly
 export const checkServerHealth = async (serverUrl) => {
   try {
-    const healthUrl = serverUrl.replace('/api', '/api/routes/health');
+    const healthUrl = serverUrl.replace("/api", "/api/routes/health");
     const response = await axios.get(healthUrl, {
       timeout: 5000, // Reasonable timeout for health check
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     });
     return response.data && response.status === 200;
   } catch (error) {
     console.log(`Health check failed for: ${serverUrl}`, error.message);
     return false;
   }
-};
-
-// Function to find the best available server
-export const findBestServer = async () => {
-  for (const server of SERVERS) {
-    if (await checkServerHealth(server.url)) {
-      console.log(`✅ Server available: ${server.name} (${server.url})`);
-      return server.url;
-    }
-    console.log(`❌ Server unavailable: ${server.name}`);
-  }
-  // If no server is available, return primary
-  return API_BASE_URL;
 };
 
 export default api;

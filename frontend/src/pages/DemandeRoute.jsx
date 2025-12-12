@@ -875,24 +875,15 @@ export default function DemandeRoute() {
                 </div>
               )}
 
-              {/* Estimated Arrival & Notification Time */}
-              {(result.estimatedArrivalTime || result.notificationTime) && (
+              {/* Estimated Arrival Time */}
+              {result.estimatedArrivalTime && (
                 <div className="px-6 pb-6">
                   <div className="p-4 bg-blue-50 rounded-xl space-y-2">
-                    {result.estimatedArrivalTime && (
-                      <div className="flex items-center gap-2 text-sm text-blue-700">
-                        <Clock className="w-4 h-4" />
-                        <strong>Arrivée estimée:</strong>{" "}
-                        {new Date(result.estimatedArrivalTime).toLocaleString()}
-                      </div>
-                    )}
-                    {result.notificationTime && (
-                      <div className="flex items-center gap-2 text-sm text-blue-700">
-                        <Bell className="w-4 h-4" />
-                        <strong>Notification (10 min avant):</strong>{" "}
-                        {new Date(result.notificationTime).toLocaleString()}
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 text-sm text-blue-700">
+                      <Clock className="w-4 h-4" />
+                      <strong>Arrivée estimée:</strong>{" "}
+                      {new Date(result.estimatedArrivalTime).toLocaleString()}
+                    </div>
                   </div>
                 </div>
               )}

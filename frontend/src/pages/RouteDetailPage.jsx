@@ -298,19 +298,6 @@ export default function RouteDetailPage() {
     }
   }
 
-  // Legacy mapPoints for backwards compatibility
-  const mapPoints = mapWaypoints.map((wp, index) => ({
-    lat: wp.latitude,
-    lng: wp.longitude,
-    label: wp.name,
-    type:
-      index === 0
-        ? "origin"
-        : index === mapWaypoints.length - 1
-        ? "destination"
-        : "waypoint",
-  }));
-
   return (
     <div className="space-y-6">
       {/* Header */}

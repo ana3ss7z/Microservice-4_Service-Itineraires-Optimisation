@@ -69,8 +69,6 @@ public class UserRouteInfoDTO {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime estimatedArrivalTime;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime notificationTime;
 
     private Boolean started;
 

@@ -1,6 +1,6 @@
 {
   "name": "itineraire-optimisation-frontend",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "description": "Frontend React pour le microservice d'itinéraires et optimisation - Transport Maroc",
   "private": true,
   "type": "module",

@@ -7,7 +7,6 @@ API REST Spring Boot permettant de :
 - Récupérer l’historique des trajets par utilisateur
 - Gérer les villes marocaines
 - Rechercher toutes les villes dans la barre de navigation
-- Système de notifications en temps réel
 
 Base URL : `/routes`
 
@@ -44,11 +43,6 @@ Base URL : `/routes`
 | GET     | `/routes/chauffeur/{chauffeurId}/started` | **🆕 Routes en cours par chauffeur**       | Non                 |
 | GET     | `/routes/user-chauffeur`                  | **🆕 Routes par userId et chauffeurId**    | Non                 |
 | GET     | `/routes/started/total-distance`          | **🆕 Distance totale routes en cours**     | Non                 |
-| GET     | `/notifications`                          | **🆕 Récupérer les notifications d'un utilisateur** | Non (userId requis) |
-| GET     | `/notifications/unread`                   | **🆕 Récupérer le nombre de notifications non lues** | Non (userId requis) |
-| GET     | `/notifications/unread-list`              | **🆕 Récupérer les notifications non lues** | Non (userId requis) |
-| PUT     | `/notifications/{id}/read`                | **🆕 Marquer une notification comme lue** | Non                 |
-| PUT     | `/notifications/mark-all-read`            | **🆕 Marquer toutes les notifications comme lues** | Non (userId requis) |
 
 ### Localisation
 
@@ -161,7 +155,6 @@ Contient les mêmes champs que l'entité sauvegardée (sans géométrie PostGIS)
   "natureMarchandise": "Meubles de salon",
   "dateDepart": "2025-12-15T10:00:00",
   "estimatedArrivalTime": "2025-12-15T10:51:00",
-  "notificationTime": "2025-12-15T10:41:00",
   "started": false,
   "startedAt": null,
   "includeReturn": true,
@@ -200,22 +193,6 @@ Contient les mêmes champs que l'entité sauvegardée (sans géométrie PostGIS)
   "timestamp": "2025-12-03 16:30:00",
   "status": "SUCCESS",
   "message": "Localisation récupérée avec succès"
-}
-```
-
-### `NotificationDTO` (modèle de notification)
-
-```json
-{
-  "id": 1,
-  "userId": "user123",
-  "title": "Arrivée estimée imminente",
-  "message": "Votre itinéraire vers Casablanca devrait arriver à destination dans environ 10 minutes",
-  "type": "ESTIMATED_ARRIVAL",
-  "read": false,
-  "createdAt": "2025-12-03T17:30:00",
-  "routeId": "route123",
-  "chauffeurId": "chauffeur456"
 }
 ```
 
@@ -303,7 +280,7 @@ Content-Type: application/json
 }
 ```
 
-**Réponse** : `UserRouteInfoDTO` contenant `totalDistanceKm`, `totalDurationMin`, `estimatedArrivalTime`, `notificationTime` (10 min avant arrivée), les informations de volume et les détails utilisateur.
+**Réponse** : `UserRouteInfoDTO` contenant `totalDistanceKm`, `totalDurationMin`, `estimatedArrivalTime`, les informations de volume et les détails utilisateur.
 
 ### 8. Récupérer les informations complètes d'un utilisateur
 
@@ -319,7 +296,7 @@ Retourne une liste de `UserRouteInfoDTO` avec toutes les informations de routes 
 PUT /routes/{routeId}/start
 ```
 
-Met `started=true` et enregistre `startedAt` avec l'heure actuelle. Recalcule `estimatedArrivalTime` et `notificationTime` basées sur l'heure de départ réelle.
+Met `started=true` et enregistre `startedAt` avec l'heure actuelle. Recalcule `estimatedArrivalTime` basées sur l'heure de départ réelle.
 
 **Réponse** : `UserRouteInfoDTO` avec les champs mis à jour.
 
@@ -411,63 +388,6 @@ GET /location/server-info
 
 Retourne les informations du serveur (hostname, IP, OS, version Java).
 
-### 20. 🆕 Récupérer les notifications d'un utilisateur
-
-```http
-GET /notifications?userId=user123&page=0&size=20
-```
-
-**Paramètres** :
-- `userId` (requis) : ID de l'utilisateur
-- `page` (optionnel) : Numéro de page (défaut: 0)
-- `size` (optionnel) : Taille de page (défaut: 20)
-
-**Réponse** : Page de `NotificationDTO`
-
-### 21. 🆕 Récupérer le nombre de notifications non lues
-
-```http
-GET /notifications/unread?userId=user123
-```
-
-**Paramètres** :
-- `userId` (requis) : ID de l'utilisateur
-
-**Réponse** : Nombre entier de notifications non lues
-
-### 22. 🆕 Récupérer les notifications non lues
-
-```http
-GET /notifications/unread-list?userId=user123
-```
-
-**Paramètres** :
-- `userId` (requis) : ID de l'utilisateur
-
-**Réponse** : Liste de `NotificationDTO` non lues
-
-### 23. 🆕 Marquer une notification comme lue
-
-```http
-PUT /notifications/{notificationId}/read
-```
-
-**Paramètres** :
-- `notificationId` (chemin) : ID de la notification
-
-**Réponse** : 200 OK
-
-### 24. 🆕 Marquer toutes les notifications comme lues
-
-```http
-PUT /notifications/mark-all-read?userId=user123
-```
-
-**Paramètres** :
-- `userId` (query) : ID de l'utilisateur
-
-**Réponse** : 200 OK
-
 ---
 
 ## Fonctionnalités avancées
@@ -482,29 +402,8 @@ La barre de navigation inclut désormais une recherche avancée qui permet à l'
 - Compatibilité avec les caractères arabes et tifinagh
 
 #### Endpoint utilisé
+
 - **GET** `/routes/ville` - Récupère toutes les villes connues
-
-### Système de notifications en temps réel
-
-Le système inclut un système complet de notifications avec :
-
-- Notifications push en temps réel via WebSocket
-- Notifications automatiques (arrivée estimée, démarrage de route, etc.)
-- Gestion de la lecture/marquage comme lu
-- Compteur de notifications non lues
-- Historique persistant dans la base de données
-
-#### Types de notifications
-- `ROUTE_STARTED` - Quand une route démarre
-- `ESTIMATED_ARRIVAL` - 10 minutes avant l'arrivée estimée
-- `ROUTE_COMPLETED` - Quand une route est terminée
-- `ROUTE_DELAYED` - En cas de retard
-- `SYSTEM_MESSAGE` - Messages système généraux
-- `URGENT` - Notifications urgentes
-
-#### Notifications automatiques programmées
-- Le système envoie automatiquement une notification 10 minutes avant l'arrivée estimée
-- Notifications basées sur les champs `notificationTime` et `estimatedArrivalTime` de la route
 
 ## Limitations actuelles
 

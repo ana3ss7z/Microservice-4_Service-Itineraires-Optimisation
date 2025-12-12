@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS routes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     date_depart TIMESTAMP,
     estimated_arrival_time TIMESTAMP,
-    notification_time TIMESTAMP,
     started BOOLEAN DEFAULT FALSE,
     started_at TIMESTAMP,
     calculated_by VARCHAR(255),

@@ -166,17 +166,14 @@ public class RouteController {
         // Calculer la route
         RouteResponse routeResponse = routeService.calculateRouteFromAddress(routeRequest);
 
-        // Calculer l'heure d'arrivée estimée et l'heure de notification (10 min avant)
+        // Calculer l'heure d'arrivée estimée
         LocalDateTime dateDepart = demande.getDateDepart();
         final LocalDateTime estimatedArrivalTime;
-        final LocalDateTime notificationTime;
 
         if (dateDepart != null && routeResponse.getDurationMin() != null) {
             estimatedArrivalTime = dateDepart.plusMinutes(routeResponse.getDurationMin());
-            notificationTime = estimatedArrivalTime.minusMinutes(10);
         } else {
             estimatedArrivalTime = null;
-            notificationTime = null;
         }
 
         // Construire la réponse
@@ -196,7 +193,6 @@ public class RouteController {
                 .natureMarchandise(demande.getNatureMarchandise())
                 .dateDepart(dateDepart)
                 .estimatedArrivalTime(estimatedArrivalTime)
-                .notificationTime(notificationTime)
                 .started(false)
                 .startedAt(null)
                 .includeReturn(true)
@@ -210,7 +206,6 @@ public class RouteController {
                 entity.setChauffeurId(chauffeurId);
                 entity.setDateDepart(dateDepart);
                 entity.setEstimatedArrivalTime(estimatedArrivalTime);
-                entity.setNotificationTime(notificationTime);
                 entity.setStarted(false);
                 routeRepository.save(entity);
             });
@@ -266,18 +261,14 @@ public class RouteController {
         // Calculer la route
         RouteResponse routeResponse = routeService.calculateRouteFromAddress(routeRequest);
 
-        // Calculer l'heure d'arrivée estimée et l'heure de notification (10 min avant)
+        // Calculer l'heure d'arrivée estimée
         LocalDateTime dateDepart = demandeRequest.getDateDepart();
         final LocalDateTime estimatedArrivalTime;
-        final LocalDateTime notificationTime;
 
         if (dateDepart != null && routeResponse.getDurationMin() != null) {
             estimatedArrivalTime = dateDepart.plusMinutes(routeResponse.getDurationMin());
-            // Notification 10 minutes avant l'arrivée
-            notificationTime = estimatedArrivalTime.minusMinutes(10);
         } else {
             estimatedArrivalTime = null;
-            notificationTime = null;
         }
 
         // Construire la réponse complète avec les informations de demande et utilisateur
@@ -301,7 +292,6 @@ public class RouteController {
                 .natureMarchandise(demandeRequest.getNatureMarchandise())
                 .dateDepart(dateDepart)
                 .estimatedArrivalTime(estimatedArrivalTime)
-                .notificationTime(notificationTime)
                 .started(false)
                 .startedAt(null)
                 .includeReturn(true)
@@ -315,7 +305,6 @@ public class RouteController {
                 entity.setChauffeurId(chauffeurId);
                 entity.setDateDepart(dateDepart);
                 entity.setEstimatedArrivalTime(estimatedArrivalTime);
-                entity.setNotificationTime(notificationTime);
                 entity.setStarted(false);
                 routeRepository.save(entity);
             });
@@ -420,7 +409,6 @@ public class RouteController {
                 .returnDurationMin(entity.getReturnDurationMin())
                 .dateDepart(entity.getDateDepart())
                 .estimatedArrivalTime(entity.getEstimatedArrivalTime())
-                .notificationTime(entity.getNotificationTime())
                 .started(entity.getStarted())
                 .startedAt(entity.getStartedAt())
                 .includeReturn(entity.getIncludeReturn())
@@ -455,7 +443,6 @@ public class RouteController {
         if (entity.getDurationMin() != null) {
             LocalDateTime newEstimatedArrival = LocalDateTime.now().plusMinutes(entity.getDurationMin());
             entity.setEstimatedArrivalTime(newEstimatedArrival);
-            entity.setNotificationTime(newEstimatedArrival.minusMinutes(10));
         }
 
         RouteEntity savedEntity = routeRepository.save(entity);

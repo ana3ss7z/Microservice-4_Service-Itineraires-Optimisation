@@ -1,17 +1,8 @@
-import {
-  Bell,
-  User,
-  Settings,
-  Search,
-  X,
-  MapPin,
-  Route,
-  Clock,
-} from "lucide-react";
+import { User, Settings, Search, X, MapPin, Route, Clock } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
-import { getAllCities } from "../services/api";
+import { getAllCities, getRouteHistory } from "../services/api";
 
 // Initial hardcoded cities for fallback
 const initialCities = [
@@ -67,16 +58,15 @@ const quickLinks = [
 export default function Navbar({ onMenuClick, isCollapsed }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState({ cities: [], links: [], routes: [] });
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [cities, setCities] = useState(initialCities);
   const [routes, setRoutes] = useState([]);
-  const [notifications, setNotifications] = useState([]);
   const searchRef = useRef(null);
   const navigate = useNavigate();
   const { darkMode } = useTheme();
 
-  // Fetch all cities, routes and notifications from API on component mount
+  // Fetch all cities and routes from API on component mount
   useEffect(() => {
     const fetchAllData = async () => {
       try {
@@ -84,28 +74,30 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
         const apiCities = await getAllCities();
         if (apiCities && Array.isArray(apiCities) && apiCities.length > 0) {
           // Map the API response to match the expected structure for search
-          const mappedCities = apiCities.map(city => ({
+          const mappedCities = apiCities.map((city) => ({
             name: city.name || city.nom,
             lat: city.latitude || city.lat,
             lng: city.longitude || city.lng,
             id: city.id,
-            type: 'city'
+            type: "city",
           }));
           setCities(mappedCities);
         }
 
         // For now, use a placeholder for current user
         // In a real implementation, you would get the actual user ID from auth context or storage
-        const currentUserId = localStorage.getItem('userId') || 'current_user'; // Replace with actual user ID logic
+        const currentUserId = localStorage.getItem("userId") || "current_user"; // Replace with actual user ID logic
 
         if (currentUserId) {
           // Fetch recent routes for the user
           const recentRoutes = await getRouteHistory(currentUserId, 0, 10); // Get first 10 routes
           if (recentRoutes && recentRoutes.content) {
             // Map route history to search format
-            const mappedRoutes = recentRoutes.content.map(route => ({
+            const mappedRoutes = recentRoutes.content.map((route) => ({
               id: route.id,
-              name: `${route.originCity || 'Départ'} → ${route.destinationCity || 'Arrivée'}`,
+              name: `${route.originCity || "Départ"} → ${
+                route.destinationCity || "Arrivée"
+              }`,
               originCity: route.originCity,
               destinationCity: route.destinationCity,
               originAddress: route.originAddress,
@@ -113,28 +105,9 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
               distanceKm: route.totalDistanceKm || route.distanceKm,
               durationMin: route.totalDurationMin || route.durationMin,
               steps: route.steps, // Include steps if available for searching
-              type: 'route'
+              type: "route",
             }));
             setRoutes(mappedRoutes);
-          }
-
-          // Fetch recent notifications for the user
-          try {
-            const recentNotifications = await getUnreadNotifications(currentUserId);
-            if (Array.isArray(recentNotifications)) {
-              // Map notifications to search format
-              const mappedNotifications = recentNotifications.map(notification => ({
-                id: notification.id,
-                title: notification.title,
-                message: notification.message,
-                routeId: notification.routeId,
-                type: 'notification'
-              }));
-              setNotifications(mappedNotifications);
-            }
-          } catch (notifError) {
-            console.error("Error fetching notifications:", notifError);
-            // Still proceed with other data even if notifications fail
           }
         }
       } catch (error) {
@@ -145,7 +118,7 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
     };
 
     fetchAllData();
-  }, []);
+  }, []); // No dependencies needed as this only runs once on mount
 
   // Handle click outside to close search
   useEffect(() => {
@@ -158,7 +131,7 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Search functionality - enhanced to include routes, addresses, and notifications
+  // Search functionality - enhanced to include routes, addresses
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
       const query = searchQuery.toLowerCase();
@@ -183,32 +156,31 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
           route.destinationCity?.toLowerCase().includes(query) ||
           route.originAddress?.toLowerCase().includes(query) ||
           route.destinationAddress?.toLowerCase().includes(query) ||
-          (route.steps && route.steps.some(step =>
-            step.name?.toLowerCase().includes(query) ||
-            step.address?.toLowerCase().includes(query) ||
-            step.city?.toLowerCase().includes(query)
-          ))
+          (route.steps &&
+            route.steps.some(
+              (step) =>
+                step.name?.toLowerCase().includes(query) ||
+                step.address?.toLowerCase().includes(query) ||
+                step.city?.toLowerCase().includes(query)
+            ))
       );
 
-      // Filter notifications based on title, message, or content
-      const notificationResults = notifications.filter(
-        (notification) =>
-          notification.title?.toLowerCase().includes(query) ||
-          notification.message?.toLowerCase().includes(query)
-      );
-
-      setSearchResults({
+      setSearchResults(prev => ({
+        ...prev,
         cities: cityResults.slice(0, 5),
         links: linkResults,
         routes: routeResults.slice(0, 5),
-        notifications: notificationResults.slice(0, 5)
-      });
+      }));
       setShowSearchResults(true);
     } else {
-      setSearchResults({ cities: [], links: [], routes: [], notifications: [] });
+      setSearchResults({
+        cities: [],
+        links: [],
+        routes: [],
+      });
       setShowSearchResults(false);
     }
-  }, [searchQuery, cities, routes, notifications]);
+  }, [searchQuery, cities, routes]);
 
   const handleCityClick = (city) => {
     // Ensure city has the proper structure for the cities page
@@ -219,7 +191,7 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
       longitude: city.lng,
       lat: city.lat,
       lng: city.lng,
-      id: city.id
+      id: city.id,
     };
     navigate("/cities", { state: { selectedCity: normalizedCity } });
     setSearchQuery("");
@@ -230,17 +202,6 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
     // Navigate to the specific route detail page
     if (route.id) {
       navigate(`/route/${route.id}`);
-    }
-    setSearchQuery("");
-    setShowSearchResults(false);
-  };
-
-  const handleNotificationClick = (notification) => {
-    // Navigate to notifications page or specific route if linked
-    if (notification.routeId) {
-      navigate(`/route/${notification.routeId}`);
-    } else {
-      navigate('/notifications');
     }
     setSearchQuery("");
     setShowSearchResults(false);
@@ -356,8 +317,7 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
             {showSearchResults &&
               (searchResults.cities?.length > 0 ||
                 searchResults.links?.length > 0 ||
-                searchResults.routes?.length > 0 ||
-                searchResults.notifications?.length > 0) && (
+                searchResults.routes?.length > 0) && (
                 <div
                   className={`absolute top-full left-0 right-0 mt-2 ${
                     darkMode
@@ -375,7 +335,7 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
                       >
                         Actions rapides
                       </p>
-                      {searchResults.links.map((link) => (
+                      {searchResults.links?.map((link) => (
                         <button
                           key={link.path}
                           onClick={() => handleLinkClick(link.path)}
@@ -396,59 +356,12 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
                     </div>
                   )}
 
-                  {/* Notifications */}
-                  {searchResults.notifications?.length > 0 && (
-                    <div
-                      className={`p-2 ${
-                        searchResults.links?.length > 0 || searchResults.cities?.length > 0 || searchResults.routes?.length > 0
-                          ? `border-t ${
-                              darkMode ? "border-slate-700" : "border-gray-100"
-                            }`
-                          : ""
-                      }`}
-                    >
-                      <p
-                        className={`text-xs font-semibold ${
-                          darkMode ? "text-gray-400" : "text-gray-500"
-                        } px-2 mb-1`}
-                      >
-                        Notifications
-                      </p>
-                      {searchResults.notifications.map((notification) => (
-                        <button
-                          key={notification.id}
-                          onClick={() => handleNotificationClick(notification)}
-                          className={`w-full flex items-center gap-3 px-3 py-2 ${
-                            darkMode ? "hover:bg-slate-700" : "hover:bg-gray-50"
-                          } rounded-lg transition-colors text-left`}
-                        >
-                          <Bell className="w-4 h-4 text-orange-500" />
-                          <div>
-                            <p
-                              className={`text-sm font-medium ${
-                                darkMode ? "text-gray-200" : "text-gray-700"
-                              }`}
-                            >
-                              {notification.title}
-                            </p>
-                            <p
-                              className={`text-xs ${
-                                darkMode ? "text-gray-400" : "text-gray-500"
-                              }`}
-                            >
-                              {notification.message.substring(0, 60)}{notification.message.length > 60 ? '...' : ''}
-                            </p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
                   {/* Routes */}
                   {searchResults.routes?.length > 0 && (
                     <div
                       className={`p-2 ${
-                        searchResults.links?.length > 0 || searchResults.notifications?.length > 0 || searchResults.cities?.length > 0
+                        searchResults.links?.length > 0 ||
+                        searchResults.cities?.length > 0
                           ? `border-t ${
                               darkMode ? "border-slate-700" : "border-gray-100"
                             }`
@@ -462,7 +375,7 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
                       >
                         Trajets
                       </p>
-                      {searchResults.routes.map((route) => (
+                      {searchResults.routes?.map((route) => (
                         <button
                           key={route.id}
                           onClick={() => handleRouteClick(route)}
@@ -477,14 +390,17 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
                                 darkMode ? "text-gray-200" : "text-gray-700"
                               }`}
                             >
-                              {route.originCity || route.originAddress} → {route.destinationCity || route.destinationAddress}
+                              {route.originCity || route.originAddress} →{" "}
+                              {route.destinationCity ||
+                                route.destinationAddress}
                             </p>
                             <p
                               className={`text-xs ${
                                 darkMode ? "text-gray-400" : "text-gray-500"
                               }`}
                             >
-                              {route.distanceKm?.toFixed(1)} km • {route.durationMin} min
+                              {route.distanceKm?.toFixed(1)} km •{" "}
+                              {route.durationMin} min
                             </p>
                           </div>
                         </button>
@@ -496,7 +412,8 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
                   {searchResults.cities?.length > 0 && (
                     <div
                       className={`p-2 ${
-                        searchResults.links?.length > 0 || searchResults.notifications?.length > 0 || searchResults.routes?.length > 0
+                        searchResults.links?.length > 0 ||
+                        searchResults.routes?.length > 0
                           ? `border-t ${
                               darkMode ? "border-slate-700" : "border-gray-100"
                             }`
@@ -510,7 +427,7 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
                       >
                         Villes
                       </p>
-                      {searchResults.cities.map((city) => (
+                      {searchResults.cities?.map((city) => (
                         <button
                           key={city.name}
                           onClick={() => handleCityClick(city)}
@@ -546,24 +463,6 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
 
         {/* Right Section */}
         <div className="flex items-center gap-2">
-          {/* Notifications */}
-          <Link
-            to="/notifications"
-            className={`relative p-2.5 rounded-xl ${
-              darkMode ? "hover:bg-slate-700" : "hover:bg-gray-100"
-            } transition-colors`}
-          >
-            <Bell
-              className={`w-5 h-5 ${
-                darkMode ? "text-gray-300" : "text-gray-600"
-              }`}
-            />
-            {/* In a real implementation, we would show the actual count here */}
-            {/* <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              3
-            </span> */}
-          </Link>
-
           {/* Settings */}
           <Link
             to="/settings"
