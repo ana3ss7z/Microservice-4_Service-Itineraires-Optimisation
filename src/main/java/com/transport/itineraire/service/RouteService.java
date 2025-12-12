@@ -575,4 +575,11 @@ public class RouteService {
     public ObjectMapper getObjectMapper() {
         return objectMapper;
     }
+
+    /**
+     * Get OSRM URL for use by other services
+     */
+    public String getOsrmUrl() {
+        return osrmUrl;
+    }
 }

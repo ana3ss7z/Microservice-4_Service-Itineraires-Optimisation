@@ -373,7 +373,7 @@ public class OptimizationService {
         try {
             // Build a single OSRM request with all optimized points
             StringBuilder urlBuilder = new StringBuilder();
-            urlBuilder.append(osrmUrl).append("/route/v1/driving/");
+            urlBuilder.append(routeService.getOsrmUrl()).append("/route/v1/driving/");
 
             // Add all lon,lat coordinates to the URL
             for (int i = 0; i < points.size(); i++) {
@@ -387,9 +387,9 @@ public class OptimizationService {
             String url = urlBuilder.toString();
             log.debug("Appel OSRM optimisé: {}", url);
 
-            // Use restTemplate with increased timeout
+            // Use restTemplate from routeService
             org.springframework.http.ResponseEntity<String> responseEntity =
-                restTemplate.getForEntity(url, String.class);
+                routeService.getRestTemplate().getForEntity(url, String.class);
             String response = responseEntity.getBody();
 
             // Create a temporary request to re-use the existing parsing logic
