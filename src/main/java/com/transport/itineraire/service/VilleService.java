@@ -254,15 +254,20 @@ public class VilleService {
     public void initializeCities() {
         if (villeRepository.count() == 0) {
             log.info("Initializing Moroccan cities database...");
-            MOROCCAN_CITIES.forEach((name, coords) -> {
-                VilleEntity ville = VilleEntity.builder()
-                        .name(name)
-                        .latitude(coords[0])
-                        .longitude(coords[1])
-                        .build();
-                villeRepository.save(ville);
-            });
-            log.info("Initialized {} Moroccan cities", MOROCCAN_CITIES.size());
+            try {
+                MOROCCAN_CITIES.forEach((name, coords) -> {
+                    VilleEntity ville = VilleEntity.builder()
+                            .name(name)
+                            .latitude(coords[0])
+                            .longitude(coords[1])
+                            .build();
+                    villeRepository.save(ville);
+                });
+                log.info("Initialized {} Moroccan cities", MOROCCAN_CITIES.size());
+            } catch (Exception e) {
+                log.error("Error initializing cities database: {}", e.getMessage());
+                throw e;
+            }
         }
     }
 
@@ -288,12 +293,22 @@ public class VilleService {
 
     @Transactional(readOnly = true)
     public List<VilleEntity> getAllCities() {
-        return villeRepository.findAll();
+        try {
+            return villeRepository.findAll();
+        } catch (Exception e) {
+            log.error("Error retrieving all cities: {}", e.getMessage());
+            return List.of(); // Return empty list instead of throwing error
+        }
     }
 
     @Transactional(readOnly = true)
     public long getCitiesCount() {
-        return villeRepository.count();
+        try {
+            return villeRepository.count();
+        } catch (Exception e) {
+            log.error("Error retrieving cities count: {}", e.getMessage());
+            return 0; // Return 0 instead of throwing error
+        }
     }
 
     private String normalizeCityName(String cityName) {

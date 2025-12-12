@@ -190,7 +190,7 @@ public class LocationService {
             }
         } catch (Exception e) {
             log.error("Erreur API géolocalisation: {}", e.getMessage());
-            throw e;
+            // Don't re-throw the exception to prevent 500 errors - just log and continue
         }
     }
 }

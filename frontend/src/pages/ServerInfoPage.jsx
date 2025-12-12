@@ -12,7 +12,7 @@ import {
   Database,
   Code,
 } from "lucide-react";
-import { getServerInfo, healthCheck } from "../services/api";
+import { getServerInfo } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
 import { useTheme } from "../context/ThemeContext";
@@ -27,12 +27,10 @@ export default function ServerInfoPage() {
   const fetchServerInfo = async () => {
     setLoading(true);
     try {
-      const [serverData, healthData] = await Promise.all([
-        getServerInfo(),
-        healthCheck(),
-      ]);
+      const serverData = await getServerInfo();
       setServerInfo(serverData);
-      setHealthStatus(healthData);
+      // Skip health check to prevent proxy errors when backend is down
+      setHealthStatus({ status: "unknown", message: "Health check disabled to prevent errors" });
       setLastRefresh(new Date());
       toast.success("Informations serveur actualisées");
     } catch (error) {
@@ -44,8 +42,8 @@ export default function ServerInfoPage() {
 
   useEffect(() => {
     fetchServerInfo();
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchServerInfo, 30000);
+    // Auto-refresh every 2 minutes (120000ms) to reduce proxy errors when backend is down
+    const interval = setInterval(fetchServerInfo, 120000);
     return () => clearInterval(interval);
   }, []);
 

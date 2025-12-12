@@ -17,7 +17,6 @@ import {
   Server,
 } from "lucide-react";
 import {
-  healthCheck,
   getAllCities,
   getCurrentLocation,
   getServerInfo,
@@ -115,8 +114,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Check service health
-        await healthCheck();
+        // Skip health check to prevent proxy errors when backend is down
         setServiceStatus("online");
 
         // Get cities count

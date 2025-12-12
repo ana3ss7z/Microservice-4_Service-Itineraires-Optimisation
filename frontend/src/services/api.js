@@ -3,6 +3,15 @@ import axios from "axios";
 // Configuration de base de l'API
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
+// Track backend status to avoid excessive requests when down
+let backendStatus = {
+  isAvailable: true,
+  lastCheck: null,
+  consecutiveFailures: 0,
+  failureThreshold: 3,  // After 3 failures, assume backend is down
+  retryAfter: 30000     // Wait 30 seconds before retrying
+};
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -13,33 +22,88 @@ const api = axios.create({
 
 // Request interceptor to track start time
 api.interceptors.request.use((config) => {
+  // Check if the backend is known to be unavailable and it's been less than retryAfter time
+  const now = new Date().getTime();
+  if (!backendStatus.isAvailable && backendStatus.lastCheck) {
+    const timeSinceLastCheck = now - backendStatus.lastCheck.getTime();
+    if (timeSinceLastCheck < backendStatus.retryAfter && !config.url.includes('/health')) {
+      // Reject the request early to prevent proxy errors
+      return Promise.reject(new Error('Backend is temporarily unavailable'));
+    } else if (timeSinceLastCheck >= backendStatus.retryAfter) {
+      // Reset status after retryAfter time has passed
+      backendStatus.isAvailable = true;
+      backendStatus.consecutiveFailures = 0;
+    }
+  }
+
   config.metadata = { startTime: new Date() };
-  console.log(
-    `🔄 Request starting: ${config.method?.toUpperCase()} ${config.url}`
-  );
+  // Only log for non-health check endpoints to reduce console spam
+  if (
+    !config.url.includes("/health") &&
+    process.env.NODE_ENV !== "production"
+  ) {
+    console.log(
+      `🔄 Request starting: ${config.method?.toUpperCase()} ${config.url}`
+    );
+  }
   return config;
 });
 
 // Response interceptor to track response times
 api.interceptors.response.use(
   (response) => {
+    // Reset failure counter on success
+    backendStatus.consecutiveFailures = 0;
+    backendStatus.isAvailable = true;
+    backendStatus.lastCheck = new Date();
+
     const responseTime = new Date() - response.config.metadata.startTime;
-    console.log(
-      `✅ Request completed: ${response.config.url} - ${responseTime}ms - Status: ${response.status}`
-    );
+    // Only log for non-health check endpoints to reduce console spam
+    if (
+      !response.config.url.includes("/health") &&
+      process.env.NODE_ENV !== "production"
+    ) {
+      console.log(
+        `✅ Request completed: ${response.config.url} - ${responseTime}ms - Status: ${response.status}`
+      );
+    }
     return response;
   },
   async (error) => {
     const requestTime = new Date() - error.config.metadata.startTime;
-    console.error(
-      `❌ Request failed: ${error.config.url} - ${requestTime}ms - Error: ${error.message}`
-    );
+
+    // Update backend status based on error
+    const isNetworkError = error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK' ||
+                          error.message.includes('ECONNREFUSED') ||
+                          error.message.includes('Network Error');
+
+    if (isNetworkError || error.response?.status >= 500) {
+      // Increment failure counter
+      backendStatus.consecutiveFailures++;
+      backendStatus.lastCheck = new Date();
+
+      // Mark backend as unavailable if threshold reached
+      if (backendStatus.consecutiveFailures >= backendStatus.failureThreshold) {
+        backendStatus.isAvailable = false;
+      }
+    }
+
+    // Only log for non-health check endpoints to reduce console spam,
+    // but still log 500 errors to help with debugging
+    const isHealthCheck = error.config?.url?.includes("/health");
+    if (!isHealthCheck || error.response?.status === 500) {
+      console.error(
+        `❌ Request failed: ${error.config?.url} - ${requestTime}ms - Error: ${error.message}`
+      );
+    }
 
     const message =
       error.response?.data?.message ||
       error.message ||
       "Une erreur de connexion est survenue";
-    console.error("API Error:", message);
+    if (!isHealthCheck) {  // Don't double log for health checks
+      console.error("API Error:", message);
+    }
     return Promise.reject(new Error(message));
   }
 );
@@ -251,35 +315,6 @@ export const calculateRouteFromDemande = async (
   return response.data;
 };
 
-/**
- * Health check du service principal
- */
-export const healthCheck = async () => {
-  const response = await api.get("/routes/health");
-  return response.data;
-};
-
-/**
- * Health check du service de demandes
- */
-export const checkDemandeServiceHealth = async () => {
-  const response = await api.get("/routes/demande-service/health");
-  return response.data;
-};
-
-// Function to check server health quickly
-export const checkServerHealth = async (serverUrl) => {
-  try {
-    const healthUrl = serverUrl.replace("/api", "/api/routes/health");
-    const response = await axios.get(healthUrl, {
-      timeout: 5000, // Reasonable timeout for health check
-      headers: { "Content-Type": "application/json" },
-    });
-    return response.data && response.status === 200;
-  } catch (error) {
-    console.log(`Health check failed for: ${serverUrl}`, error.message);
-    return false;
-  }
-};
+// Health check functions have been removed to prevent proxy errors when backend is down
 
 export default api;

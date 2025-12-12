@@ -21,23 +21,15 @@ export default defineConfig({
         timeout: 65000, // 65 seconds (more than client timeout to prevent early proxy timeout)
         proxyTimeout: 65000, // Also set proxy timeout
         onProxyReq: (req) => {
-          console.log(
-            `🔄 Request: ${req.method} ${req.url} -> ${PRIMARY_TARGET}`
-          );
+          // Silent logging for debugging
         },
         onProxyRes: (proxyRes, req) => {
-          console.log(
-            `✅ Response: ${req.method} ${req.url} -> ${proxyRes.statusCode}`
-          );
+          // Silent logging for debugging
         },
         onError: (err) => {
-          console.error(`❌ Proxy error to ${PRIMARY_TARGET}:`, err.message);
-
-          // Note: Vite proxy target cannot be changed dynamically without server restart
-          // For runtime server switching, use client-side logic in api.js instead
-          console.log(
-            `💡 To switch servers, update PRIMARY_TARGET and restart dev server`
-          );
+          // Suppress error logging to prevent console spam when backend is down
+          // console.error(`❌ Proxy error to ${PRIMARY_TARGET}:`, err.message);
+          // console.log(`💡 Backend server not running. Start it with: mvn spring-boot:run`);
         },
       },
     },
