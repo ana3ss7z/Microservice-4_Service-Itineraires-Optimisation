@@ -321,36 +321,41 @@ public class ApiDocsController {
             )
         ));
 
+        Map<String, Object> routeResponseProperties = new LinkedHashMap<>();
+        routeResponseProperties.put("routeId", "string - ID de l'itinéraire");
+        routeResponseProperties.put("distanceKm", "number - Distance en km");
+        routeResponseProperties.put("durationMin", "integer - Durée en minutes");
+        routeResponseProperties.put("returnDistanceKm", "number - Distance retour en km");
+        routeResponseProperties.put("returnDurationMin", "integer - Durée retour en minutes");
+        routeResponseProperties.put("totalDistanceKm", "number - Distance totale en km");
+        routeResponseProperties.put("totalDurationMin", "integer - Durée totale en minutes");
+        routeResponseProperties.put("steps", "array[Waypoint] - Étapes de l'itinéraire");
+        routeResponseProperties.put("instructions", "array[string] - Instructions de navigation");
+        routeResponseProperties.put("routePolyline", "string - Chemin encodé pour la visualisation sur carte");
+        routeResponseProperties.put("status", "string - Statut du calcul");
+        routeResponseProperties.put("calculatedAt", "datetime - Date du calcul");
+
         schemas.put("RouteResponse", Map.of(
             "type", "object",
-            "properties", Map.of(
-                "routeId", "string - ID de l'itinéraire",
-                "distanceKm", "number - Distance en km",
-                "durationMin", "integer - Durée en minutes",
-                "returnDistanceKm", "number - Distance retour en km",
-                "returnDurationMin", "integer - Durée retour en minutes",
-                "totalDistanceKm", "number - Distance totale en km",
-                "totalDurationMin", "integer - Durée totale en minutes",
-                "steps", "array[Waypoint] - Étapes de l'itinéraire",
-                "instructions", "array[string] - Instructions de navigation",
-                "routePolyline", "string - Chemin encodé pour la visualisation sur carte"
-            )
+            "properties", routeResponseProperties
         ));
+
+        Map<String, Object> demandeRequestProperties = new LinkedHashMap<>();
+        demandeRequestProperties.put("userId", "string - ID de l'utilisateur");
+        demandeRequestProperties.put("chauffeurId", "string - ID du chauffeur");
+        demandeRequestProperties.put("username", "string - Nom d'utilisateur");
+        demandeRequestProperties.put("email", "string - Adresse email de l'utilisateur");
+        demandeRequestProperties.put("fullName", "string - Nom complet de l'utilisateur");
+        demandeRequestProperties.put("phone", "string - Numéro de téléphone de l'utilisateur");
+        demandeRequestProperties.put("volume", "number - Volume de la marchandise (m³)");
+        demandeRequestProperties.put("natureMarchandise", "string - Description de la nature de la marchandise");
+        demandeRequestProperties.put("dateDepart", "datetime - Date et heure de départ prévue");
+        demandeRequestProperties.put("adresseDepart", "string - Adresse de départ");
+        demandeRequestProperties.put("adresseDestination", "string - Adresse de destination");
 
         schemas.put("DemandeRequestDTO", Map.of(
             "type", "object",
-            "properties", Map.of(
-                "userId", "string - ID de l'utilisateur",
-                "chauffeurId", "string - ID du chauffeur",
-                "username", "string - Nom d'utilisateur",
-                "email", "string - Adresse email de l'utilisateur",
-                "fullName", "string - Nom complet de l'utilisateur",
-                "phone", "string - Numéro de téléphone de l'utilisateur",
-                "volume", "number - Volume de la marchandise (m³)",
-                "natureMarchandise", "string - Description de la nature de la marchandise",
-                "dateDepart", "datetime - Date et heure de départ prévue",
-                "adresseDepart", "string - Adresse de départ"
-            )
+            "properties", demandeRequestProperties
         ));
 
 
