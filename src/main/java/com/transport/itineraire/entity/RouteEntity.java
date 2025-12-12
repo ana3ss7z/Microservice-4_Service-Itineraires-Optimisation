@@ -16,17 +16,30 @@ public class RouteEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @Column(length = 500)
     private String userId;
+
+    @Column(length = 500)
     private String chauffeurId;
+
+    @Column(length = 500)
     private String requestId;
 
+    @Column(columnDefinition = "TEXT")
     private String originAddress;
+
+    @Column(columnDefinition = "TEXT")
     private String originCity;
+
     private Double originLatitude;
     private Double originLongitude;
 
+    @Column(columnDefinition = "TEXT")
     private String destinationAddress;
+
+    @Column(columnDefinition = "TEXT")
     private String destinationCity;
+
     private Double destinationLatitude;
     private Double destinationLongitude;
 
@@ -47,8 +60,13 @@ public class RouteEntity {
     private String instructionsJson;
 
     private Boolean includeReturn;
+
+    @Column(columnDefinition = "TEXT")
     private String preference;
+
     private Boolean isOptimized;
+
+    @Column(length = 500)
     private String optimizationType;
 
     @Column(updatable = false)
@@ -64,7 +82,10 @@ public class RouteEntity {
 
     private LocalDateTime startedAt;
 
+    @Column(columnDefinition = "TEXT")
     private String calculatedBy;
+
+    @Column(columnDefinition = "TEXT")
     private String status;
 
     @Column(length = 1000)
