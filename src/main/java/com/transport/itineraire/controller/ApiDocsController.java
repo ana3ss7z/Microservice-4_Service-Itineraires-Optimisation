@@ -356,85 +356,88 @@ public class ApiDocsController {
             )
         ));
 
-        schemas.put("UserRouteInfoDTO", Map.of(
-            "type", "object",
-            "properties", Map.of(
-                "routeId", "string - ID de l'itinéraire",
-                "userId", "string - ID de l'utilisateur",
-                "chauffeurId", "string - ID du chauffeur",
-                "username", "string - Nom d'utilisateur",
-                "email", "string - Email de l'utilisateur",
-                "fullName", "string - Nom complet de l'utilisateur",
-                "phone", "string - Téléphone de l'utilisateur",
-                "adresseDepart", "string - Adresse de départ",
-                "adresseDestination", "string - Adresse de destination",
-                "originLatitude", "number - Latitude d'origine",
-                "originLongitude", "number - Longitude d'origine",
-                "originCity", "string - Ville d'origine",
-                "destinationLatitude", "number - Latitude de destination",
-                "destinationLongitude", "number - Longitude de destination",
-                "destinationCity", "string - Ville de destination",
-                "totalDistanceKm", "number - Distance totale en km",
-                "totalDurationMin", "integer - Durée totale en minutes",
-                "distanceKm", "number - Distance aller en km",
-                "durationMin", "integer - Durée aller en minutes",
-                "returnDistanceKm", "number - Distance retour en km",
-                "returnDurationMin", "integer - Durée retour en minutes",
-                "volume", "number - Volume de la marchandise",
-                "natureMarchandise", "string - Nature de la marchandise",
-                "dateDepart", "datetime - Date de départ",
-                "estimatedArrivalTime", "datetime - Heure d'arrivée estimée",
-                "started", "boolean - Statut de démarrage",
-                "startedAt", "datetime - Heure de démarrage réelle",
-                "includeReturn", "boolean - Inclure le retour",
-                "isOptimized", "boolean - Si l'itinéraire est optimisé",
-                "optimizationType", "string - Type d'optimisation",
-                "createdAt", "datetime - Date de création",
-                "status", "string - Statut de l'itinéraire",
-                "calculatedBy", "string - Méthode de calcul",
-                "steps", "array[Waypoint] - Points de passage (pour itinéraires optimisés)"
-            )
-        ));
+        Map<String, Object> userRouteInfoProperties = new LinkedHashMap<>();
+        userRouteInfoProperties.put("routeId", "string - ID de l'itinéraire");
+        userRouteInfoProperties.put("userId", "string - ID de l'utilisateur");
+        userRouteInfoProperties.put("chauffeurId", "string - ID du chauffeur");
+        userRouteInfoProperties.put("username", "string - Nom d'utilisateur");
+        userRouteInfoProperties.put("email", "string - Email de l'utilisateur");
+        userRouteInfoProperties.put("fullName", "string - Nom complet de l'utilisateur");
+        userRouteInfoProperties.put("phone", "string - Téléphone de l'utilisateur");
+        userRouteInfoProperties.put("adresseDepart", "string - Adresse de départ");
+        userRouteInfoProperties.put("adresseDestination", "string - Adresse de destination");
+        userRouteInfoProperties.put("originLatitude", "number - Latitude d'origine");
+        userRouteInfoProperties.put("originLongitude", "number - Longitude d'origine");
+        userRouteInfoProperties.put("originCity", "string - Ville d'origine");
+        userRouteInfoProperties.put("destinationLatitude", "number - Latitude de destination");
+        userRouteInfoProperties.put("destinationLongitude", "number - Longitude de destination");
+        userRouteInfoProperties.put("destinationCity", "string - Ville de destination");
+        userRouteInfoProperties.put("totalDistanceKm", "number - Distance totale en km");
+        userRouteInfoProperties.put("totalDurationMin", "integer - Durée totale en minutes");
+        userRouteInfoProperties.put("distanceKm", "number - Distance aller en km");
+        userRouteInfoProperties.put("durationMin", "integer - Durée aller en minutes");
+        userRouteInfoProperties.put("returnDistanceKm", "number - Distance retour en km");
+        userRouteInfoProperties.put("returnDurationMin", "integer - Durée retour en minutes");
+        userRouteInfoProperties.put("volume", "number - Volume de la marchandise");
+        userRouteInfoProperties.put("natureMarchandise", "string - Nature de la marchandise");
+        userRouteInfoProperties.put("dateDepart", "datetime - Date de départ");
+        userRouteInfoProperties.put("estimatedArrivalTime", "datetime - Heure d'arrivée estimée");
+        userRouteInfoProperties.put("started", "boolean - Statut de démarrage");
+        userRouteInfoProperties.put("startedAt", "datetime - Heure de démarrage réelle");
+        userRouteInfoProperties.put("includeReturn", "boolean - Inclure le retour");
+        userRouteInfoProperties.put("isOptimized", "boolean - Si l'itinéraire est optimisé");
+        userRouteInfoProperties.put("optimizationType", "string - Type d'optimisation");
+        userRouteInfoProperties.put("createdAt", "datetime - Date de création");
+        userRouteInfoProperties.put("status", "string - Statut de l'itinéraire");
+        userRouteInfoProperties.put("calculatedBy", "string - Méthode de calcul");
+        userRouteInfoProperties.put("steps", "array[Waypoint] - Points de passage (pour itinéraires optimisés)");
 
-        schemas.put("RouteDTO", Map.of(
-            "type", "object",
-            "properties", Map.of(
-                "id", "string - ID de l'itinéraire",
-                "userId", "string - ID de l'utilisateur",
-                "originLatitude", "number - Latitude d'origine",
-                "originLongitude", "number - Longitude d'origine",
-                "originAddress", "string - Adresse d'origine",
-                "originCity", "string - Ville d'origine",
-                "destinationLatitude", "number - Latitude de destination",
-                "destinationLongitude", "number - Longitude de destination",
-                "destinationAddress", "string - Adresse de destination",
-                "destinationCity", "string - Ville de destination",
-                "distanceKm", "number - Distance en km",
-                "durationMin", "integer - Durée en minutes",
-                "returnDistanceKm", "number - Distance retour en km",
-                "returnDurationMin", "integer - Durée retour en minutes",
-                "totalDistanceKm", "number - Distance totale en km",
-                "totalDurationMin", "integer - Durée totale en minutes",
-                "includeReturn", "boolean - Inclure le retour",
-                "isOptimized", "boolean - Si l'itinéraire est optimisé",
-                "optimizationType", "string - Type d'optimisation",
-                "createdAt", "datetime - Date de création",
-                "status", "string - Statut de l'itinéraire",
-                "calculatedBy", "string - Méthode de calcul",
-                "steps", "array[Waypoint] - Points de passage (pour itinéraires optimisés)"
-            )
-        ));
+        Map<String, Object> userRouteInfoSchema = new LinkedHashMap<>();
+        userRouteInfoSchema.put("type", "object");
+        userRouteInfoSchema.put("properties", userRouteInfoProperties);
+        schemas.put("UserRouteInfoDTO", userRouteInfoSchema);
 
-        schemas.put("VilleEntity", Map.of(
-            "type", "object",
-            "properties", Map.of(
-                "id", "integer - ID de la ville",
-                "name", "string - Nom de la ville",
-                "latitude", "number - Latitude GPS",
-                "longitude", "number - Longitude GPS",
-                "createdAt", "datetime - Date de création"
-            )
-        ));
+        Map<String, Object> routeDTOProperties = new LinkedHashMap<>();
+        routeDTOProperties.put("id", "string - ID de l'itinéraire");
+        routeDTOProperties.put("userId", "string - ID de l'utilisateur");
+        routeDTOProperties.put("originLatitude", "number - Latitude d'origine");
+        routeDTOProperties.put("originLongitude", "number - Longitude d'origine");
+        routeDTOProperties.put("originAddress", "string - Adresse d'origine");
+        routeDTOProperties.put("originCity", "string - Ville d'origine");
+        routeDTOProperties.put("destinationLatitude", "number - Latitude de destination");
+        routeDTOProperties.put("destinationLongitude", "number - Longitude de destination");
+        routeDTOProperties.put("destinationAddress", "string - Adresse de destination");
+        routeDTOProperties.put("destinationCity", "string - Ville de destination");
+        routeDTOProperties.put("distanceKm", "number - Distance en km");
+        routeDTOProperties.put("durationMin", "integer - Durée en minutes");
+        routeDTOProperties.put("returnDistanceKm", "number - Distance retour en km");
+        routeDTOProperties.put("returnDurationMin", "integer - Durée retour en minutes");
+        routeDTOProperties.put("totalDistanceKm", "number - Distance totale en km");
+        routeDTOProperties.put("totalDurationMin", "integer - Durée totale en minutes");
+        routeDTOProperties.put("includeReturn", "boolean - Inclure le retour");
+        routeDTOProperties.put("isOptimized", "boolean - Si l'itinéraire est optimisé");
+        routeDTOProperties.put("optimizationType", "string - Type d'optimisation");
+        routeDTOProperties.put("createdAt", "datetime - Date de création");
+        routeDTOProperties.put("status", "string - Statut de l'itinéraire");
+        routeDTOProperties.put("calculatedBy", "string - Méthode de calcul");
+        routeDTOProperties.put("steps", "array[Waypoint] - Points de passage (pour itinéraires optimisés)");
+
+        Map<String, Object> routeDTOSchema = new LinkedHashMap<>();
+        routeDTOSchema.put("type", "object");
+        routeDTOSchema.put("properties", routeDTOProperties);
+        schemas.put("RouteDTO", routeDTOSchema);
+
+        Map<String, Object> villeEntityProperties = new LinkedHashMap<>();
+        villeEntityProperties.put("id", "integer - ID de la ville");
+        villeEntityProperties.put("name", "string - Nom de la ville");
+        villeEntityProperties.put("latitude", "number - Latitude GPS");
+        villeEntityProperties.put("longitude", "number - Longitude GPS");
+        villeEntityProperties.put("createdAt", "datetime - Date de création");
+
+        Map<String, Object> villeEntitySchema = new LinkedHashMap<>();
+        villeEntitySchema.put("type", "object");
+        villeEntitySchema.put("properties", villeEntityProperties);
+        schemas.put("VilleEntity", villeEntitySchema);
 
         apiDocs.put("schemas", schemas);
 
