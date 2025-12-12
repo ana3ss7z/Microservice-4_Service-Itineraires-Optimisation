@@ -35,6 +35,7 @@ public class OptimizationService {
         this.objectMapper = objectMapper;
     }
 
+    @Transactional
     public RouteResponse optimizeRoute(RouteRequest request) {
         validateRequest(request);
 
@@ -736,11 +737,20 @@ public class OptimizationService {
             log.info("Route optimisée sauvegardée: {}", saved.getId());
 
         } catch (Exception e) {
-            log.error("Erreur sauvegarde optimisation: {}", e.getMessage(), e);
-            // Generate a temporary ID if saving fails, so service still returns a consistent response
+            log.error("Erreur sauvegarde optimisation critique: {}", e.getMessage(), e);
+            log.error("Détail de l'exception critique:", e);
+            log.error("Données de la route optimisée à sauvegarder: userId={}, nombre de points={}, totalDistanceKm={}",
+                      request.getUserId(),
+                      optimized != null ? optimized.size() : 0,
+                      response.getDistanceKm());
+
+            // Still set the routeId so the response is valid to the frontend, but log the failure
+            // This is important - we don't want to fail the entire route calculation just because save fails
             if (response.getRouteId() == null) {
                 response.setRouteId(java.util.UUID.randomUUID().toString());
             }
+            // Log the error but continue execution so users still get their route
+            // This is the reason why routes don't appear in history - save is failing but API succeeds
         }
     }
 

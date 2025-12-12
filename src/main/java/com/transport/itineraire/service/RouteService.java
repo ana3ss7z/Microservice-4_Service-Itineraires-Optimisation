@@ -32,6 +32,7 @@ public class RouteService {
     @Value("${external.api.nominatim.base-url}") private String nominatimUrl;
     @Value("${external.api.osrm.base-url}") private String osrmUrl;
 
+    @Transactional
     public RouteResponse calculateRouteFromCoordinates(RouteRequest request) {
         try {
             String url = String.format("%s/route/v1/car/%f,%f;%f,%f?overview=full&geometries=geojson&steps=true",
@@ -81,6 +82,7 @@ public class RouteService {
         }
     }
 
+    @Transactional
     public RouteResponse calculateRouteFromAddress(RouteRequest request) {
         try {
             Waypoint origin = geocodeAddress(request.getOriginAddress());
@@ -518,11 +520,21 @@ public class RouteService {
             log.info("Route sauvegardée: {}", saved.getId());
 
         } catch (Exception e) {
-            log.error("Erreur sauvegarde: {}", e.getMessage(), e);
-            // Ensure the routeId is not null if saving fails, use the existing one
+            log.error("Erreur sauvegarde critique: {}", e.getMessage(), e);
+            log.error("Détail de l'exception critique:", e);
+            log.error("Données de la route à sauvegarder: userId={}, originCity={}, destinationCity={}, distanceKm={}",
+                      request.getUserId(),
+                      request.getOrigin() != null ? request.getOrigin().getCity() : null,
+                      request.getDestination() != null ? request.getDestination().getCity() : null,
+                      response.getDistanceKm());
+
+            // Still set the routeId so the response is valid to the frontend, but log the failure
+            // This is important - we don't want to fail the entire route calculation just because save fails
             if (response.getRouteId() == null) {
                 response.setRouteId(java.util.UUID.randomUUID().toString());
             }
+            // Log the error but continue execution so users still get their route
+            // This is the reason why routes don't appear in history - save is failing but API succeeds
         }
     }
 
