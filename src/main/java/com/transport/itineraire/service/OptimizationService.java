@@ -410,7 +410,9 @@ public class OptimizationService {
 
             JsonNode route = root.get("routes").get(0);
             Double distance = route.get("distance").asDouble() / 1000.0;
-            Integer duration = (int) (route.get("duration").asDouble() / 60.0);
+            Integer rawDuration = (int) (route.get("duration").asDouble() / 60.0);
+            // Adjust duration to be more realistic considering real driving conditions
+            Integer duration = adjustRealisticDuration(distance, rawDuration);
 
             // Extract detailed steps
             List<Waypoint> steps = new ArrayList<>();
@@ -522,9 +524,13 @@ public class OptimizationService {
                     }
                 }
 
-                // Add the distance and duration for this segment
+                // Add the distance for this segment (this is accurate)
                 totalDist += segmentResponse.getDistanceKm();
-                totalDuration += segmentResponse.getDurationMin();
+
+                // Adjust duration to be more realistic considering real driving conditions
+                // OSRM provides optimistic times, so we add buffer for stops, traffic, speed limits
+                int adjustedDuration = adjustRealisticDuration(segmentResponse.getDistanceKm(), segmentResponse.getDurationMin());
+                totalDuration += adjustedDuration;
 
                 // Add the instructions from this segment
                 if (segmentResponse.getInstructions() != null) {
@@ -736,5 +742,41 @@ public class OptimizationService {
                 response.setRouteId(java.util.UUID.randomUUID().toString());
             }
         }
+    }
+
+    /**
+     * Adjust the calculated duration to be more realistic considering real driving conditions
+     * OSRM provides optimistic times, so we add buffer for stops, traffic, speed limits, etc.
+     *
+     * @param distanceKm The distance in kilometers
+     * @param calculatedMin The OSRM calculated duration in minutes
+     * @return A more realistic duration in minutes
+     */
+    private int adjustRealisticDuration(double distanceKm, int calculatedMin) {
+        if (calculatedMin <= 0) {
+            return calculatedMin; // Return as is if invalid
+        }
+
+        // Calculate average speed from OSRM (optimistic)
+        double osrmAvgSpeed = distanceKm / (calculatedMin / 60.0); // km/h
+
+        // Based on your requirements: realistic speed between 60-120 km/h with stops/controls
+        // We'll use a conservative approach of 70-90 km/h average including stops
+        // This accounts for traffic, stops, speed limits, police controls, etc.
+        double realisticAvgSpeed = 80.0; // km/h average including all stops/controls
+
+        // Calculate realistic time based on realistic average speed
+        double realisticTimeHours = distanceKm / realisticAvgSpeed;
+        int realisticTimeMin = (int) Math.ceil(realisticTimeHours * 60.0);
+
+        // Ensure we don't return a smaller time than OSRM (which would be unrealistic)
+        // We want to add realistic buffer, not make it less realistic
+        int bufferTime = Math.max(0, realisticTimeMin - calculatedMin);
+
+        // Add a minimum buffer to ensure realistic time accounting for real-world conditions
+        int minBuffer = (int) (calculatedMin * 0.15); // minimum 15% buffer
+        int finalBuffer = Math.max(minBuffer, bufferTime);
+
+        return calculatedMin + finalBuffer;
     }
 }
