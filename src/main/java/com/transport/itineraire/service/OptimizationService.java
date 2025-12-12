@@ -35,13 +35,17 @@ public class OptimizationService {
     public RouteResponse optimizeRoute(RouteRequest request) {
         validateRequest(request);
 
-        // CORRECTION: Enrichir les waypoints avec reverse geocoding
-        enrichWaypoints(request.getWaypoints());
+        // CORRECTION: Construire la liste complète des points incluant origin et destination
+        List<Waypoint> allPoints = buildCompletePointsList(request);
 
-        List<Waypoint> optimized = nearestNeighborOptimization(request.getWaypoints());
+        // CORRECTION: Enrichir les waypoints avec reverse geocoding
+        enrichWaypoints(allPoints);
+
+        // CORRECTION: Optimiser uniquement les waypoints intermédiaires, pas origin/destination
+        List<Waypoint> optimized = optimizeWithOriginAndDestination(allPoints, request.getOrigin(), request.getDestination());
         RouteResponse response = calculateDetails(optimized);
 
-        // CORRECTION: Calcul du retour si demandé
+        // CORRECTION: Calcul du retour si demandé (retour vers l'origin)
         if (Boolean.TRUE.equals(request.getIncludeReturn())) {
             Waypoint lastPoint = optimized.get(optimized.size() - 1);
             Waypoint firstPoint = optimized.get(0);
@@ -57,10 +61,8 @@ public class OptimizationService {
 
             // CORRECTION: Ajout de l'instruction de retour
             List<String> instructions = new ArrayList<>(response.getInstructions());
-            String lastName = lastPoint.getName() != null && !lastPoint.getName().isEmpty()
-                    ? lastPoint.getName() : lastPoint.getCity();
-            String firstName = firstPoint.getName() != null && !firstPoint.getName().isEmpty()
-                    ? firstPoint.getName() : firstPoint.getCity();
+            String lastName = getWaypointDisplayName(lastPoint);
+            String firstName = getWaypointDisplayName(firstPoint);
             instructions.add("Retour de %s à %s: %.2f km".formatted(lastName, firstName, returnDist));
             response.setInstructions(instructions);
         } else {
@@ -72,6 +74,184 @@ public class OptimizationService {
 
         saveOptimizedRoute(request, response, optimized);
         return response;
+    }
+
+    /**
+     * Construit la liste complète des points: origin + waypoints + destination
+     */
+    private List<Waypoint> buildCompletePointsList(RouteRequest request) {
+        List<Waypoint> allPoints = new ArrayList<>();
+
+        // Ajouter l'origin si présent
+        if (request.getOrigin() != null) {
+            Waypoint origin = request.getOrigin();
+            if (origin.getName() == null || origin.getName().isEmpty()) {
+                origin.setName("Origin");
+            }
+            allPoints.add(origin);
+        }
+
+        // Ajouter les waypoints intermédiaires
+        if (request.getWaypoints() != null) {
+            allPoints.addAll(request.getWaypoints());
+        }
+
+        // Ajouter la destination si présente et différente de l'origin
+        if (request.getDestination() != null) {
+            Waypoint destination = request.getDestination();
+            if (destination.getName() == null || destination.getName().isEmpty()) {
+                destination.setName("Destination");
+            }
+            // Vérifier si la destination est différente de l'origin
+            if (request.getOrigin() == null ||
+                !isSameLocation(request.getOrigin(), destination)) {
+                allPoints.add(destination);
+            }
+        }
+
+        return allPoints;
+    }
+
+    /**
+     * Vérifie si deux waypoints sont au même endroit
+     */
+    private boolean isSameLocation(Waypoint w1, Waypoint w2) {
+        if (w1 == null || w2 == null) return false;
+        double tolerance = 0.001; // ~111 mètres
+        return Math.abs(w1.getLatitude() - w2.getLatitude()) < tolerance &&
+               Math.abs(w1.getLongitude() - w2.getLongitude()) < tolerance;
+    }
+
+    /**
+     * Optimise le trajet en gardant l'origin au début et la destination à la fin
+     * Les waypoints intermédiaires sont optimisés avec l'algorithme nearest neighbor
+     */
+    private List<Waypoint> optimizeWithOriginAndDestination(List<Waypoint> allPoints, Waypoint origin, Waypoint destination) {
+        // Si pas d'origin/destination spécifiés, utiliser l'ancien algorithme
+        if (origin == null && destination == null) {
+            return nearestNeighborOptimization(allPoints);
+        }
+
+        // Si on a 2 points ou moins, pas besoin d'optimiser
+        if (allPoints.size() <= 2) {
+            for (int i = 0; i < allPoints.size(); i++) {
+                allPoints.get(i).setOrder(i + 1);
+            }
+            return allPoints;
+        }
+
+        List<Waypoint> result = new ArrayList<>();
+
+        // Si origin est spécifié, commencer par lui
+        Waypoint startPoint = null;
+        Waypoint endPoint = null;
+        List<Waypoint> intermediatePoints = new ArrayList<>();
+
+        for (Waypoint point : allPoints) {
+            if (origin != null && isSameLocation(point, origin)) {
+                startPoint = point;
+            } else if (destination != null && isSameLocation(point, destination)) {
+                endPoint = point;
+            } else {
+                intermediatePoints.add(point);
+            }
+        }
+
+        // Si origin et destination sont identiques (circuit), on optimise différemment
+        boolean isCircuit = origin != null && destination != null && isSameLocation(origin, destination);
+
+        if (isCircuit) {
+            // Circuit: origin -> waypoints optimisés -> retour à origin
+            if (startPoint != null) {
+                result.add(startPoint);
+            }
+
+            // Optimiser les points intermédiaires à partir du point de départ
+            if (!intermediatePoints.isEmpty()) {
+                List<Waypoint> optimizedMiddle = nearestNeighborFromStart(
+                    intermediatePoints,
+                    startPoint != null ? startPoint : intermediatePoints.get(0)
+                );
+                result.addAll(optimizedMiddle);
+            }
+            // Pour un circuit, on ne rajoute pas la destination car c'est le même que l'origin
+            // Le retour sera calculé séparément si includeReturn est true
+        } else {
+            // Trajet linéaire: origin -> waypoints optimisés -> destination
+            if (startPoint != null) {
+                result.add(startPoint);
+            }
+
+            // Optimiser les points intermédiaires
+            if (!intermediatePoints.isEmpty()) {
+                Waypoint fromPoint = startPoint != null ? startPoint : intermediatePoints.get(0);
+                List<Waypoint> optimizedMiddle = nearestNeighborBetweenPoints(
+                    intermediatePoints,
+                    fromPoint,
+                    endPoint
+                );
+                result.addAll(optimizedMiddle);
+            }
+
+            if (endPoint != null) {
+                result.add(endPoint);
+            }
+        }
+
+        // Assigner les ordres
+        for (int i = 0; i < result.size(); i++) {
+            result.get(i).setOrder(i + 1);
+        }
+
+        return result;
+    }
+
+    /**
+     * Optimisation nearest neighbor à partir d'un point de départ
+     */
+    private List<Waypoint> nearestNeighborFromStart(List<Waypoint> points, Waypoint startFrom) {
+        if (points == null || points.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Waypoint> result = new ArrayList<>();
+        Set<Integer> visited = new HashSet<>();
+        Waypoint current = startFrom;
+
+        while (visited.size() < points.size()) {
+            int nearest = -1;
+            double minDist = Double.MAX_VALUE;
+
+            for (int i = 0; i < points.size(); i++) {
+                if (!visited.contains(i)) {
+                    double dist = calculateDistance(current, points.get(i));
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nearest = i;
+                    }
+                }
+            }
+
+            if (nearest != -1) {
+                current = points.get(nearest);
+                result.add(current);
+                visited.add(nearest);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Optimisation nearest neighbor entre deux points fixes (start et end)
+     */
+    private List<Waypoint> nearestNeighborBetweenPoints(List<Waypoint> points, Waypoint start, Waypoint end) {
+        if (points == null || points.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Simple nearest neighbor depuis le point de départ
+        return nearestNeighborFromStart(points, start);
     }
 
     /**
@@ -248,16 +428,60 @@ public class OptimizationService {
     }
 
     private void validateRequest(RouteRequest request) {
-        if (request.getWaypoints() == null || request.getWaypoints().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Waypoints vides");
+        // Compter le nombre total de points (origin + waypoints + destination)
+        int totalPoints = 0;
+
+        if (request.getOrigin() != null &&
+            request.getOrigin().getLatitude() != null &&
+            request.getOrigin().getLongitude() != null) {
+            totalPoints++;
         }
-        if (request.getWaypoints().size() > maxWaypoints) {
+
+        if (request.getWaypoints() != null) {
+            totalPoints += request.getWaypoints().size();
+        }
+
+        if (request.getDestination() != null &&
+            request.getDestination().getLatitude() != null &&
+            request.getDestination().getLongitude() != null) {
+            // Ne pas compter si destination = origin (circuit)
+            if (request.getOrigin() == null || !isSameLocation(request.getOrigin(), request.getDestination())) {
+                totalPoints++;
+            }
+        }
+
+        // Validation: minimum 2 points pour calculer une route
+        if (totalPoints < 2) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    String.format("Trop de points: %d (max: %d)", request.getWaypoints().size(), maxWaypoints));
+                "Au moins 2 points sont requis (origin + destination ou waypoints)");
         }
-        for (Waypoint wp : request.getWaypoints()) {
-            if (wp.getLatitude() == null || wp.getLongitude() == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Coordonnées manquantes");
+
+        // Validation: maximum de waypoints
+        if (totalPoints > maxWaypoints) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    String.format("Trop de points: %d (max: %d)", totalPoints, maxWaypoints));
+        }
+
+        // Validation des coordonnées de l'origin
+        if (request.getOrigin() != null) {
+            if (request.getOrigin().getLatitude() == null || request.getOrigin().getLongitude() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Coordonnées de l'origin manquantes");
+            }
+        }
+
+        // Validation des coordonnées de la destination
+        if (request.getDestination() != null) {
+            if (request.getDestination().getLatitude() == null || request.getDestination().getLongitude() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Coordonnées de la destination manquantes");
+            }
+        }
+
+        // Validation des waypoints
+        if (request.getWaypoints() != null) {
+            for (Waypoint wp : request.getWaypoints()) {
+                if (wp.getLatitude() == null || wp.getLongitude() == null) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Coordonnées manquantes dans les waypoints");
+                }
             }
         }
     }

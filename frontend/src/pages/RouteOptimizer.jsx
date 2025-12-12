@@ -155,25 +155,63 @@ export default function RouteOptimizer() {
     setResult(null);
 
     try {
-      const request = {
-        userId,
-        origin: {
-          latitude: waypoints[0].latitude,
-          longitude: waypoints[0].longitude,
-          name: waypoints[0].name,
-        },
-        destination: {
-          latitude: waypoints[waypoints.length - 1].latitude,
-          longitude: waypoints[waypoints.length - 1].longitude,
-          name: waypoints[waypoints.length - 1].name,
-        },
-        waypoints: waypoints.slice(1, -1).map((w) => ({
-          latitude: w.latitude,
-          longitude: w.longitude,
-          name: w.name,
-        })),
-        includeReturn,
-      };
+      // Déterminer si c'est un circuit (premier et dernier point identiques ou retour activé)
+      const firstPoint = waypoints[0];
+      const lastPoint = waypoints[waypoints.length - 1];
+      const isCircuit =
+        includeReturn ||
+        (firstPoint.name === lastPoint.name &&
+          Math.abs(firstPoint.latitude - lastPoint.latitude) < 0.001 &&
+          Math.abs(firstPoint.longitude - lastPoint.longitude) < 0.001);
+
+      let request;
+
+      if (isCircuit && waypoints.length > 2) {
+        // Pour un circuit: origin = destination = premier point, waypoints = tous les autres
+        request = {
+          userId,
+          origin: {
+            latitude: firstPoint.latitude,
+            longitude: firstPoint.longitude,
+            name: firstPoint.name,
+          },
+          destination: {
+            latitude: firstPoint.latitude,
+            longitude: firstPoint.longitude,
+            name: firstPoint.name,
+          },
+          waypoints: waypoints.slice(1).map((w) => ({
+            latitude: w.latitude,
+            longitude: w.longitude,
+            name: w.name,
+          })),
+          includeReturn,
+        };
+      } else {
+        // Trajet linéaire: origin = premier, destination = dernier, waypoints = intermédiaires
+        request = {
+          userId,
+          origin: {
+            latitude: firstPoint.latitude,
+            longitude: firstPoint.longitude,
+            name: firstPoint.name,
+          },
+          destination: {
+            latitude: lastPoint.latitude,
+            longitude: lastPoint.longitude,
+            name: lastPoint.name,
+          },
+          waypoints:
+            waypoints.length > 2
+              ? waypoints.slice(1, -1).map((w) => ({
+                  latitude: w.latitude,
+                  longitude: w.longitude,
+                  name: w.name,
+                }))
+              : [],
+          includeReturn,
+        };
+      }
 
       const response = await optimizeRoute(request);
       setResult(response);

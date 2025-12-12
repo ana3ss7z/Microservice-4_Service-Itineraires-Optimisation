@@ -117,6 +117,48 @@ export default function RouteResultCard({ result }) {
         </div>
       )}
 
+      {/* Steps/Points Order - Visual representation of route */}
+      {result.steps && result.steps.length > 0 && (
+        <div className="p-6 border-t border-gray-100">
+          <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <ArrowRight className="w-5 h-5 text-emerald-500" />
+            Ordre du parcours optimisé
+          </h4>
+          <div className="flex flex-wrap items-center gap-2">
+            {result.steps.map((step, index) => (
+              <div key={index} className="flex items-center">
+                <div
+                  className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                    index === 0
+                      ? "bg-emerald-100 text-emerald-700 border-2 border-emerald-500"
+                      : index === result.steps.length - 1
+                      ? "bg-rose-100 text-rose-700 border-2 border-rose-500"
+                      : "bg-purple-100 text-purple-700"
+                  }`}
+                >
+                  <span className="font-bold mr-1">
+                    {step.order || index + 1}.
+                  </span>
+                  {step.name || step.city || `Point ${index + 1}`}
+                </div>
+                {index < result.steps.length - 1 && (
+                  <ArrowRight className="w-4 h-4 text-gray-400 mx-1" />
+                )}
+              </div>
+            ))}
+            {result.returnDistanceKm > 0 && result.steps.length > 0 && (
+              <>
+                <ArrowRight className="w-4 h-4 text-orange-400 mx-1" />
+                <div className="px-3 py-2 rounded-lg text-sm font-medium bg-orange-100 text-orange-700 border-2 border-orange-500">
+                  <RotateCcw className="w-4 h-4 inline mr-1" />
+                  {result.steps[0].name || result.steps[0].city || "Retour"}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Steps/Instructions */}
       {result.instructions && result.instructions.length > 0 && (
         <div className="p-6">
