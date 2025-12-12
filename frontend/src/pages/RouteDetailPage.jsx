@@ -209,24 +209,52 @@ export default function RouteDetailPage() {
       }
     });
   } else {
-    // Fallback to origin/destination only (simple routes)
-    if (route.originLatitude && route.originLongitude) {
-      mapWaypoints.push({
-        latitude: route.originLatitude,
-        longitude: route.originLongitude,
-        name: cleanCityName(route.originCity) || "Départ",
-        city: cleanCityName(route.originCity),
-        order: 1,
-      });
+    // If no steps available, try to extract points from routePolyline for visualization
+    if (route.routePolyline) {
+      const polylinePoints = route.routePolyline.split('|');
+      if (polylinePoints.length > 0) {
+        // Take sample points from the routePolyline for visualization
+        // Take only some points to avoid too many markers (performance)
+        const stepSize = Math.ceil(polylinePoints.length / 20); // Max 20 points
+        for (let i = 0; i < polylinePoints.length; i += stepSize) {
+          const [latStr, lngStr] = polylinePoints[i].split(',');
+          if (latStr && lngStr) {
+            const lat = parseFloat(latStr);
+            const lng = parseFloat(lngStr);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              mapWaypoints.push({
+                latitude: lat,
+                longitude: lng,
+                name: `Route Point ${mapWaypoints.length + 1}`,
+                city: null,
+                order: mapWaypoints.length + 1,
+              });
+            }
+          }
+        }
+      }
     }
-    if (route.destinationLatitude && route.destinationLongitude) {
-      mapWaypoints.push({
-        latitude: route.destinationLatitude,
-        longitude: route.destinationLongitude,
-        name: cleanCityName(route.destinationCity) || "Arrivée",
-        city: cleanCityName(route.destinationCity),
-        order: 2,
-      });
+
+    // Add origin and destination as fallback if no routePolyline either
+    if (mapWaypoints.length === 0) {
+      if (route.originLatitude && route.originLongitude) {
+        mapWaypoints.push({
+          latitude: route.originLatitude,
+          longitude: route.originLongitude,
+          name: cleanCityName(route.originCity) || "Départ",
+          city: cleanCityName(route.originCity),
+          order: 1,
+        });
+      }
+      if (route.destinationLatitude && route.destinationLongitude) {
+        mapWaypoints.push({
+          latitude: route.destinationLatitude,
+          longitude: route.destinationLongitude,
+          name: cleanCityName(route.destinationCity) || "Arrivée",
+          city: cleanCityName(route.destinationCity),
+          order: mapWaypoints.length + 1,
+        });
+      }
     }
   }
 
