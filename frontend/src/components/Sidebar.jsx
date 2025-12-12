@@ -80,12 +80,6 @@ const menuGroups = [
     title: "Utilisateur",
     items: [
       {
-        path: "/users",
-        name: "Info Utilisateurs",
-        icon: Users,
-        color: "from-indigo-500 to-indigo-600",
-      },
-      {
         path: "/profile",
         name: "Mon Profil",
         icon: Users,

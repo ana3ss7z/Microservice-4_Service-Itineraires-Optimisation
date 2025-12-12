@@ -10,7 +10,6 @@ import RouteOptimizer from "./pages/RouteOptimizer";
 import DemandeRoute from "./pages/DemandeRoute";
 import RouteHistory from "./pages/RouteHistory";
 import RouteDetailPage from "./pages/RouteDetailPage";
-import UserInfoPage from "./pages/UserInfoPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import LocationPage from "./pages/LocationPage";
 import CitiesPage from "./pages/CitiesPage";
@@ -118,7 +117,6 @@ function App() {
                 <Route path="/demande" element={<DemandeRoute />} />
                 <Route path="/history" element={<RouteHistory />} />
                 <Route path="/route/:id" element={<RouteDetailPage />} />
-                <Route path="/users" element={<UserInfoPage />} />
                 <Route path="/profile" element={<UserProfilePage />} />
                 <Route path="/location" element={<LocationPage />} />
                 <Route path="/cities" element={<CitiesPage />} />

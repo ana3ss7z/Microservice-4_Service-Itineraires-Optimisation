@@ -20,17 +20,17 @@ export default defineConfig({
         // Increased timeout to accommodate longer processing requests
         timeout: 65000, // 65 seconds (more than client timeout to prevent early proxy timeout)
         proxyTimeout: 65000, // Also set proxy timeout
-        onProxyReq: (proxyReq, req, res) => {
+        onProxyReq: (req) => {
           console.log(
             `🔄 Request: ${req.method} ${req.url} -> ${PRIMARY_TARGET}`
           );
         },
-        onProxyRes: (proxyRes, req, res) => {
+        onProxyRes: (proxyRes, req) => {
           console.log(
             `✅ Response: ${req.method} ${req.url} -> ${proxyRes.statusCode}`
           );
         },
-        onError: (err, req, res) => {
+        onError: (err) => {
           console.error(`❌ Proxy error to ${PRIMARY_TARGET}:`, err.message);
 
           // Note: Vite proxy target cannot be changed dynamically without server restart
