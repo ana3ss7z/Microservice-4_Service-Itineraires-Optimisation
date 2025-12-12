@@ -152,6 +152,223 @@ public class ApiDocsController {
         villeEndpoint.put("testExamples", villeTests);
         endpoints.add(villeEndpoint);
 
+        // PUT /routes/{id}/start
+        Map<String, Object> startEndpoint = new LinkedHashMap<>();
+        startEndpoint.put("method", "PUT");
+        startEndpoint.put("path", "/routes/{id}/start");
+        startEndpoint.put("summary", "Démarrer une route");
+        startEndpoint.put("description", "Met le statut started à true et enregistre l'heure de départ effective");
+        startEndpoint.put("authentication", "Bearer JWT Token");
+        startEndpoint.put("parameters", List.of(Map.of("name", "id", "type", "string", "required", true, "description", "ID de l'itinéraire")));
+        Map<String, String> startTests = new LinkedHashMap<>();
+        startTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/YOUR_ROUTE_ID/start' -Method PUT -Headers @{'Authorization'='Bearer YOUR_JWT_TOKEN'}");
+        startTests.put("curl", "curl -X PUT 'http://172.30.80.11:31030/api/routes/YOUR_ROUTE_ID/start' -H 'Authorization: Bearer YOUR_JWT_TOKEN'");
+        startTests.put("fetch", "fetch('http://172.30.80.11:31030/api/routes/YOUR_ROUTE_ID/start', {method:'PUT', headers:{'Authorization':'Bearer YOUR_JWT_TOKEN'}}).then(r=>r.json()).then(console.log)");
+        startEndpoint.put("testExamples", startTests);
+        endpoints.add(startEndpoint);
+
+        // PUT /routes/{id}/stop
+        Map<String, Object> stopEndpoint = new LinkedHashMap<>();
+        stopEndpoint.put("method", "PUT");
+        stopEndpoint.put("path", "/routes/{id}/stop");
+        stopEndpoint.put("summary", "Arrêter une route");
+        stopEndpoint.put("description", "Met le statut started à false");
+        stopEndpoint.put("authentication", "Bearer JWT Token");
+        stopEndpoint.put("parameters", List.of(Map.of("name", "id", "type", "string", "required", true, "description", "ID de l'itinéraire")));
+        Map<String, String> stopTests = new LinkedHashMap<>();
+        stopTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/YOUR_ROUTE_ID/stop' -Method PUT -Headers @{'Authorization'='Bearer YOUR_JWT_TOKEN'}");
+        stopTests.put("curl", "curl -X PUT 'http://172.30.80.11:31030/api/routes/YOUR_ROUTE_ID/stop' -H 'Authorization: Bearer YOUR_JWT_TOKEN'");
+        stopTests.put("fetch", "fetch('http://172.30.80.11:31030/api/routes/YOUR_ROUTE_ID/stop', {method:'PUT', headers:{'Authorization':'Bearer YOUR_JWT_TOKEN'}}).then(r=>r.json()).then(console.log)");
+        stopEndpoint.put("testExamples", stopTests);
+        endpoints.add(stopEndpoint);
+
+        // GET /routes/started
+        Map<String, Object> startedEndpoint = new LinkedHashMap<>();
+        startedEndpoint.put("method", "GET");
+        startedEndpoint.put("path", "/routes/started");
+        startedEndpoint.put("summary", "Récupérer toutes les routes démarrées");
+        startedEndpoint.put("description", "Retourne toutes les routes avec started=true pour calculer les distances");
+        startedEndpoint.put("authentication", "Bearer JWT Token");
+        Map<String, String> startedTests = new LinkedHashMap<>();
+        startedTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/started' -Method GET -Headers @{'Authorization'='Bearer YOUR_JWT_TOKEN'}");
+        startedTests.put("curl", "curl -X GET 'http://172.30.80.11:31030/api/routes/started' -H 'Authorization: Bearer YOUR_JWT_TOKEN'");
+        startedTests.put("fetch", "fetch('http://172.30.80.11:31030/api/routes/started', {headers:{'Authorization':'Bearer YOUR_JWT_TOKEN'}}).then(r=>r.json()).then(console.log)");
+        startedEndpoint.put("testExamples", startedTests);
+        endpoints.add(startedEndpoint);
+
+        // GET /routes/chauffeur/{chauffeurId}/started
+        Map<String, Object> chauffeurStartedEndpoint = new LinkedHashMap<>();
+        chauffeurStartedEndpoint.put("method", "GET");
+        chauffeurStartedEndpoint.put("path", "/routes/chauffeur/{chauffeurId}/started");
+        chauffeurStartedEndpoint.put("summary", "Récupérer les routes démarrées d'un chauffeur");
+        chauffeurStartedEndpoint.put("description", "Retourne les routes en cours pour un chauffeur spécifique");
+        chauffeurStartedEndpoint.put("authentication", "Bearer JWT Token");
+        chauffeurStartedEndpoint.put("parameters", List.of(Map.of("name", "chauffeurId", "type", "string", "required", true, "description", "ID du chauffeur")));
+        Map<String, String> chauffeurTests = new LinkedHashMap<>();
+        chauffeurTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/chauffeur/YOUR_CHAUFFEUR_ID/started' -Method GET -Headers @{'Authorization'='Bearer YOUR_JWT_TOKEN'}");
+        chauffeurTests.put("curl", "curl -X GET 'http://172.30.80.11:31030/api/routes/chauffeur/YOUR_CHAUFFEUR_ID/started' -H 'Authorization: Bearer YOUR_JWT_TOKEN'");
+        chauffeurTests.put("fetch", "fetch('http://172.30.80.11:31030/api/routes/chauffeur/YOUR_CHAUFFEUR_ID/started', {headers:{'Authorization':'Bearer YOUR_JWT_TOKEN'}}).then(r=>r.json()).then(console.log)");
+        chauffeurStartedEndpoint.put("testExamples", chauffeurTests);
+        endpoints.add(chauffeurStartedEndpoint);
+
+        // GET /routes/user-chauffeur
+        Map<String, Object> userChauffeurEndpoint = new LinkedHashMap<>();
+        userChauffeurEndpoint.put("method", "GET");
+        userChauffeurEndpoint.put("path", "/routes/user-chauffeur");
+        userChauffeurEndpoint.put("summary", "Récupérer les routes par userId et chauffeurId");
+        userChauffeurEndpoint.put("description", "Retourne les routes associées à un utilisateur et un chauffeur");
+        userChauffeurEndpoint.put("authentication", "Bearer JWT Token");
+        userChauffeurEndpoint.put("parameters", List.of(
+            Map.of("name", "userId", "type", "string", "required", true, "description", "ID de l'utilisateur"),
+            Map.of("name", "chauffeurId", "type", "string", "required", true, "description", "ID du chauffeur")
+        ));
+        Map<String, String> userChauffeurTests = new LinkedHashMap<>();
+        userChauffeurTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/user-chauffeur?userId=user123&chauffeurId=chauffeur456' -Method GET -Headers @{'Authorization'='Bearer YOUR_JWT_TOKEN'}");
+        userChauffeurTests.put("curl", "curl -X GET 'http://172.30.80.11:31030/api/routes/user-chauffeur?userId=user123&chauffeurId=chauffeur456' -H 'Authorization: Bearer YOUR_JWT_TOKEN'");
+        userChauffeurTests.put("fetch", "fetch('http://172.30.80.11:31030/api/routes/user-chauffeur?userId=user123&chauffeurId=chauffeur456', {headers:{'Authorization':'Bearer YOUR_JWT_TOKEN'}}).then(r=>r.json()).then(console.log)");
+        userChauffeurEndpoint.put("testExamples", userChauffeurTests);
+        endpoints.add(userChauffeurEndpoint);
+
+        // GET /routes/started/total-distance
+        Map<String, Object> totalDistanceEndpoint = new LinkedHashMap<>();
+        totalDistanceEndpoint.put("method", "GET");
+        totalDistanceEndpoint.put("path", "/routes/started/total-distance");
+        totalDistanceEndpoint.put("summary", "Calculer la distance totale des routes démarrées");
+        totalDistanceEndpoint.put("description", "Retourne la somme des distances de toutes les routes en cours");
+        totalDistanceEndpoint.put("authentication", "Bearer JWT Token");
+        Map<String, String> totalDistTests = new LinkedHashMap<>();
+        totalDistTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/started/total-distance' -Method GET -Headers @{'Authorization'='Bearer YOUR_JWT_TOKEN'}");
+        totalDistTests.put("curl", "curl -X GET 'http://172.30.80.11:31030/api/routes/started/total-distance' -H 'Authorization: Bearer YOUR_JWT_TOKEN'");
+        totalDistTests.put("fetch", "fetch('http://172.30.80.11:31030/api/routes/started/total-distance', {headers:{'Authorization':'Bearer YOUR_JWT_TOKEN'}}).then(r=>r.json()).then(console.log)");
+        totalDistanceEndpoint.put("testExamples", totalDistTests);
+        endpoints.add(totalDistanceEndpoint);
+
+        // POST /routes/demande-info
+        Map<String, Object> demandeInfoEndpoint = new LinkedHashMap<>();
+        demandeInfoEndpoint.put("method", "POST");
+        demandeInfoEndpoint.put("path", "/routes/demande-info");
+        demandeInfoEndpoint.put("summary", "Calcul d'itinéraire avec informations de demande");
+        demandeInfoEndpoint.put("description", "Calcule l'itinéraire et retourne les informations complètes incluant volume, nature de marchandise et relation userId-chauffeurId");
+        demandeInfoEndpoint.put("authentication", "Bearer JWT Token");
+        Map<String, Object> demandeExample = new LinkedHashMap<>();
+        demandeExample.put("userId", "user123");
+        demandeExample.put("chauffeurId", "chauffeur456");
+        demandeExample.put("username", "ahmed_benali");
+        demandeExample.put("email", "ahmed.benali@email.com");
+        demandeExample.put("fullName", "Ahmed Ben Ali");
+        demandeExample.put("phone", "+212 6 12 34 56 78");
+        demandeExample.put("volume", 15.5);
+        demandeExample.put("natureMarchandise", "Meubles de salon");
+        demandeExample.put("dateDepart", "2025-12-15T10:00:00");
+        demandeExample.put("adresseDepart", "123 Rue Mohammed V, Casablanca");
+        demandeExample.put("adresseDestination", "456 Avenue Hassan II, Rabat");
+        demandeInfoEndpoint.put("requestBody", demandeExample);
+        Map<String, String> demandeTests = new LinkedHashMap<>();
+        demandeTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/demande-info' -Method POST -Headers @{'Content-Type'='application/json';'Authorization'='Bearer YOUR_JWT_TOKEN'} -Body '{\"userId\":\"user123\",\"chauffeurId\":\"chauffeur456\",\"volume\":15.5,\"natureMarchandise\":\"Meubles de salon\",\"adresseDepart\":\"123 Rue Mohammed V, Casablanca\",\"adresseDestination\":\"456 Avenue Hassan II, Rabat\"}'");
+        demandeTests.put("curl", "curl -X POST 'http://172.30.80.11:31030/api/routes/demande-info' -H 'Content-Type: application/json' -H 'Authorization: Bearer YOUR_JWT_TOKEN' -d '{\"userId\":\"user123\",\"chauffeurId\":\"chauffeur456\",\"volume\":15.5,\"natureMarchandise\":\"Meubles de salon\",\"adresseDepart\":\"123 Rue Mohammed V, Casablanca\",\"adresseDestination\":\"456 Avenue Hassan II, Rabat\"}'");
+        demandeTests.put("fetch", "fetch('http://172.30.80.11:31030/api/routes/demande-info', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer YOUR_JWT_TOKEN'}, body:JSON.stringify({userId:'user123',chauffeurId:'chauffeur456',volume:15.5,natureMarchandise:'Meubles de salon',adresseDepart:'123 Rue Mohammed V, Casablanca',adresseDestination:'456 Avenue Hassan II, Rabat'})}).then(r=>r.json()).then(console.log)");
+        demandeInfoEndpoint.put("testExamples", demandeTests);
+        endpoints.add(demandeInfoEndpoint);
+
+        // GET /routes/user-info
+        Map<String, Object> userInfoEndpoint = new LinkedHashMap<>();
+        userInfoEndpoint.put("method", "GET");
+        userInfoEndpoint.put("path", "/routes/user-info");
+        userInfoEndpoint.put("summary", "Récupérer toutes les informations utilisateur");
+        userInfoEndpoint.put("description", "Retourne les informations complètes incluant totalDistanceKm, totalDurationMin et volume");
+        userInfoEndpoint.put("authentication", "Bearer JWT Token");
+        userInfoEndpoint.put("parameters", List.of(
+            Map.of("name", "userId", "type", "string", "required", true, "description", "ID de l'utilisateur"),
+            Map.of("name", "page", "type", "integer", "required", false, "default", 0, "description", "Numéro de page"),
+            Map.of("name", "size", "type", "integer", "required", false, "default", 20, "description", "Éléments par page")
+        ));
+        Map<String, String> userInfoTests = new LinkedHashMap<>();
+        userInfoTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/routes/user-info?userId=user123&page=0&size=20' -Method GET -Headers @{'Authorization'='Bearer YOUR_JWT_TOKEN'}");
+        userInfoTests.put("curl", "curl -X GET 'http://172.30.80.11:31030/api/routes/user-info?userId=user123&page=0&size=20' -H 'Authorization: Bearer YOUR_JWT_TOKEN'");
+        userInfoTests.put("fetch", "fetch('http://172.30.80.11:31030/api/routes/user-info?userId=user123&page=0&size=20', {headers:{'Authorization':'Bearer YOUR_JWT_TOKEN'}}).then(r=>r.json()).then(console.log)");
+        userInfoEndpoint.put("testExamples", userInfoTests);
+        endpoints.add(userInfoEndpoint);
+
+        // NOTIFICATION ENDPOINTS
+        // GET /notifications
+        Map<String, Object> notificationsEndpoint = new LinkedHashMap<>();
+        notificationsEndpoint.put("method", "GET");
+        notificationsEndpoint.put("path", "/notifications");
+        notificationsEndpoint.put("summary", "Récupérer les notifications d'un utilisateur");
+        notificationsEndpoint.put("description", "Retourne une liste paginée des notifications pour un utilisateur");
+        notificationsEndpoint.put("authentication", "None");
+        notificationsEndpoint.put("parameters", List.of(
+            Map.of("name", "userId", "type", "string", "required", true, "description", "ID de l'utilisateur"),
+            Map.of("name", "page", "type", "integer", "required", false, "default", 0, "description", "Numéro de page"),
+            Map.of("name", "size", "type", "integer", "required", false, "default", 20, "description", "Éléments par page")
+        ));
+        Map<String, String> notificationsTests = new LinkedHashMap<>();
+        notificationsTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/notifications?userId=user123&page=0&size=20' -Method GET");
+        notificationsTests.put("curl", "curl -X GET 'http://172.30.80.11:31030/api/notifications?userId=user123&page=0&size=20'");
+        notificationsTests.put("fetch", "fetch('http://172.30.80.11:31030/api/notifications?userId=user123&page=0&size=20').then(r=>r.json()).then(console.log)");
+        notificationsEndpoint.put("testExamples", notificationsTests);
+        endpoints.add(notificationsEndpoint);
+
+        // GET /notifications/unread
+        Map<String, Object> unreadCountEndpoint = new LinkedHashMap<>();
+        unreadCountEndpoint.put("method", "GET");
+        unreadCountEndpoint.put("path", "/notifications/unread");
+        unreadCountEndpoint.put("summary", "Récupérer le nombre de notifications non lues");
+        unreadCountEndpoint.put("description", "Retourne le nombre de notifications non lues pour un utilisateur");
+        unreadCountEndpoint.put("authentication", "None");
+        unreadCountEndpoint.put("parameters", List.of(Map.of("name", "userId", "type", "string", "required", true, "description", "ID de l'utilisateur")));
+        Map<String, String> unreadCountTests = new LinkedHashMap<>();
+        unreadCountTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/notifications/unread?userId=user123' -Method GET");
+        unreadCountTests.put("curl", "curl -X GET 'http://172.30.80.11:31030/api/notifications/unread?userId=user123'");
+        unreadCountTests.put("fetch", "fetch('http://172.30.80.11:31030/api/notifications/unread?userId=user123').then(r=>r.json()).then(console.log)");
+        unreadCountEndpoint.put("testExamples", unreadCountTests);
+        endpoints.add(unreadCountEndpoint);
+
+        // GET /notifications/unread-list
+        Map<String, Object> unreadListEndpoint = new LinkedHashMap<>();
+        unreadListEndpoint.put("method", "GET");
+        unreadListEndpoint.put("path", "/notifications/unread-list");
+        unreadListEndpoint.put("summary", "Récupérer les notifications non lues");
+        unreadListEndpoint.put("description", "Retourne la liste des notifications non lues pour un utilisateur");
+        unreadListEndpoint.put("authentication", "None");
+        unreadListEndpoint.put("parameters", List.of(Map.of("name", "userId", "type", "string", "required", true, "description", "ID de l'utilisateur")));
+        Map<String, String> unreadListTests = new LinkedHashMap<>();
+        unreadListTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/notifications/unread-list?userId=user123' -Method GET");
+        unreadListTests.put("curl", "curl -X GET 'http://172.30.80.11:31030/api/notifications/unread-list?userId=user123'");
+        unreadListTests.put("fetch", "fetch('http://172.30.80.11:31030/api/notifications/unread-list?userId=user123').then(r=>r.json()).then(console.log)");
+        unreadListEndpoint.put("testExamples", unreadListTests);
+        endpoints.add(unreadListEndpoint);
+
+        // PUT /notifications/{id}/read
+        Map<String, Object> markReadEndpoint = new LinkedHashMap<>();
+        markReadEndpoint.put("method", "PUT");
+        markReadEndpoint.put("path", "/notifications/{id}/read");
+        markReadEndpoint.put("summary", "Marquer une notification comme lue");
+        markReadEndpoint.put("description", "Marque une notification spécifique comme lue");
+        markReadEndpoint.put("authentication", "None");
+        markReadEndpoint.put("parameters", List.of(Map.of("name", "id", "type", "integer", "required", true, "description", "ID de la notification")));
+        Map<String, String> markReadTests = new LinkedHashMap<>();
+        markReadTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/notifications/1/read' -Method PUT");
+        markReadTests.put("curl", "curl -X PUT 'http://172.30.80.11:31030/api/notifications/1/read'");
+        markReadTests.put("fetch", "fetch('http://172.30.80.11:31030/api/notifications/1/read', {method:'PUT'}).then(r=>r.text()).then(console.log)");
+        markReadEndpoint.put("testExamples", markReadTests);
+        endpoints.add(markReadEndpoint);
+
+        // PUT /notifications/mark-all-read
+        Map<String, Object> markAllReadEndpoint = new LinkedHashMap<>();
+        markAllReadEndpoint.put("method", "PUT");
+        markAllReadEndpoint.put("path", "/notifications/mark-all-read");
+        markAllReadEndpoint.put("summary", "Marquer toutes les notifications comme lues");
+        markAllReadEndpoint.put("description", "Marque toutes les notifications d'un utilisateur comme lues");
+        markAllReadEndpoint.put("authentication", "None");
+        markAllReadEndpoint.put("parameters", List.of(Map.of("name", "userId", "type", "string", "required", true, "description", "ID de l'utilisateur")));
+        Map<String, String> markAllReadTests = new LinkedHashMap<>();
+        markAllReadTests.put("powershell", "Invoke-RestMethod -Uri 'http://172.30.80.11:31030/api/notifications/mark-all-read?userId=user123' -Method PUT");
+        markAllReadTests.put("curl", "curl -X PUT 'http://172.30.80.11:31030/api/notifications/mark-all-read?userId=user123'");
+        markAllReadTests.put("fetch", "fetch('http://172.30.80.11:31030/api/notifications/mark-all-read?userId=user123', {method:'PUT'}).then(r=>r.text()).then(console.log)");
+        markAllReadEndpoint.put("testExamples", markAllReadTests);
+        endpoints.add(markAllReadEndpoint);
+
         apiDocs.put("endpoints", endpoints);
 
         // Schemas
@@ -164,7 +381,8 @@ public class ApiDocsController {
                 "address", "string - Adresse complète",
                 "latitude", "number - Latitude GPS",
                 "longitude", "number - Longitude GPS",
-                "city", "string - Ville"
+                "city", "string - Ville",
+                "order", "integer - Ordre dans l'itinéraire (pour les waypoints optimisés)"
             )
         ));
 
@@ -177,7 +395,8 @@ public class ApiDocsController {
                 "destinationAddress", "string - Adresse de destination",
                 "waypoints", "array[Waypoint] - Points intermédiaires (max 25)",
                 "includeReturn", "boolean - Inclure le trajet retour",
-                "userId", "string - ID de l'utilisateur"
+                "userId", "string - ID de l'utilisateur",
+                "requestId", "string - ID de la requête (optionnel)"
             )
         ));
 
@@ -191,8 +410,124 @@ public class ApiDocsController {
                 "returnDurationMin", "integer - Durée retour en minutes",
                 "totalDistanceKm", "number - Distance totale en km",
                 "totalDurationMin", "integer - Durée totale en minutes",
+                "steps", "array[Waypoint] - Étapes de l'itinéraire",
+                "instructions", "array[string] - Instructions de navigation",
+                "routePolyline", "string - Chemin encodé pour la visualisation sur carte",
                 "status", "string - Statut du calcul",
                 "calculatedAt", "datetime - Date du calcul"
+            )
+        ));
+
+        schemas.put("DemandeRequestDTO", Map.of(
+            "type", "object",
+            "properties", Map.of(
+                "userId", "string - ID de l'utilisateur",
+                "chauffeurId", "string - ID du chauffeur",
+                "username", "string - Nom d'utilisateur",
+                "email", "string - Adresse email de l'utilisateur",
+                "fullName", "string - Nom complet de l'utilisateur",
+                "phone", "string - Numéro de téléphone de l'utilisateur",
+                "volume", "number - Volume de la marchandise (m³)",
+                "natureMarchandise", "string - Description de la nature de la marchandise",
+                "dateDepart", "datetime - Date et heure de départ prévue",
+                "adresseDepart", "string - Adresse de départ",
+                "adresseDestination", "string - Adresse de destination"
+            )
+        ));
+
+        schemas.put("UserRouteInfoDTO", Map.of(
+            "type", "object",
+            "properties", Map.of(
+                "routeId", "string - ID de l'itinéraire",
+                "userId", "string - ID de l'utilisateur",
+                "chauffeurId", "string - ID du chauffeur",
+                "username", "string - Nom d'utilisateur",
+                "email", "string - Email de l'utilisateur",
+                "fullName", "string - Nom complet de l'utilisateur",
+                "phone", "string - Téléphone de l'utilisateur",
+                "adresseDepart", "string - Adresse de départ",
+                "adresseDestination", "string - Adresse de destination",
+                "originLatitude", "number - Latitude d'origine",
+                "originLongitude", "number - Longitude d'origine",
+                "originCity", "string - Ville d'origine",
+                "destinationLatitude", "number - Latitude de destination",
+                "destinationLongitude", "number - Longitude de destination",
+                "destinationCity", "string - Ville de destination",
+                "totalDistanceKm", "number - Distance totale en km",
+                "totalDurationMin", "integer - Durée totale en minutes",
+                "distanceKm", "number - Distance aller en km",
+                "durationMin", "integer - Durée aller en minutes",
+                "returnDistanceKm", "number - Distance retour en km",
+                "returnDurationMin", "integer - Durée retour en minutes",
+                "volume", "number - Volume de la marchandise",
+                "natureMarchandise", "string - Nature de la marchandise",
+                "dateDepart", "datetime - Date de départ",
+                "estimatedArrivalTime", "datetime - Heure d'arrivée estimée",
+                "notificationTime", "datetime - Heure de notification (10 min avant arrivée)",
+                "started", "boolean - Statut de démarrage",
+                "startedAt", "datetime - Heure de démarrage réelle",
+                "includeReturn", "boolean - Inclure le retour",
+                "isOptimized", "boolean - Si l'itinéraire est optimisé",
+                "optimizationType", "string - Type d'optimisation",
+                "createdAt", "datetime - Date de création",
+                "status", "string - Statut de l'itinéraire",
+                "calculatedBy", "string - Méthode de calcul",
+                "steps", "array[Waypoint] - Points de passage (pour itinéraires optimisés)"
+            )
+        ));
+
+        schemas.put("RouteDTO", Map.of(
+            "type", "object",
+            "properties", Map.of(
+                "id", "string - ID de l'itinéraire",
+                "userId", "string - ID de l'utilisateur",
+                "originLatitude", "number - Latitude d'origine",
+                "originLongitude", "number - Longitude d'origine",
+                "originAddress", "string - Adresse d'origine",
+                "originCity", "string - Ville d'origine",
+                "destinationLatitude", "number - Latitude de destination",
+                "destinationLongitude", "number - Longitude de destination",
+                "destinationAddress", "string - Adresse de destination",
+                "destinationCity", "string - Ville de destination",
+                "distanceKm", "number - Distance en km",
+                "durationMin", "integer - Durée en minutes",
+                "returnDistanceKm", "number - Distance retour en km",
+                "returnDurationMin", "integer - Durée retour en minutes",
+                "totalDistanceKm", "number - Distance totale en km",
+                "totalDurationMin", "integer - Durée totale en minutes",
+                "includeReturn", "boolean - Inclure le retour",
+                "isOptimized", "boolean - Si l'itinéraire est optimisé",
+                "optimizationType", "string - Type d'optimisation",
+                "createdAt", "datetime - Date de création",
+                "status", "string - Statut de l'itinéraire",
+                "calculatedBy", "string - Méthode de calcul",
+                "steps", "array[Waypoint] - Points de passage (pour itinéraires optimisés)"
+            )
+        ));
+
+        schemas.put("VilleEntity", Map.of(
+            "type", "object",
+            "properties", Map.of(
+                "id", "integer - ID de la ville",
+                "name", "string - Nom de la ville",
+                "latitude", "number - Latitude GPS",
+                "longitude", "number - Longitude GPS",
+                "createdAt", "datetime - Date de création"
+            )
+        ));
+
+        schemas.put("NotificationDTO", Map.of(
+            "type", "object",
+            "properties", Map.of(
+                "id", "integer - ID de la notification",
+                "userId", "string - ID de l'utilisateur",
+                "title", "string - Titre de la notification",
+                "message", "string - Message de la notification",
+                "type", "string - Type de la notification (ROUTE_STARTED, ESTIMATED_ARRIVAL, etc.)",
+                "read", "boolean - Statut de lecture",
+                "createdAt", "datetime - Date de création",
+                "routeId", "string - ID de la route associée (optionnel)",
+                "chauffeurId", "string - ID du chauffeur associé (optionnel)"
             )
         ));
 

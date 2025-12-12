@@ -70,14 +70,17 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [cities, setCities] = useState(initialCities);
+  const [routes, setRoutes] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const searchRef = useRef(null);
   const navigate = useNavigate();
   const { darkMode } = useTheme();
 
-  // Fetch all cities from API on component mount
+  // Fetch all cities, routes and notifications from API on component mount
   useEffect(() => {
-    const fetchAllCities = async () => {
+    const fetchAllData = async () => {
       try {
+        // Fetch cities
         const apiCities = await getAllCities();
         if (apiCities && Array.isArray(apiCities) && apiCities.length > 0) {
           // Map the API response to match the expected structure for search
@@ -85,18 +88,63 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
             name: city.name || city.nom,
             lat: city.latitude || city.lat,
             lng: city.longitude || city.lng,
-            id: city.id
+            id: city.id,
+            type: 'city'
           }));
           setCities(mappedCities);
         }
+
+        // For now, use a placeholder for current user
+        // In a real implementation, you would get the actual user ID from auth context or storage
+        const currentUserId = localStorage.getItem('userId') || 'current_user'; // Replace with actual user ID logic
+
+        if (currentUserId) {
+          // Fetch recent routes for the user
+          const recentRoutes = await getRouteHistory(currentUserId, 0, 10); // Get first 10 routes
+          if (recentRoutes && recentRoutes.content) {
+            // Map route history to search format
+            const mappedRoutes = recentRoutes.content.map(route => ({
+              id: route.id,
+              name: `${route.originCity || 'Départ'} → ${route.destinationCity || 'Arrivée'}`,
+              originCity: route.originCity,
+              destinationCity: route.destinationCity,
+              originAddress: route.originAddress,
+              destinationAddress: route.destinationAddress,
+              distanceKm: route.totalDistanceKm || route.distanceKm,
+              durationMin: route.totalDurationMin || route.durationMin,
+              steps: route.steps, // Include steps if available for searching
+              type: 'route'
+            }));
+            setRoutes(mappedRoutes);
+          }
+
+          // Fetch recent notifications for the user
+          try {
+            const recentNotifications = await getUnreadNotifications(currentUserId);
+            if (Array.isArray(recentNotifications)) {
+              // Map notifications to search format
+              const mappedNotifications = recentNotifications.map(notification => ({
+                id: notification.id,
+                title: notification.title,
+                message: notification.message,
+                routeId: notification.routeId,
+                type: 'notification'
+              }));
+              setNotifications(mappedNotifications);
+            }
+          } catch (notifError) {
+            console.error("Error fetching notifications:", notifError);
+            // Still proceed with other data even if notifications fail
+          }
+        }
       } catch (error) {
-        console.error("Error fetching cities:", error);
+        console.error("Error fetching data:", error);
         // Fallback to initial cities if API fails
         setCities(initialCities);
       }
     };
 
-    fetchAllCities();
+    fetchAllData();
   }, []);
 
   // Handle click outside to close search
@@ -110,25 +158,57 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Search functionality
+  // Search functionality - enhanced to include routes, addresses, and notifications
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
       const query = searchQuery.toLowerCase();
+
+      // Filter cities based on name, region or address-related terms
       const cityResults = cities.filter(
         (city) =>
           city.name?.toLowerCase().includes(query) ||
           (city.region && city.region.toLowerCase().includes(query))
       );
+
+      // Filter quick links
       const linkResults = quickLinks.filter((link) =>
         link.name.toLowerCase().includes(query)
       );
-      setSearchResults({ cities: cityResults.slice(0, 5), links: linkResults });
+
+      // Filter routes based on origin/destination cities, addresses, or route name
+      const routeResults = routes.filter(
+        (route) =>
+          route.name?.toLowerCase().includes(query) ||
+          route.originCity?.toLowerCase().includes(query) ||
+          route.destinationCity?.toLowerCase().includes(query) ||
+          route.originAddress?.toLowerCase().includes(query) ||
+          route.destinationAddress?.toLowerCase().includes(query) ||
+          (route.steps && route.steps.some(step =>
+            step.name?.toLowerCase().includes(query) ||
+            step.address?.toLowerCase().includes(query) ||
+            step.city?.toLowerCase().includes(query)
+          ))
+      );
+
+      // Filter notifications based on title, message, or content
+      const notificationResults = notifications.filter(
+        (notification) =>
+          notification.title?.toLowerCase().includes(query) ||
+          notification.message?.toLowerCase().includes(query)
+      );
+
+      setSearchResults({
+        cities: cityResults.slice(0, 5),
+        links: linkResults,
+        routes: routeResults.slice(0, 5),
+        notifications: notificationResults.slice(0, 5)
+      });
       setShowSearchResults(true);
     } else {
-      setSearchResults({ cities: [], links: [] });
+      setSearchResults({ cities: [], links: [], routes: [], notifications: [] });
       setShowSearchResults(false);
     }
-  }, [searchQuery, cities]);
+  }, [searchQuery, cities, routes, notifications]);
 
   const handleCityClick = (city) => {
     // Ensure city has the proper structure for the cities page
@@ -142,6 +222,26 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
       id: city.id
     };
     navigate("/cities", { state: { selectedCity: normalizedCity } });
+    setSearchQuery("");
+    setShowSearchResults(false);
+  };
+
+  const handleRouteClick = (route) => {
+    // Navigate to the specific route detail page
+    if (route.id) {
+      navigate(`/route/${route.id}`);
+    }
+    setSearchQuery("");
+    setShowSearchResults(false);
+  };
+
+  const handleNotificationClick = (notification) => {
+    // Navigate to notifications page or specific route if linked
+    if (notification.routeId) {
+      navigate(`/route/${notification.routeId}`);
+    } else {
+      navigate('/notifications');
+    }
     setSearchQuery("");
     setShowSearchResults(false);
   };
@@ -255,7 +355,9 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
             {/* Search Results Dropdown */}
             {showSearchResults &&
               (searchResults.cities?.length > 0 ||
-                searchResults.links?.length > 0) && (
+                searchResults.links?.length > 0 ||
+                searchResults.routes?.length > 0 ||
+                searchResults.notifications?.length > 0) && (
                 <div
                   className={`absolute top-full left-0 right-0 mt-2 ${
                     darkMode
@@ -294,11 +396,107 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
                     </div>
                   )}
 
+                  {/* Notifications */}
+                  {searchResults.notifications?.length > 0 && (
+                    <div
+                      className={`p-2 ${
+                        searchResults.links?.length > 0 || searchResults.cities?.length > 0 || searchResults.routes?.length > 0
+                          ? `border-t ${
+                              darkMode ? "border-slate-700" : "border-gray-100"
+                            }`
+                          : ""
+                      }`}
+                    >
+                      <p
+                        className={`text-xs font-semibold ${
+                          darkMode ? "text-gray-400" : "text-gray-500"
+                        } px-2 mb-1`}
+                      >
+                        Notifications
+                      </p>
+                      {searchResults.notifications.map((notification) => (
+                        <button
+                          key={notification.id}
+                          onClick={() => handleNotificationClick(notification)}
+                          className={`w-full flex items-center gap-3 px-3 py-2 ${
+                            darkMode ? "hover:bg-slate-700" : "hover:bg-gray-50"
+                          } rounded-lg transition-colors text-left`}
+                        >
+                          <Bell className="w-4 h-4 text-orange-500" />
+                          <div>
+                            <p
+                              className={`text-sm font-medium ${
+                                darkMode ? "text-gray-200" : "text-gray-700"
+                              }`}
+                            >
+                              {notification.title}
+                            </p>
+                            <p
+                              className={`text-xs ${
+                                darkMode ? "text-gray-400" : "text-gray-500"
+                              }`}
+                            >
+                              {notification.message.substring(0, 60)}{notification.message.length > 60 ? '...' : ''}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Routes */}
+                  {searchResults.routes?.length > 0 && (
+                    <div
+                      className={`p-2 ${
+                        searchResults.links?.length > 0 || searchResults.notifications?.length > 0 || searchResults.cities?.length > 0
+                          ? `border-t ${
+                              darkMode ? "border-slate-700" : "border-gray-100"
+                            }`
+                          : ""
+                      }`}
+                    >
+                      <p
+                        className={`text-xs font-semibold ${
+                          darkMode ? "text-gray-400" : "text-gray-500"
+                        } px-2 mb-1`}
+                      >
+                        Trajets
+                      </p>
+                      {searchResults.routes.map((route) => (
+                        <button
+                          key={route.id}
+                          onClick={() => handleRouteClick(route)}
+                          className={`w-full flex items-center gap-3 px-3 py-2 ${
+                            darkMode ? "hover:bg-slate-700" : "hover:bg-gray-50"
+                          } rounded-lg transition-colors text-left`}
+                        >
+                          <Route className="w-4 h-4 text-blue-500" />
+                          <div>
+                            <p
+                              className={`text-sm font-medium ${
+                                darkMode ? "text-gray-200" : "text-gray-700"
+                              }`}
+                            >
+                              {route.originCity || route.originAddress} → {route.destinationCity || route.destinationAddress}
+                            </p>
+                            <p
+                              className={`text-xs ${
+                                darkMode ? "text-gray-400" : "text-gray-500"
+                              }`}
+                            >
+                              {route.distanceKm?.toFixed(1)} km • {route.durationMin} min
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Cities */}
                   {searchResults.cities?.length > 0 && (
                     <div
                       className={`p-2 ${
-                        searchResults.links?.length > 0
+                        searchResults.links?.length > 0 || searchResults.notifications?.length > 0 || searchResults.routes?.length > 0
                           ? `border-t ${
                               darkMode ? "border-slate-700" : "border-gray-100"
                             }`
