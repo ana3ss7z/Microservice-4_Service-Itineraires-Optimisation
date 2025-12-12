@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -341,10 +342,166 @@ public class OptimizationService {
     }
 
     private RouteResponse calculateDetails(List<Waypoint> points) {
+        if (points.size() < 2) {
+            // Handle case with fewer than 2 points
+            String polyline = generatePolyline(points);
+            return RouteResponse.builder()
+                    .distanceKm(0.0)
+                    .durationMin(0)
+                    .steps(points)
+                    .routePolyline(polyline)
+                    .instructions(new ArrayList<>())
+                    .calculatedAt(LocalDateTime.now())
+                    .status("SUCCESS")
+                    .build();
+        }
+
+        // For optimization, we can create the route using a single OSRM call with all points
+        // if the number of points is reasonable (less than typical OSRM limit)
+        if (points.size() <= 10) { // OSRM typically supports up to 150 coordinates but performance degrades
+            return calculateOptimizedRouteWithAllPoints(points);
+        } else {
+            // For many points, use segments approach but with timeout handling
+            return calculateOptimizedRouteWithSegments(points);
+        }
+    }
+
+    /**
+     * Calculate optimized route using a single request with all points
+     */
+    private RouteResponse calculateOptimizedRouteWithAllPoints(List<Waypoint> points) {
+        try {
+            // Build a single OSRM request with all optimized points
+            StringBuilder urlBuilder = new StringBuilder();
+            urlBuilder.append(osrmUrl).append("/route/v1/driving/");
+
+            // Add all lon,lat coordinates to the URL
+            for (int i = 0; i < points.size(); i++) {
+                Waypoint wp = points.get(i);
+                if (i > 0) urlBuilder.append(";");
+                urlBuilder.append(wp.getLongitude()).append(",").append(wp.getLatitude());
+            }
+
+            urlBuilder.append("?overview=full&geometries=geojson&steps=true");
+
+            String url = urlBuilder.toString();
+            log.debug("Appel OSRM optimisé: {}", url);
+
+            // Use restTemplate with increased timeout
+            org.springframework.http.ResponseEntity<String> responseEntity =
+                restTemplate.getForEntity(url, String.class);
+            String response = responseEntity.getBody();
+
+            // Create a temporary request to re-use the existing parsing logic
+            RouteRequest tempRequest = RouteRequest.builder()
+                    .origin(points.get(0))
+                    .destination(points.get(points.size() - 1))
+                    .includeReturn(false)
+                    .build();
+
+            // Parse the response using the existing method from RouteService
+            // We'll need to temporarily call this on the full route data
+            ObjectMapper mapper = objectMapper; // Use the local ObjectMapper
+            JsonNode root = mapper.readTree(response);
+
+            if (!"Ok".equals(root.get("code").asText())) {
+                throw new RuntimeException("Erreur OSRM: " + root.path("message").asText("Erreur inconnue"));
+            }
+
+            JsonNode route = root.get("routes").get(0);
+            Double distance = route.get("distance").asDouble() / 1000.0;
+            Integer duration = (int) (route.get("duration").asDouble() / 60.0);
+
+            // Extract detailed steps
+            List<Waypoint> steps = new ArrayList<>();
+            JsonNode legs = route.path("legs");
+            int stepOrder = 1;
+
+            if (legs.isArray() && legs.size() > 0) {
+                for (JsonNode leg : legs) {
+                    JsonNode stepsNode = leg.path("steps");
+                    if (stepsNode.isArray()) {
+                        for (JsonNode step : stepsNode) {
+                            JsonNode maneuver = step.path("maneuver");
+                            JsonNode location = maneuver.path("location");
+
+                            if (location.isArray() && location.size() == 2) {
+                                double longitude = location.get(0).asDouble();
+                                double latitude = location.get(1).asDouble();
+                                String name = step.path("name").asText("");
+
+                                Waypoint waypoint = Waypoint.builder()
+                                        .longitude(longitude)
+                                        .latitude(latitude)
+                                        .name(name)
+                                        .order(stepOrder++)
+                                        .build();
+
+                                steps.add(waypoint);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Extract geometry for polyline
+            List<Waypoint> fullRouteGeometry = new ArrayList<>();
+            JsonNode geometry = route.path("geometry");
+            if (geometry != null && !geometry.isNull()) {
+                JsonNode coordinates = geometry.path("coordinates");
+                if (coordinates.isArray()) {
+                    for (JsonNode coord : coordinates) {
+                        if (coord.isArray() && coord.size() >= 2) {
+                            double longitude = coord.get(0).asDouble();
+                            double latitude = coord.get(1).asDouble();
+
+                            Waypoint wp = Waypoint.builder()
+                                    .longitude(longitude)
+                                    .latitude(latitude)
+                                    .name("Route Point")
+                                    .order(0) // Geometry points don't have step order
+                                    .build();
+                            fullRouteGeometry.add(wp);
+                        }
+                    }
+                }
+            }
+
+            // Generate instructions
+            List<String> instructions = new ArrayList<>();
+            for (int i = 0; i < points.size() - 1; i++) {
+                String fromName = getWaypointDisplayName(points.get(i));
+                String toName = getWaypointDisplayName(points.get(i + 1));
+                instructions.add("De %s à %s".formatted(fromName, toName));
+            }
+
+            String polyline = generatePolyline(fullRouteGeometry);
+
+            return RouteResponse.builder()
+                    .distanceKm(Math.round(distance * 100.0) / 100.0)
+                    .durationMin(duration)
+                    .steps(points) // Include original optimized sequence
+                    .routePolyline(polyline) // Use actual route geometry
+                    .instructions(instructions)
+                    .calculatedAt(LocalDateTime.now())
+                    .status("SUCCESS")
+                    .build();
+
+        } catch (Exception e) {
+            log.warn("Failed to get detailed route with all points: {}", e.getMessage());
+            // Fall back to segment approach if single request fails
+            return calculateOptimizedRouteWithSegments(points);
+        }
+    }
+
+    /**
+     * Calculate optimized route by processing segments one by one
+     */
+    private RouteResponse calculateOptimizedRouteWithSegments(List<Waypoint> points) {
         double totalDist = 0;
         int totalDuration = 0;
         List<String> allInstructions = new ArrayList<>();
-        List<Waypoint> fullRouteGeometry = new ArrayList<>(); // This will contain the actual path geometry
+        List<Waypoint> fullRouteGeometry = new ArrayList<>();
 
         for (int i = 0; i < points.size() - 1; i++) {
             Waypoint from = points.get(i);
