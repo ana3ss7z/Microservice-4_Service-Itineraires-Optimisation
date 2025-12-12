@@ -334,6 +334,61 @@ export const getServerInfo = async () => {
   }
 };
 
+/**
+ * Fetch server info and return metadata (data, cached flag, timestamp)
+ */
+export const fetchServerInfoWithMeta = async () => {
+  const now = Date.now();
+  const cache = simpleCache.serverInfo;
+  try {
+    if (inFlightRequests.has("serverInfo-meta")) {
+      return await inFlightRequests.get("serverInfo-meta");
+    }
+    const requestPromise = api
+      .get("/location/server-info")
+      .then((r) => ({ data: r.data || null, cached: false, ts: now }));
+    inFlightRequests.set("serverInfo-meta", requestPromise);
+    const result = await requestPromise;
+    simpleCache.serverInfo = { data: result.data, ts: now };
+    return result;
+  } catch (err) {
+    if (cache.data) {
+      return { data: cache.data, cached: true, ts: cache.ts, error: err };
+    }
+    // Re-throw when no cache
+    throw err;
+  } finally {
+    inFlightRequests.delete("serverInfo-meta");
+  }
+};
+
+/**
+ * Fetch all cities and return metadata (data, cached flag, timestamp)
+ */
+export const fetchAllCitiesWithMeta = async () => {
+  const now = Date.now();
+  const cache = simpleCache.cities;
+  try {
+    if (inFlightRequests.has("cities-meta")) {
+      return await inFlightRequests.get("cities-meta");
+    }
+    const requestPromise = api
+      .get("/routes/ville")
+      .then((r) => ({ data: r.data || [], cached: false, ts: now }));
+    inFlightRequests.set("cities-meta", requestPromise);
+    const result = await requestPromise;
+    simpleCache.cities = { data: result.data, ts: now };
+    return result;
+  } catch (err) {
+    if (cache.data) {
+      return { data: cache.data, cached: true, ts: cache.ts, error: err };
+    }
+    throw err;
+  } finally {
+    inFlightRequests.delete("cities-meta");
+  }
+};
+
 // ==================== DEMANDES EXTERNES API ====================
 
 /**

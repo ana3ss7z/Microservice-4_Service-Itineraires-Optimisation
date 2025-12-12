@@ -20,17 +20,6 @@ export default defineConfig({
         // Increased timeout to accommodate longer processing requests
         timeout: 65000, // 65 seconds (more than client timeout to prevent early proxy timeout)
         proxyTimeout: 65000, // Also set proxy timeout
-        onProxyReq: (req) => {
-          // Silent logging for debugging
-        },
-        onProxyRes: (proxyRes, req) => {
-          // Silent logging for debugging
-        },
-        onError: (err) => {
-          // Suppress error logging to prevent console spam when backend is down
-          // console.error(`❌ Proxy error to ${PRIMARY_TARGET}:`, err.message);
-          // console.log(`💡 Backend server not running. Start it with: mvn spring-boot:run`);
-        },
       },
     },
   },

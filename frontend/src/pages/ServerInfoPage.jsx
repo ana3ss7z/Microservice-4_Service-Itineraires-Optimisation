@@ -9,12 +9,10 @@ import {
   XCircle,
   Clock,
   Wifi,
-  Database,
   Code,
 } from "lucide-react";
-import { getServerInfo } from "../services/api";
+import { fetchServerInfoWithMeta } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
-import ServiceChecker from "../components/ServiceChecker";
 import toast from "react-hot-toast";
 import { useTheme } from "../context/ThemeContext";
 
@@ -24,12 +22,20 @@ export default function ServerInfoPage() {
   const [healthStatus, setHealthStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(null);
+  const [serverCached, setServerCached] = useState(false);
+  const [serverTs, setServerTs] = useState(null);
 
   const fetchServerInfo = async () => {
     setLoading(true);
     try {
-      const serverData = await getServerInfo();
+      const result = await fetchServerInfoWithMeta();
+      const serverData = result.data;
+      console.debug("ServerInfo fetched:", serverData);
       setServerInfo(serverData);
+      setServerCached(!!result.cached);
+      setServerTs(result.ts || null);
+      const now = Date.now();
+      const isStale = result.cached && now - (result.ts || 0) >= 60 * 1000;
       // Determine health status from server data
       if (serverData) {
         const s = (
@@ -41,7 +47,7 @@ export default function ServerInfoPage() {
           .toString()
           .toUpperCase();
         const healthyValues = ["UP", "OK", "SUCCESS", "HEALTHY", "RUNNING"];
-        const isUp = healthyValues.includes(s) || s === "";
+        const isUp = healthyValues.includes(s);
         setHealthStatus({
           status: isUp ? "UP" : s || "UNKNOWN",
           message:
@@ -56,6 +62,12 @@ export default function ServerInfoPage() {
         });
       }
       setLastRefresh(new Date());
+      if (isStale) {
+        setHealthStatus({
+          status: "DOWN",
+          message: "Données en cache (dégradées)",
+        });
+      }
       toast.success("Informations serveur actualisées");
     } catch (error) {
       // On error we mark service as down and provide the message for display
@@ -84,7 +96,6 @@ export default function ServerInfoPage() {
       .toUpperCase()
       .trim();
     const allowed = ["UP", "OK", "SUCCESS", "HEALTHY", "RUNNING"];
-    if (statusStr === "") return !!serverInfo; // if we have serverInfo but no status, consider it reachable
     return allowed.includes(statusStr);
   })();
 
@@ -102,6 +113,19 @@ export default function ServerInfoPage() {
               <Server className="w-6 h-6 text-white" />
             </div>
             Informations Serveur
+            {serverCached && (
+              <span
+                className={`ml-3 text-xs px-2 py-1 rounded-full font-semibold ${
+                  serverTs && Date.now() - serverTs >= 60 * 1000
+                    ? "bg-red-600 text-white"
+                    : "bg-yellow-400 text-black"
+                }`}
+              >
+                {serverTs && Date.now() - serverTs >= 60 * 1000
+                  ? "Cache périmé"
+                  : "Cache"}
+              </span>
+            )}
           </h1>
           <p className={`${darkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
             État et informations du microservice
@@ -210,6 +234,20 @@ export default function ServerInfoPage() {
                       serverInfo?.host ||
                       "-"}
                   </p>
+                  <p
+                    className={`text-xs ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    Source:{" "}
+                    {serverInfo?.serverHostname
+                      ? "serverHostname"
+                      : serverInfo?.hostname
+                      ? "hostname"
+                      : serverInfo?.host
+                      ? "host"
+                      : "-"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -233,6 +271,20 @@ export default function ServerInfoPage() {
                       serverInfo?.ip ||
                       serverInfo?.ipAddress ||
                       "-"}
+                  </p>
+                  <p
+                    className={`text-xs ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    Source:{" "}
+                    {serverInfo?.serverIp
+                      ? "serverIp"
+                      : serverInfo?.ip
+                      ? "ip"
+                      : serverInfo?.ipAddress
+                      ? "ipAddress"
+                      : "-"}
                   </p>
                 </div>
               </div>
@@ -271,6 +323,20 @@ export default function ServerInfoPage() {
                         serverInfo?.operatingSystem ||
                         "-"}
                   </p>
+                  <p
+                    className={`text-xs ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    Source:{" "}
+                    {serverInfo?.osName
+                      ? "osName"
+                      : serverInfo?.os
+                      ? "os"
+                      : serverInfo?.operatingSystem
+                      ? "operatingSystem"
+                      : "-"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -285,6 +351,18 @@ export default function ServerInfoPage() {
                   <p className="text-sm text-gray-500">Version Java</p>
                   <p className="font-bold text-gray-800">
                     {serverInfo?.javaVersion || serverInfo?.java || "-"}
+                  </p>
+                  <p
+                    className={`text-xs ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    Source:{" "}
+                    {serverInfo?.javaVersion
+                      ? "javaVersion"
+                      : serverInfo?.java
+                      ? "java"
+                      : "-"}
                   </p>
                 </div>
               </div>
@@ -388,53 +466,6 @@ export default function ServerInfoPage() {
               </div>
             </div>
           )}
-
-          {/* Raw Server Info */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <Database className="w-5 h-5 text-slate-500" />
-                Données Brutes du Serveur
-              </h2>
-            </div>
-            <div className="p-6">
-              <pre className="bg-gray-900 text-gray-100 rounded-xl p-6 overflow-auto text-sm font-mono">
-                {JSON.stringify(serverInfo, null, 2)}
-              </pre>
-            </div>
-          </div>
-
-          {/* Health Check Response */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-emerald-500" />
-                Réponse Health Check
-              </h2>
-            </div>
-            <div className="p-6">
-              <pre className="bg-gray-900 text-gray-100 rounded-xl p-6 overflow-auto text-sm font-mono">
-                {JSON.stringify(healthStatus, null, 2)}
-              </pre>
-            </div>
-          </div>
-
-          {/* Service Checker */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-emerald-500" />
-                Vérification des Endpoints API
-              </h2>
-            </div>
-            <div className="p-6">
-              <ServiceChecker
-                onStatusChange={(s) =>
-                  setHealthStatus({ status: s.status, message: s.message })
-                }
-              />
-            </div>
-          </div>
 
           {/* API Endpoints Info */}
           <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 overflow-hidden">

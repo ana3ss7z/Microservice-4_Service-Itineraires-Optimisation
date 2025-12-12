@@ -3,12 +3,11 @@ import { Link } from "react-router-dom";
 import {
   MapPin,
   Route,
-  Package,
+  BarChart3,
   History,
   Globe,
   Building2,
   TrendingUp,
-  Clock,
   CheckCircle,
   AlertCircle,
   Activity,
@@ -17,9 +16,9 @@ import {
   Server,
 } from "lucide-react";
 import {
-  getAllCities,
   getCurrentLocation,
-  getServerInfo,
+  fetchServerInfoWithMeta,
+  fetchAllCitiesWithMeta,
 } from "../services/api";
 import { useTheme } from "../context/ThemeContext";
 import toast from "react-hot-toast";
@@ -38,23 +37,23 @@ const quickActions = [
     description: "Multi-points TSP",
     icon: Route,
     path: "/optimizer",
-    color: "from-purple-500 to-purple-600",
+    color: "from-green-500 to-purple-600",
     bgColor: "bg-purple-50",
   },
   {
-    title: "Demande Transport",
-    description: "Avec volume & marchandise",
-    icon: Package,
-    path: "/demande",
-    color: "from-orange-500 to-orange-600",
-    bgColor: "bg-orange-50",
+    title: "Statistiques",
+    description: "Analyse des trajets",
+    icon: BarChart3,
+    path: "/statistics",
+    color: "from-red-500 to-purple-600",
+    bgColor: "bg-violet-50",
   },
   {
     title: "Historique",
     description: "Voir vos trajets",
     icon: History,
     path: "/history",
-    color: "from-cyan-500 to-cyan-600",
+    color: "from-cyan-500 to-yellow-600",
     bgColor: "bg-cyan-50",
   },
   {
@@ -75,61 +74,50 @@ const quickActions = [
   },
 ];
 
-// Utilisateurs prédéfinis basés sur la collection Postman
-const predefinedUsers = [
-  {
-    id: "user123",
-    name: "Ahmed Benali",
-    email: "ahmed.benali@email.com",
-    icon: "👨‍💼",
-  },
-  {
-    id: "user456",
-    name: "Fatima Alaoui",
-    email: "fatima.alaoui@email.com",
-    icon: "👩‍💼",
-  },
-  {
-    id: "user789",
-    name: "Omar Tazi",
-    email: "omar.tazi@entreprise.ma",
-    icon: "👨‍🔧",
-  },
-  {
-    id: "user999",
-    name: "Khadija Mansouri",
-    email: "khadija@email.com",
-    icon: "👩‍🏫",
-  },
-];
-
 export default function Dashboard() {
   const { darkMode } = useTheme();
   const [serviceStatus, setServiceStatus] = useState("checking");
   const [citiesCount, setCitiesCount] = useState(0);
   const [location, setLocation] = useState(null);
+  const [, setLocationFallback] = useState(false);
   const [serverInfo, setServerInfo] = useState(null);
+  const [serverCached, setServerCached] = useState(false);
+  const [serverTs, setServerTs] = useState(null);
   const [, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      let citiesOk = false;
+      let serverOk = false;
       try {
-        // Skip health check to prevent proxy errors when backend is down
-        setServiceStatus("online");
+        // start checking
+        setServiceStatus("checking");
 
         // Get cities count
         try {
-          const cities = await getAllCities();
-          setCitiesCount(cities?.length || 30); // Default to 30 Moroccan cities
+          const citiesMeta = await fetchAllCitiesWithMeta();
+          setCitiesCount(citiesMeta.data?.length || 30); // Default to 30 Moroccan cities
+          const now = Date.now();
+          const citiesFresh =
+            !citiesMeta.cached || now - citiesMeta.ts < 60 * 1000;
+          if (citiesMeta.data && citiesFresh) citiesOk = true;
         } catch (e) {
           setCitiesCount(30); // Fallback to known city count
           console.log("Cities count fallback");
         }
 
-        // Get server info
+        // Get server info (with metadata)
         try {
-          const server = await getServerInfo();
-          setServerInfo(server);
+          const server = await fetchServerInfoWithMeta();
+          setServerInfo(server.data);
+          setServerCached(!!server.cached);
+          setServerTs(server.ts || null);
+          // serverOk if it was fetched freshly or cached recently (within TTL)
+          const now = Date.now();
+          const serverFresh = !server.cached || now - server.ts < 60 * 1000;
+          if (server.data && serverFresh) {
+            serverOk = true;
+          }
         } catch (e) {
           console.log("Server info not available");
         }
@@ -141,12 +129,19 @@ export default function Dashboard() {
         } catch (e) {
           // Fallback to default location (Casablanca)
           setLocation({ city: "Casablanca", country: "Morocco" });
+          setLocationFallback(true);
           console.log("Location not available, using default");
         }
       } catch (error) {
         setServiceStatus("offline");
         toast.error("Service indisponible");
       } finally {
+        // If serviceStatus wasn't set online by server result, determine based on cached successes
+        if (serverOk || citiesOk) {
+          setServiceStatus("online");
+        } else {
+          setServiceStatus("offline");
+        }
         setLoading(false);
       }
     };
@@ -283,81 +278,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Users Section */}
-      <div
-        className={`rounded-2xl p-6 shadow-lg ${
-          darkMode
-            ? "bg-slate-800 border border-slate-700"
-            : "bg-white border border-gray-100"
-        }`}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3
-            className={`font-bold text-lg flex items-center gap-3 ${
-              darkMode ? "text-white" : "text-gray-800"
-            }`}
-          >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
-              <Users className="w-5 h-5 text-white" />
-            </div>
-            Utilisateurs Disponibles
-          </h3>
-          <Link
-            to="/users"
-            className="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center gap-1"
-          >
-            Voir tous
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {predefinedUsers.map((user) => (
-            <Link
-              key={user.id}
-              to={`/users`}
-              className={`group p-4 rounded-xl transition-all duration-200 ${
-                darkMode
-                  ? "bg-slate-700 hover:bg-indigo-900/30 border border-slate-600 hover:border-indigo-500"
-                  : "bg-gradient-to-br from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-indigo-100 border border-gray-200 hover:border-indigo-300"
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className={`w-12 h-12 rounded-xl shadow flex items-center justify-center text-2xl ${
-                    darkMode ? "bg-slate-600" : "bg-white"
-                  }`}
-                >
-                  {user.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`font-semibold truncate ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    }`}
-                  >
-                    {user.name}
-                  </p>
-                  <p
-                    className={`text-xs truncate ${
-                      darkMode ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  >
-                    {user.id}
-                  </p>
-                </div>
-              </div>
-              <p
-                className={`text-xs truncate ${
-                  darkMode ? "text-gray-400" : "text-gray-500"
-                }`}
-              >
-                {user.email}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </div>
-
       {/* Info Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* API Endpoints Card */}
@@ -402,11 +322,6 @@ export default function Dashboard() {
                 method: "POST",
                 path: "/routes/optimize",
                 desc: "Optimisation TSP",
-              },
-              {
-                method: "POST",
-                path: "/routes/demande-info",
-                desc: "Avec volume",
               },
               { method: "GET", path: "/routes/history", desc: "Historique" },
               {
@@ -489,102 +404,143 @@ export default function Dashboard() {
               />
             </div>
             Informations Serveur
-          </h3>
-          {serverInfo ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div
-                  className={`p-4 rounded-xl ${
-                    darkMode ? "bg-slate-700" : "bg-gray-50"
-                  }`}
-                >
-                  <p
-                    className={`text-xs mb-1 ${
-                      darkMode ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  >
-                    Hostname
-                  </p>
-                  <p
-                    className={`font-semibold truncate ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    }`}
-                  >
-                    {serverInfo.hostname || serverInfo.host || "-"}
-                  </p>
-                </div>
-                <div
-                  className={`p-4 rounded-xl ${
-                    darkMode ? "bg-slate-700" : "bg-gray-50"
-                  }`}
-                >
-                  <p
-                    className={`text-xs mb-1 ${
-                      darkMode ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  >
-                    IP Serveur
-                  </p>
-                  <p
-                    className={`font-semibold ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    }`}
-                  >
-                    {serverInfo.ip || serverInfo.ipAddress || "-"}
-                  </p>
-                </div>
-                <div
-                  className={`p-4 rounded-xl ${
-                    darkMode ? "bg-slate-700" : "bg-gray-50"
-                  }`}
-                >
-                  <p
-                    className={`text-xs mb-1 ${
-                      darkMode ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  >
-                    OS
-                  </p>
-                  <p
-                    className={`font-semibold truncate ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    }`}
-                  >
-                    {serverInfo.os || serverInfo.operatingSystem || "-"}
-                  </p>
-                </div>
-                <div
-                  className={`p-4 rounded-xl ${
-                    darkMode ? "bg-slate-700" : "bg-gray-50"
-                  }`}
-                >
-                  <p
-                    className={`text-xs mb-1 ${
-                      darkMode ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  >
-                    Java
-                  </p>
-                  <p
-                    className={`font-semibold truncate ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    }`}
-                  >
-                    {serverInfo.javaVersion || serverInfo.java || "-"}
-                  </p>
-                </div>
-              </div>
-              <Link
-                to="/server"
-                className={`block w-full text-center py-3 rounded-xl font-medium transition-colors ${
-                  darkMode
-                    ? "bg-slate-700 hover:bg-slate-600 text-gray-200"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+            {serverCached && (
+              <span
+                className={`ml-3 text-xs px-2 py-1 rounded-full font-semibold ${
+                  serverTs && Date.now() - serverTs >= 60 * 1000
+                    ? "bg-red-600 text-white"
+                    : "bg-yellow-400 text-black"
                 }`}
               >
-                Voir plus de détails
-              </Link>
-            </div>
+                {serverTs && Date.now() - serverTs >= 60 * 1000
+                  ? "Cache périmé"
+                  : "Cache"}
+              </span>
+            )}
+          </h3>
+          {serverInfo ? (
+            <>
+              {!(
+                serverInfo.serverHostname ||
+                serverInfo.serverIp ||
+                serverInfo.osName ||
+                serverInfo.javaVersion
+              ) && (
+                <div
+                  className={`text-sm text-yellow-500 mb-2 ${
+                    darkMode ? "text-yellow-300" : "text-yellow-700"
+                  }`}
+                >
+                  Some server information is missing (hostname / OS). It may be
+                  due to the running environment (container / local).
+                </div>
+              )}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div
+                    className={`p-4 rounded-xl ${
+                      darkMode ? "bg-slate-700" : "bg-gray-50"
+                    }`}
+                  >
+                    <p
+                      className={`text-xs mb-1 ${
+                        darkMode ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    >
+                      Hostname
+                    </p>
+                    <p
+                      className={`font-semibold truncate ${
+                        darkMode ? "text-white" : "text-gray-800"
+                      }`}
+                    >
+                      {serverInfo.serverHostname ||
+                        serverInfo.hostname ||
+                        serverInfo.host ||
+                        "-"}
+                    </p>
+                  </div>
+                  <div
+                    className={`p-4 rounded-xl ${
+                      darkMode ? "bg-slate-700" : "bg-gray-50"
+                    }`}
+                  >
+                    <p
+                      className={`text-xs mb-1 ${
+                        darkMode ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    >
+                      IP Serveur
+                    </p>
+                    <p
+                      className={`font-semibold ${
+                        darkMode ? "text-white" : "text-gray-800"
+                      }`}
+                    >
+                      {serverInfo.serverIp ||
+                        serverInfo.ip ||
+                        serverInfo.ipAddress ||
+                        "-"}
+                    </p>
+                  </div>
+                  <div
+                    className={`p-4 rounded-xl ${
+                      darkMode ? "bg-slate-700" : "bg-gray-50"
+                    }`}
+                  >
+                    <p
+                      className={`text-xs mb-1 ${
+                        darkMode ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    >
+                      OS
+                    </p>
+                    <p
+                      className={`font-semibold truncate ${
+                        darkMode ? "text-white" : "text-gray-800"
+                      }`}
+                    >
+                      {serverInfo.osName && serverInfo.osVersion
+                        ? `${serverInfo.osName} ${serverInfo.osVersion}`
+                        : serverInfo.osName ||
+                          serverInfo.os ||
+                          serverInfo.operatingSystem ||
+                          "-"}
+                    </p>
+                  </div>
+                  <div
+                    className={`p-4 rounded-xl ${
+                      darkMode ? "bg-slate-700" : "bg-gray-50"
+                    }`}
+                  >
+                    <p
+                      className={`text-xs mb-1 ${
+                        darkMode ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    >
+                      Java
+                    </p>
+                    <p
+                      className={`font-semibold truncate ${
+                        darkMode ? "text-white" : "text-gray-800"
+                      }`}
+                    >
+                      {serverInfo.javaVersion || serverInfo.java || "-"}
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  to="/server"
+                  className={`block w-full text-center py-3 rounded-xl font-medium transition-colors ${
+                    darkMode
+                      ? "bg-slate-700 hover:bg-slate-600 text-gray-200"
+                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                  }`}
+                >
+                  Voir plus de détails
+                </Link>
+              </div>
+            </>
           ) : (
             <div
               className={`text-center py-8 ${
@@ -597,118 +553,7 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-
-      {/* Features Card */}
-      <div
-        className={`rounded-2xl p-6 shadow-lg ${
-          darkMode
-            ? "bg-slate-800 border border-slate-700"
-            : "bg-white border border-gray-100"
-        }`}
-      >
-        <h3
-          className={`font-bold text-lg mb-4 flex items-center gap-2 ${
-            darkMode ? "text-white" : "text-gray-800"
-          }`}
-        >
-          <div
-            className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-              darkMode ? "bg-purple-900/50" : "bg-purple-100"
-            }`}
-          >
-            <TrendingUp
-              className={`w-5 h-5 ${
-                darkMode ? "text-purple-400" : "text-purple-600"
-              }`}
-            />
-          </div>
-          Fonctionnalités
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {[
-            {
-              title: "Calcul Haversine",
-              desc: "Distance à vol d'oiseau précise",
-              icon: "📐",
-            },
-            {
-              title: "Optimisation TSP",
-              desc: "Algorithme du plus proche voisin",
-              icon: "🔄",
-            },
-            {
-              title: "Reverse Geocoding",
-              desc: "Via Nominatim/OpenStreetMap",
-              icon: "🗺️",
-            },
-            {
-              title: "Multi-waypoints",
-              desc: "Jusqu'à 15 points intermédiaires",
-              icon: "📍",
-            },
-            {
-              title: "Géolocalisation IP",
-              desc: "Détection automatique position",
-              icon: "🌍",
-            },
-          ].map((feature, i) => (
-            <div
-              key={i}
-              className={`flex items-start gap-3 p-4 rounded-xl ${
-                darkMode ? "bg-slate-700" : "bg-gray-50"
-              }`}
-            >
-              <span className="text-2xl">{feature.icon}</span>
-              <div>
-                <p
-                  className={`font-medium ${
-                    darkMode ? "text-white" : "text-gray-800"
-                  }`}
-                >
-                  {feature.title}
-                </p>
-                <p
-                  className={`text-xs ${
-                    darkMode ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  {feature.desc}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Location Info */}
-      {location && (
-        <div className="bg-gradient-to-r from-pink-500 to-rose-500 rounded-2xl p-6 text-white shadow-xl">
-          <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-            <Globe className="w-6 h-6" />
-            Votre Localisation Détectée
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-pink-100 text-sm">Ville</p>
-              <p className="font-bold text-lg">{location.city || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-pink-100 text-sm">Région</p>
-              <p className="font-bold text-lg">
-                {location.regionName || "N/A"}
-              </p>
-            </div>
-            <div>
-              <p className="text-pink-100 text-sm">Pays</p>
-              <p className="font-bold text-lg">{location.country || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-pink-100 text-sm">IP</p>
-              <p className="font-bold text-lg">{location.ipAddress || "N/A"}</p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
+div;
