@@ -341,43 +341,81 @@ public class OptimizationService {
     }
 
     private RouteResponse calculateDetails(List<Waypoint> points) {
-        // Note: In a complete implementation, this should calculate the actual route between
-        // each consecutive pair of waypoints to get the real road geometry, not just straight lines.
-        // The current approach shows straight lines between optimized waypoints.
-        // For a production system, each segment between points would need to be calculated
-        // using the OSRM API to get the actual road path geometry.
-
         double totalDist = 0;
         int totalDuration = 0;
-        List<String> instructions = new ArrayList<>();
+        List<String> allInstructions = new ArrayList<>();
+        List<Waypoint> fullRouteGeometry = new ArrayList<>(); // This will contain the actual path geometry
 
         for (int i = 0; i < points.size() - 1; i++) {
             Waypoint from = points.get(i);
             Waypoint to = points.get(i + 1);
 
-            double segmentDist = calculateDistance(from, to);
-            int segmentDuration = estimateDuration(segmentDist);
+            try {
+                // Use the helper method from RouteService to get the actual route between points
+                RouteResponse segmentResponse = routeService.calculateRouteBetweenPoints(from, to);
 
-            totalDist += segmentDist;
-            totalDuration += segmentDuration;
+                // Accumulate the actual route geometry for visualization
+                if (i == 0) {
+                    // For the first segment, add all points
+                    fullRouteGeometry.addAll(segmentResponse.getSteps());
+                } else {
+                    // For subsequent segments, skip the first point to avoid duplicate connections
+                    if (!segmentResponse.getSteps().isEmpty()) {
+                        fullRouteGeometry.addAll(segmentResponse.getSteps().subList(1, segmentResponse.getSteps().size()));
+                    }
+                }
 
-            // CORRECTION: Utiliser name ou city, jamais null
-            String fromName = getWaypointDisplayName(from);
-            String toName = getWaypointDisplayName(to);
+                // Add the distance and duration for this segment
+                totalDist += segmentResponse.getDistanceKm();
+                totalDuration += segmentResponse.getDurationMin();
 
-            instructions.add("De %s à %s: %.2f km".formatted(fromName, toName, segmentDist));
+                // Add the instructions from this segment
+                if (segmentResponse.getInstructions() != null) {
+                    allInstructions.addAll(segmentResponse.getInstructions());
+                }
+
+                // Add a summary instruction
+                String fromName = getWaypointDisplayName(from);
+                String toName = getWaypointDisplayName(to);
+                allInstructions.add("Segment %d: De %s à %s: %.2f km".formatted(i+1, fromName, toName, segmentResponse.getDistanceKm()));
+
+            } catch (Exception e) {
+                log.warn("Failed to get detailed route from {} to {}: {}",
+                    getWaypointDisplayName(from), getWaypointDisplayName(to), e.getMessage());
+
+                // Fallback to straight line calculation if actual route calculation fails
+                double segmentDist = calculateDistance(from, to);
+                int segmentDuration = estimateDuration(segmentDist);
+
+                totalDist += segmentDist;
+                totalDuration += segmentDuration;
+
+                String fromName = getWaypointDisplayName(from);
+                String toName = getWaypointDisplayName(to);
+                allInstructions.add("Segment %d: De %s à %s: %.2f km (calcul estimé)".formatted(i+1, fromName, toName, segmentDist));
+
+                // For fallback, add both waypoints to maintain the path
+                if (i == 0) {
+                    fullRouteGeometry.add(from);
+                }
+                fullRouteGeometry.add(to);
+            }
         }
 
-        // For the optimized route polyline, we'll use the straight-line path between points
-        // In a real implementation, we would get the actual road geometry between points
-        String polyline = generatePolyline(points);
+        // If no geometry was retrieved, fall back to using the waypoint points
+        if (fullRouteGeometry.isEmpty() && !points.isEmpty()) {
+            fullRouteGeometry.addAll(points);
+        }
+
+        // Generate the polyline from the actual route geometry
+        String polyline = generatePolyline(fullRouteGeometry);
 
         return RouteResponse.builder()
                 .distanceKm(Math.round(totalDist * 100.0) / 100.0)
                 .durationMin(totalDuration)
-                .steps(points)
-                .routePolyline(polyline)
-                .instructions(instructions)
+                .steps(points) // Still include the optimized sequence as steps
+                .routePolyline(polyline) // Use the actual route geometry for visualization
+                .instructions(allInstructions)
                 .calculatedAt(LocalDateTime.now())
                 .status("SUCCESS")
                 .build();
