@@ -307,6 +307,56 @@ export const checkDemandeServiceHealth = async () => {
   return response.data;
 };
 
+// ==================== NOTIFICATION API ====================
+
+/**
+ * Récupérer les notifications d'un utilisateur
+ */
+export const getUserNotifications = async (userId, page = 0, size = 20) => {
+  const response = await api.get("/notifications", {
+    params: { userId, page, size },
+  });
+  return response.data;
+};
+
+/**
+ * Récupérer le nombre de notifications non lues
+ */
+export const getUnreadNotificationCount = async (userId) => {
+  const response = await api.get("/notifications/unread", {
+    params: { userId },
+  });
+  return response.data;
+};
+
+/**
+ * Récupérer les notifications non lues
+ */
+export const getUnreadNotifications = async (userId) => {
+  const response = await api.get("/notifications/unread-list", {
+    params: { userId },
+  });
+  return response.data;
+};
+
+/**
+ * Marquer une notification comme lue
+ */
+export const markAsRead = async (notificationId) => {
+  const response = await api.put(`/notifications/${notificationId}/read`);
+  return response.data;
+};
+
+/**
+ * Marquer toutes les notifications comme lues
+ */
+export const markAllAsRead = async (userId) => {
+  const response = await api.put("/notifications/mark-all-read", null, {
+    params: { userId },
+  });
+  return response.data;
+};
+
 // Function to check server health quickly
 export const checkServerHealth = async (serverUrl) => {
   try {

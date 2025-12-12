@@ -3,8 +3,10 @@ import com.transport.itineraire.entity.RouteEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -25,4 +27,8 @@ public interface RouteRepository extends JpaRepository<RouteEntity, String> {
 
     // Récupérer les routes par userId et chauffeurId
     List<RouteEntity> findByUserIdAndChauffeurId(String userId, String chauffeurId);
+
+    // Find routes with pending notifications
+    @Query("SELECT r FROM RouteEntity r WHERE r.notificationTime IS NOT NULL AND r.notificationTime <= :currentTime AND r.started = true")
+    List<RouteEntity> findRoutesWithPendingNotifications(LocalDateTime currentTime);
 }

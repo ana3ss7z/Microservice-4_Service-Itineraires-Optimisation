@@ -11,9 +11,10 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
+import { getAllCities } from "../services/api";
 
-// Moroccan cities for search
-const moroccanCities = [
+// Initial hardcoded cities for fallback
+const initialCities = [
   {
     name: "Casablanca",
     lat: 33.5731,
@@ -68,9 +69,35 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [cities, setCities] = useState(initialCities);
   const searchRef = useRef(null);
   const navigate = useNavigate();
   const { darkMode } = useTheme();
+
+  // Fetch all cities from API on component mount
+  useEffect(() => {
+    const fetchAllCities = async () => {
+      try {
+        const apiCities = await getAllCities();
+        if (apiCities && Array.isArray(apiCities) && apiCities.length > 0) {
+          // Map the API response to match the expected structure for search
+          const mappedCities = apiCities.map(city => ({
+            name: city.name || city.nom,
+            lat: city.latitude || city.lat,
+            lng: city.longitude || city.lng,
+            id: city.id
+          }));
+          setCities(mappedCities);
+        }
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+        // Fallback to initial cities if API fails
+        setCities(initialCities);
+      }
+    };
+
+    fetchAllCities();
+  }, []);
 
   // Handle click outside to close search
   useEffect(() => {
@@ -87,10 +114,10 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
       const query = searchQuery.toLowerCase();
-      const cityResults = moroccanCities.filter(
+      const cityResults = cities.filter(
         (city) =>
-          city.name.toLowerCase().includes(query) ||
-          city.region.toLowerCase().includes(query)
+          city.name?.toLowerCase().includes(query) ||
+          (city.region && city.region.toLowerCase().includes(query))
       );
       const linkResults = quickLinks.filter((link) =>
         link.name.toLowerCase().includes(query)
@@ -101,10 +128,20 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
       setSearchResults({ cities: [], links: [] });
       setShowSearchResults(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, cities]);
 
   const handleCityClick = (city) => {
-    navigate("/cities", { state: { selectedCity: city } });
+    // Ensure city has the proper structure for the cities page
+    const normalizedCity = {
+      name: city.name,
+      nom: city.name, // for compatibility with cities page
+      latitude: city.lat,
+      longitude: city.lng,
+      lat: city.lat,
+      lng: city.lng,
+      id: city.id
+    };
+    navigate("/cities", { state: { selectedCity: normalizedCity } });
     setSearchQuery("");
     setShowSearchResults(false);
   };
@@ -323,7 +360,10 @@ export default function Navbar({ onMenuClick, isCollapsed }) {
                 darkMode ? "text-gray-300" : "text-gray-600"
               }`}
             />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+            {/* In a real implementation, we would show the actual count here */}
+            {/* <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              3
+            </span> */}
           </Link>
 
           {/* Settings */}

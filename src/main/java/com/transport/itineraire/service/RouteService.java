@@ -632,4 +632,12 @@ public class RouteService {
 
         return calculatedMin + finalBuffer;
     }
+
+    /**
+     * Get all routes that have pending notifications
+     * @return List of routes with notification time that has passed
+     */
+    public List<RouteEntity> getRoutesWithPendingNotifications() {
+        return repository.findRoutesWithPendingNotifications(LocalDateTime.now());
+    }
 }
